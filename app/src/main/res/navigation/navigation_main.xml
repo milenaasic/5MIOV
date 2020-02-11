@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/navigation_main"
+    app:startDestination="@id/mainFragment">
+
+    <fragment
+        android:id="@+id/mainFragment"
+        android:name="com.vertial.sipdnidphone.ui.fragment_main.MainFragment"
+        android:label="fragment_main"
+        tools:layout="@layout/fragment_main" >
+        <action
+            android:id="@+id/action_mainFragment_to_detailContact"
+            app:destination="@id/detailContact" />
+    </fragment>
+    <fragment
+        android:id="@+id/detailContact"
+        android:name="com.vertial.sipdnidphone.ui.fragment_detail_contact.DetailContact"
+        android:label="fragment_detail_contact"
+        tools:layout="@layout/fragment_detail_contact" />
+</navigation>

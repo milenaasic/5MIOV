@@ -1,0 +1,20 @@
+<resources>
+
+    <string name="app_name">5MIOV</string>
+
+    <!-- ovo mi nece trebati -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <!-- Menu names -->
+    <string name="dial_pad">Dial Pad</string>
+    <string name="my_account">My Account</string>
+
+    <!-- content descriptions -->
+    <string name="contact_picture">contact picture</string>
+
+    <!-- layout items text -->
+    <string name="name">Name</string>
+
+    <!-- snackbar messages-->
+    <string name="no_permission_read_contacts">No permission to read contacts</string>
+</resources>
