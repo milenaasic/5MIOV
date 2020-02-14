@@ -1,6 +1,7 @@
 package com.vertial.sipdnidphone.ui.fragment_main
 
 import android.net.Uri
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -11,7 +12,7 @@ import com.vertial.sipdnidphone.R
 import com.vertial.sipdnidphone.databinding.FragmentMainRecViewItemType1Binding
 
 
-
+private val MYTAG="MY_MainFragmentAdapter"
 class MainFragmentAdapter(val clickListener: ContactItemClickListener)
     : RecyclerView.Adapter<MainFragmentAdapter.MyViewHolder>() {
 
@@ -32,22 +33,27 @@ class MainFragmentAdapter(val clickListener: ContactItemClickListener)
 
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        holder.bind(clickListener,dataList[position])
+        var shouldShow=true
+
+        if(position!=0){
+                val sameFirstLetter=dataList[position-1].name.first().equals(dataList[position].name.first(),true)
+                /*Log.i(MYTAG,"prvo slovo prethodnog je ${dataList[position-1].name.first()} ")
+            Log.i(MYTAG,"prvo slovo trenutnog je ${dataList[position].name.first()} ")
+            Log.i(MYTAG,"poredjenje je $sameFirstLetter")*/
+                if(sameFirstLetter) shouldShow=false
+        }
+
+        holder.bind(clickListener,dataList[position],shouldShow)
     }
 
     class MyViewHolder private constructor(val binding: FragmentMainRecViewItemType1Binding):
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(clickListener: ContactItemClickListener,item:ContactItem){
+        fun bind(clickListener: ContactItemClickListener,item:ContactItem,shouldShow: Boolean){
            binding.clickListener=clickListener
             binding.contactItem=item
-            /*Glide.with(binding.imageViewContact)
-                    .load(item.photoThumbUri)
-                    .apply(RequestOptions().circleCrop())
-                    .into(binding.imageViewContact)*/
-            //binding.imageViewContact.setImageURI(Ur
+            binding.shouldShow=shouldShow
             binding.executePendingBindings()
-
         }
 
 

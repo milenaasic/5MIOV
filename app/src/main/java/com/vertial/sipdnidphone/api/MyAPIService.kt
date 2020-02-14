@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit
 
 
 
-private const val BASE_URL ="https://"
+private const val BASE_URL ="https://www.google.com"
 
 private val moshi= Moshi.Builder()
     .add(KotlinJsonAdapterFactory())
@@ -40,7 +40,7 @@ object MyAPI {
 
  interface MyAPIService {
 
-    //@POST("api/")
-    //fun postFilteredNewsList(@Body filter: NetworkNewsFilterObject): Deferred<List<NetworkNewsItem>>
+    @POST("api/")
+    fun sendRegistrationToServer(@Body request: NetRequest_Registration): Deferred<NetResponse_Registration>
 }
 

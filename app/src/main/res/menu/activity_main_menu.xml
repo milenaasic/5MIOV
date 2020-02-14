@@ -6,7 +6,8 @@
         android:id="@+id/menu_item_dial_pad"
         android:icon="@drawable/ic_action_dialpad"
         android:title="@string/dial_pad"
-        app:showAsAction="always" />
+        app:showAsAction="always"
+        android:orderInCategory="2" />
     <item
         android:id="@+id/menu_item_myaccount"
         android:title="@string/my_account"

@@ -26,7 +26,7 @@ class MainFragmentViewModel(application: Application) :AndroidViewModel(applicat
         get() = _numberOfSelectedContacts
 
     init {
-        populateContactList("")
+        //populateContactList("")
     }
 
 
@@ -61,11 +61,6 @@ class MainFragmentViewModel(application: Application) :AndroidViewModel(applicat
                 "${ContactsContract.Contacts.DISPLAY_NAME_PRIMARY} ASC"
             )
             Log.i(MYTAG,"u do in background")
-
-            /*if (cursor == null)Log.i(MYTAG,"cursor je null")
-            else{
-                Log.i(MYTAG,"broj zapisa je ${cursor.count}")
-            }*/
 
             return convertCursorToList(cursor)
         }

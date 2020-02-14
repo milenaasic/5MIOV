@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/registration_navigation"
+    app:startDestination="@id/emptyLogoFragment">
+
+    <fragment
+        android:id="@+id/registrationFragment"
+        android:name="com.vertial.sipdnidphone.ui.RegistrationAuthorization.RegistrationFragment"
+        android:label="fragment_registration"
+        tools:layout="@layout/fragment_registration" >
+        <action
+            android:id="@+id/action_registrationFragment_to_authorizationFragment"
+            app:destination="@id/authorizationFragment"
+            app:popUpTo="@+id/registrationFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/authorizationFragment"
+        android:name="com.vertial.sipdnidphone.ui.RegistrationAuthorization.AuthorizationFragment"
+        android:label="fragment_authorization"
+        tools:layout="@layout/fragment_authorization" />
+    <fragment
+        android:id="@+id/emptyLogoFragment"
+        android:name="com.vertial.sipdnidphone.ui.emty_logo_fragment.EmptyLogoFragment"
+        android:label="fragment_empty_logo"
+        tools:layout="@layout/fragment_empty_logo" >
+        <action
+            android:id="@+id/action_emptyLogoFragment_to_registrationFragment"
+            app:destination="@id/registrationFragment"
+            app:popUpTo="@+id/emptyLogoFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+</navigation>

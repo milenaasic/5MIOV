@@ -8,7 +8,7 @@
     <fragment
         android:id="@+id/mainFragment"
         android:name="com.vertial.sipdnidphone.ui.fragment_main.MainFragment"
-        android:label="fragment_main"
+        android:label="@string/_5miov"
         tools:layout="@layout/fragment_main" >
         <action
             android:id="@+id/action_mainFragment_to_detailContact"
@@ -17,6 +17,6 @@
     <fragment
         android:id="@+id/detailContact"
         android:name="com.vertial.sipdnidphone.ui.fragment_detail_contact.DetailContact"
-        android:label="fragment_detail_contact"
+        android:label="@string/_5miov"
         tools:layout="@layout/fragment_detail_contact" />
 </navigation>

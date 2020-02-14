@@ -2,19 +2,39 @@
 
     <string name="app_name">5MIOV</string>
 
-    <!-- ovo mi nece trebati -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-
     <!-- Menu names -->
     <string name="dial_pad">Dial Pad</string>
     <string name="my_account">My Account</string>
+    <string name="search">Search</string>
+    <string name="search_hint">Search</string>
+
 
     <!-- content descriptions -->
     <string name="contact_picture">contact picture</string>
 
     <!-- layout items text -->
     <string name="name">Name</string>
+    <string name="_5miov">5MIOV</string>
+    <string name="to_register_enter_your_phone_number">To Register Enter Your Phone Number</string>
+    <string name="phone_number">phone number</string>
+    <string name="register">REGISTER</string>
+    <string name="_5miov_will_send_sms_with_token_to_verify_your_number">5MIOV will send SMS with token to verify your number</string>
+    <string name="enter_token_sent_to_your_phone_number">Enter Token Sent To Your Phone Number</string>
+    <string name="token">token</string>
+    <string name="submit">SUBMIT</string>
+    <string name="resend_sms">RESEND SMS</string>
+    <string name="or">OR</string>
+    <string name="resend_allowed_2_times_in_24_hours">* Resend allowed 2 times in 24 hours</string>
+    <string name="token_expires_in_5_minutes">Token expires in 5 minutes</string>
+    <string name="_234123123123">+234123123123</string>
+
 
     <!-- snackbar messages-->
-    <string name="no_permission_read_contacts">No permission to read contacts</string>
+    <string name="no_permission_read_contacts">Sorry,no permission to read contacts</string>
+    <string name="not_valid_phone_number">Please,enter valid phone number!</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+
 </resources>
