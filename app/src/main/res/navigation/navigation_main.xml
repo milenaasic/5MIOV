@@ -19,4 +19,9 @@
         android:name="com.vertial.sipdnidphone.ui.fragment_detail_contact.DetailContact"
         android:label="@string/_5miov"
         tools:layout="@layout/fragment_detail_contact" />
+    <fragment
+        android:id="@+id/dialPadFragment"
+        android:name="com.vertial.sipdnidphone.ui.fragment_dial_pad.DialPadFragment"
+        android:label=" "
+        tools:layout="@layout/fragment_dial_pad" />
 </navigation>

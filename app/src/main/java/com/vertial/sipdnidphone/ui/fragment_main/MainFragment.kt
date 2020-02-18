@@ -47,7 +47,6 @@ class MainFragment : Fragment() {
         binding= DataBindingUtil.inflate(inflater,R.layout.fragment_main,container,false)
         viewModel= ViewModelProvider(this).get(MainFragmentViewModel::class.java)
 
-
         if(checkForPermissions()) initalizeAdapter()
 
         return binding.root
@@ -78,7 +77,7 @@ class MainFragment : Fragment() {
         inflater.inflate(R.menu.main_fragment_menu,menu)
         val mitem=menu.findItem(R.id.menu_item_search)
         val itemMyAccount= menu.findItem(R.id.menu_item_myaccount)
-        val itemDialPad=menu.findItem(R.id.menu_item_dial_pad)
+        val itemDialPad=menu.findItem(R.id.dialPadFragment)
         searchViewActionBar=menu.findItem(R.id.menu_item_search).actionView as SearchView
         searchViewActionBar.setQueryHint(getString(R.string.search_hint))
 

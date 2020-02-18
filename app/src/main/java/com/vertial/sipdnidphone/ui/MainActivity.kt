@@ -1,6 +1,7 @@
 package com.vertial.sipdnidphone.ui
 
 import android.content.Intent
+import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -13,6 +14,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.NavigationUI
+import androidx.navigation.ui.onNavDestinationSelected
 import com.vertial.sipdnidphone.R
 import com.vertial.sipdnidphone.api.MyAPI
 import com.vertial.sipdnidphone.api.MyAPIService
@@ -29,7 +31,7 @@ import com.vertial.sipdnidphone.utils.EMPTY_TOKEN
 private const val MY_TAG="MY_MainActivity"
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityMainBinding
+     lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
     private lateinit var viewModel: MainActivityViewModel
 
@@ -48,23 +50,30 @@ class MainActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this, MainActivityViewModelFactory(myRepository,application))
             .get(MainActivityViewModel::class.java)
 
+
         navController=findNavController(R.id.navfragment_main)
         NavigationUI.setupWithNavController(binding.toolbarMain,navController)
 
 
-        /*viewModel.userData.observe(this, Observer {user->
+       navController.addOnDestinationChangedListener { controller, destination, arguments ->
 
-            Log.i(MY_TAG,("user u bazi je $user"))
-            if(user.userToken== EMPTY_TOKEN){
-                startActivity(Intent(this,RegistrationAuthorizationActivity::class.java))
-                finish()
+               when(destination.id){
 
-            }else {
-                if(navController.currentDestination?.id==R.id.emptyLogoFragment) navController.navigate(EmptyLogoFragmentDirections.actionEmptyLogoFragmentToMainFragment())
+                    R.id.mainFragment->{
+                        binding.toolbarMain.elevation=(3 * resources.displayMetrics.density)
+                    }
 
-            }
+                    R.id.dialPadFragment->{
+                        binding.toolbarMain.navigationIcon=resources.getDrawable(R.drawable.ic_close_button,null)
+                        binding.toolbarMain.elevation=0f
 
-         })*/
+                    }
+
+               }
+
+        }
+
+
 
         //PROBA WEB ACTIVITY
         //val intent= Intent(this,WebViewActivity::class.java)
@@ -78,22 +87,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-
-        return when (item.itemId) {
-            R.id.menu_item_dial_pad -> {
-
-                 true
-            }
-            R.id.menu_item_myaccount -> {
-
-                 true
-            }
-            else -> super.onOptionsItemSelected(item)
-
-        }
-
-
+        return item.onNavDestinationSelected(navController) || super.onOptionsItemSelected(item)
     }
+
+
 
 
 }

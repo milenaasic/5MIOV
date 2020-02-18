@@ -15,6 +15,8 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPIService: MyAPIService){
     //User Live Data
     fun getUserData()=myDatabaseDao.getUser()
 
+    fun getPremunber()=myDatabaseDao.getPrenumber()
+
     private val _registrationNetworkError= MutableLiveData<String>()
     val registrationNetworkError: LiveData<String>
         get() = _registrationNetworkError
