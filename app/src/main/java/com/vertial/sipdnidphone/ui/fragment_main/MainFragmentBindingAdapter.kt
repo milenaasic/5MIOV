@@ -18,7 +18,7 @@ fun setThumbnailPhoto(view: ImageView, item: ContactItem?){
 
     Glide.with(view)
         .load(item?.photoThumbUri)
-        .apply(RequestOptions().error(R.drawable.ic_action_dialpad).fallback(R.drawable.thumbnail_background))
+        .apply(RequestOptions().error(R.drawable.thumbnail_background).fallback(R.drawable.thumbnail_background))
         .apply(RequestOptions().circleCrop())
         .into(view)
 
@@ -36,16 +36,17 @@ fun setABCLetters(view: TextView, item: ContactItem?){
 
 }
 
-@BindingAdapter("setVisibility")
-fun setVisibility(view: TextView, shouldShow:Boolean){
-    if(shouldShow)view.visibility= View.VISIBLE
-    else view.visibility=View.GONE
+@BindingAdapter("setLetterVisibility")
+fun setLetterVisibility(view: TextView, t:MyViewHolderType){
+    if(t.type==MainFragmentAdapter.POSITION_0_IN_LIST || t.type==MainFragmentAdapter.SHOW_FIRST_LETTER) {
+        view.visibility= View.VISIBLE
+    } else view.visibility=View.GONE
 
 }
 
 @BindingAdapter("setDividerVisibility")
-fun setDividerVisibility(view: View, shouldShow:Boolean){
-    if(shouldShow)view.visibility= View.VISIBLE
+fun setDividerVisibility(view: View, t:MyViewHolderType){
+    if(t.type==MainFragmentAdapter.SHOW_FIRST_LETTER)view.visibility= View.VISIBLE
     else view.visibility=View.GONE
 
 }

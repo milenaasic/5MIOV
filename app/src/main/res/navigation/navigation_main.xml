@@ -17,8 +17,15 @@
     <fragment
         android:id="@+id/detailContact"
         android:name="com.vertial.sipdnidphone.ui.fragment_detail_contact.DetailContact"
-        android:label="@string/_5miov"
-        tools:layout="@layout/fragment_detail_contact" />
+        android:label="@string/empty_string"
+        tools:layout="@layout/fragment_detail_contact" >
+        <argument
+            android:name="contactLookUpKey"
+            app:argType="string" />
+        <argument
+            android:name="displayName"
+            app:argType="string" />
+    </fragment>
     <fragment
         android:id="@+id/dialPadFragment"
         android:name="com.vertial.sipdnidphone.ui.fragment_dial_pad.DialPadFragment"

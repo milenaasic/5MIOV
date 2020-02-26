@@ -33,26 +33,30 @@ class MainFragmentAdapter(val clickListener: ContactItemClickListener)
 
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        var shouldShow=true
-
+        var viewType= MyViewHolderType(DEFAULT_LOOK)
+        if(position==0)viewType= MyViewHolderType(POSITION_0_IN_LIST)
         if(position!=0){
-                val sameFirstLetter=dataList[position-1].name.first().equals(dataList[position].name.first(),true)
-                /*Log.i(MYTAG,"prvo slovo prethodnog je ${dataList[position-1].name.first()} ")
-            Log.i(MYTAG,"prvo slovo trenutnog je ${dataList[position].name.first()} ")
-            Log.i(MYTAG,"poredjenje je $sameFirstLetter")*/
-                if(sameFirstLetter) shouldShow=false
+                if(!dataList[position-1].name.first().equals(dataList[position].name.first(),true))
+                viewType= MyViewHolderType(SHOW_FIRST_LETTER)
         }
 
-        holder.bind(clickListener,dataList[position],shouldShow)
+        holder.bind(clickListener,dataList[position],viewType)
+    }
+
+    companion object{
+        const val POSITION_0_IN_LIST=0
+        const val SHOW_FIRST_LETTER=1
+        const val DEFAULT_LOOK=2
+
     }
 
     class MyViewHolder private constructor(val binding: FragmentMainRecViewItemType1Binding):
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(clickListener: ContactItemClickListener,item:ContactItem,shouldShow: Boolean){
+        fun bind(clickListener: ContactItemClickListener,item:ContactItem,viewType:MyViewHolderType){
            binding.clickListener=clickListener
             binding.contactItem=item
-            binding.shouldShow=shouldShow
+            binding.viewType=viewType
             binding.executePendingBindings()
         }
 
@@ -68,6 +72,8 @@ class MainFragmentAdapter(val clickListener: ContactItemClickListener)
 
 }
 
-class ContactItemClickListener(val clickListener:(id:String)->Unit ){
-    fun onClick(item:ContactItem)=clickListener(item.lookUpKey)
+class ContactItemClickListener(val clickListener:(item:ContactItem)->Unit ){
+    fun onClick(item:ContactItem)=clickListener(item)
 }
+
+data class MyViewHolderType(val type:Int)

@@ -1,5 +1,6 @@
 package com.vertial.sipdnidphone.api
 
+import android.annotation.TargetApi
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -7,26 +8,27 @@ import kotlinx.coroutines.Deferred
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
-import retrofit2.http.Body
-import retrofit2.http.POST
+import retrofit2.http.*
 import java.util.concurrent.TimeUnit
 
+private const val NAME="MY_API"
 
+@TargetApi (26)
+val coded=java.util.Base64.getEncoder().encodeToString("5miov:tester".toByteArray())
 
-private const val BASE_URL ="https://www.google.com"
+private const val BASE_URL ="https://test.find.in.rs/"
 
 private val moshi= Moshi.Builder()
     .add(KotlinJsonAdapterFactory())
     .build()
 
-val okHttpClient = OkHttpClient.Builder()
+/*val okHttpClient = OkHttpClient.Builder()
     .connectTimeout(23, TimeUnit.SECONDS)
     .readTimeout(10, TimeUnit.SECONDS)
     .writeTimeout(10, TimeUnit.SECONDS)
-    .build()
+    .build()*/
 
 private val retrofit= Retrofit.Builder()
-    .client(okHttpClient)
     .addConverterFactory(MoshiConverterFactory.create(moshi))
     .addCallAdapterFactory(CoroutineCallAdapterFactory())
     .baseUrl(BASE_URL)
@@ -40,7 +42,16 @@ object MyAPI {
 
  interface MyAPIService {
 
-    @POST("api/")
-    fun sendRegistrationToServer(@Body request: NetRequest_Registration): Deferred<NetResponse_Registration>
+
+    @POST("user/signup")
+    fun sendRegistrationToServer(
+        @Header("Authorization") authorization:String="Basic $coded",
+        @Body request: NetRequest_Registration): Deferred<NetResponse_Registration>
+
+
+     @POST("user/create")
+     fun authorizeUser(
+         @Header("Authorization") authorization:String="Basic $coded",
+         @Body request: NetRequest_Authorization): Deferred<NetResponse_Authorization>
 }
 

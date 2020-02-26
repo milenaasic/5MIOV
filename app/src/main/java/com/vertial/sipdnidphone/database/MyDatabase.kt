@@ -45,7 +45,7 @@ abstract class MyDatabase:RoomDatabase(){
                                 val myvalues=ContentValues().apply {
                                     put("user_name", EMPTY_USERNAME)
                                     put("user_phone", EMPTY_PHONE_NUMBER)
-                                    put("token", "123")
+                                    put("token", EMPTY_TOKEN)
                                 }
                                 val myValues2=ContentValues().apply {
                                     put("prenumber","+38111777111")

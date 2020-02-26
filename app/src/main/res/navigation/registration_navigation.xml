@@ -15,6 +15,11 @@
             app:destination="@id/authorizationFragment"
             app:popUpTo="@+id/registrationFragment"
             app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_registrationFragment_to_addNumberToAccount"
+            app:destination="@id/addNumberToAccount"
+            app:popUpTo="@+id/registrationFragment"
+            app:popUpToInclusive="true" />
     </fragment>
     <fragment
         android:id="@+id/authorizationFragment"
@@ -31,5 +36,13 @@
             app:destination="@id/registrationFragment"
             app:popUpTo="@+id/emptyLogoFragment"
             app:popUpToInclusive="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/addNumberToAccount"
+        android:name="com.vertial.sipdnidphone.ui.RegistrationAuthorization.AddNumberToAccount"
+        android:label="AddNumberToAccount" >
+        <action
+            android:id="@+id/action_addNumberToAccount_to_authorizationFragment"
+            app:destination="@id/authorizationFragment" />
     </fragment>
 </navigation>

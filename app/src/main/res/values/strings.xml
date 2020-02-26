@@ -1,6 +1,7 @@
 <resources>
 
     <string name="app_name">5MIOV</string>
+    <string name="empty_string"> </string>
 
     <!-- Menu names -->
     <string name="dial_pad">Dial Pad</string>
@@ -8,6 +9,7 @@
     <string name="search">Search</string>
     <string name="search_hint">Search</string>
     <string name="paste">PASTE</string>
+    <string name="sync_contacts">Sync Contacts</string>
 
 
     <!-- content descriptions -->
@@ -36,9 +38,10 @@
     <string name="no_permission_make_phone_call">Sorry,no permission to make phone calls!</string>
     <string name="not_valid_phone_number">Not a valid phone number </string>
     <string name="unable_to_make_call">Unable to make a call</string>
-    Clipboard contains an invalid data type
     <string name="clipboard_invalid_data_type">Clipboard contains an invalid data type</string>
 
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 
 </resources>

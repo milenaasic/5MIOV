@@ -18,12 +18,12 @@ class RegAuthActivityViewModel(val myRepository: Repo, application: Application)
 
     val userData=myRepository.getUserData()
 
-    private val _navigateToAuthFragment= MutableLiveData<Boolean>()
-    val navigateToAuthFragment:LiveData<Boolean>
-    get() = _navigateToAuthFragment
-
 
     val registrationNetworkError=myRepository.registrationNetworkError
+    val registrationNetworkSuccess=myRepository.registrationSuccess
+
+    val authorizationNetworkError=myRepository.authorizationNetworkError
+    val authorizationNetworkSuccess=myRepository.authorizationSuccess
 
     init {
 
@@ -32,7 +32,7 @@ class RegAuthActivityViewModel(val myRepository: Repo, application: Application)
 
     fun registerButtonClicked(phoneNumber:String){
         enteredPhoneNumber=phoneNumber
-
+        Log.i(MY_TAG,("registration button clicked"))
         //send registrtion phone number to server and go to authorization fragment
         viewModelScope.launch {
             myRepository.sendRegistationToServer(phoneNumber)
@@ -40,11 +40,11 @@ class RegAuthActivityViewModel(val myRepository: Repo, application: Application)
 
     }
 
+    fun submitButtonClicked(smsToken:String){
 
-    fun navigationToAuthFragmentFinished(){
-        _navigateToAuthFragment.value=false
+        viewModelScope.launch {
+            myRepository.authorizeThisUser(enteredPhoneNumber,smsToken)
+        }
+
     }
-
-
-
 }

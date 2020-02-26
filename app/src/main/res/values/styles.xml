@@ -20,6 +20,6 @@
     <style name="dial_pad_number_text_style">
         <item name="android:textAllCaps">true</item>
         <item name="android:textAppearance">@style/TextAppearance.MaterialComponents.Body1</item>
-        <item name="android:textColor">@color/colorPrimaryDark</item>
+        <item name="android:textColor">@android:color/black</item>
     </style>
 </resources>

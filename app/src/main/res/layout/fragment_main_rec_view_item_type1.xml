@@ -6,7 +6,7 @@
     <data>
         <variable name="clickListener" type="com.vertial.sipdnidphone.ui.fragment_main.ContactItemClickListener"/>
         <variable name="contactItem" type="com.vertial.sipdnidphone.ui.fragment_main.ContactItem" />
-        <variable name="shouldShow" type="Boolean" />
+        <variable name="viewType" type="com.vertial.sipdnidphone.ui.fragment_main.MyViewHolderType" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -61,7 +61,7 @@
             android:layout_marginBottom="4dp"
             android:textAlignment="center"
             android:textAllCaps="true"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
             app:layout_constraintBottom_toBottomOf="@+id/imageView_contact"
             app:layout_constraintEnd_toEndOf="@+id/imageView_contact"
             app:layout_constraintStart_toStartOf="@+id/imageView_contact"
@@ -82,7 +82,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/divider"
             app:setABCLetters="@{contactItem}"
-            app:setVisibility="@{shouldShow}" />
+            app:setLetterVisibility="@{viewType}" />
 
         <View
             android:id="@+id/divider"
@@ -95,7 +95,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:setDividerVisibility="@{shouldShow}" />
+            app:setDividerVisibility="@{viewType}" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

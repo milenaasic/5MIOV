@@ -14,6 +14,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.vertial.sipdnidphone.R
 import com.vertial.sipdnidphone.databinding.FragmentMainBinding
@@ -55,10 +56,12 @@ class MainFragment : Fragment() {
     private fun initalizeAdapter(){
 
         contactsAdapter=MainFragmentAdapter(ContactItemClickListener {
-            //otvori detail fragment za dati kontakt
+            val action=MainFragmentDirections.actionMainFragmentToDetailContact(it.lookUpKey,it.name)
+            findNavController().navigate(action)
         })
         binding.recViewMainFragment.adapter=contactsAdapter
-        viewModel.populateContactList("")
+        val search:String?=null
+        viewModel.populateContactList(search)
     }
 
 
@@ -78,6 +81,7 @@ class MainFragment : Fragment() {
         val mitem=menu.findItem(R.id.menu_item_search)
         val itemMyAccount= menu.findItem(R.id.menu_item_myaccount)
         val itemDialPad=menu.findItem(R.id.dialPadFragment)
+        val itemSyncContacts=menu.findItem(R.id.menu_item_sync_contacts)
         searchViewActionBar=menu.findItem(R.id.menu_item_search).actionView as SearchView
         searchViewActionBar.setQueryHint(getString(R.string.search_hint))
 
@@ -86,6 +90,7 @@ class MainFragment : Fragment() {
                 Log.i(MYTAG,"on search expand listener")
                 itemMyAccount.isVisible=false
                 itemDialPad.isVisible=false
+                itemSyncContacts.isVisible=false
                 searchViewActionBar.isIconified=false
                 return true
             }
@@ -94,6 +99,7 @@ class MainFragment : Fragment() {
                 searchViewActionBar.isIconified=true
                 itemMyAccount.isVisible=true
                 itemDialPad.isVisible=true
+                itemSyncContacts.isVisible=true
                 searchViewActionBar.clearFocus()
                 return true
             }
@@ -110,7 +116,7 @@ class MainFragment : Fragment() {
 
             override fun onQueryTextChange(p0: String?): Boolean {
                 Log.i(MYTAG,"on qerry text change $p0")
-                viewModel.populateContactList(p0?:"")
+                viewModel.populateContactList(p0)
                 return true
             }
 

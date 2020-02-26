@@ -89,11 +89,7 @@ class DialPadFragment : Fragment() {
          binding.editTextEnterNumber.apply {
              setShowSoftInputOnFocus(false)
              addTextChangedListener(PhoneNumberFormattingTextWatcher(FORMATTING_COUNTRY_CODE))
-             setOnLongClickListener {
 
-
-                true
-             }
           }
 
         return binding.root
@@ -112,38 +108,34 @@ class DialPadFragment : Fragment() {
         clipboard= requireActivity().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     }
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-
-    }
-
     override fun onStart() {
         super.onStart()
-
-        requireActivity()
-        requireActivity().actionBar?.setBackgroundDrawable(resources.getDrawable(android.R.color.transparent,null))
+        //requireActivity().actionBar?.setBackgroundDrawable(resources.getDrawable(android.R.color.transparent,null))
     }
 
     private fun appendDigit(char:CharSequence){
-        binding.editTextEnterNumber.text.append(char)
-
+        binding.editTextEnterNumber.apply {
+            text.append(char)
+            isCursorVisible=true
+         }
     }
 
     private fun deleteDigit(){
         val charCount:Int = binding.editTextEnterNumber.length()
-        if (charCount > 0) {
-            binding.editTextEnterNumber.text.delete(charCount - 1, charCount);
+        if (charCount == 1) {
+            binding.editTextEnterNumber.text.delete(charCount - 1, charCount)
+            binding.editTextEnterNumber.isCursorVisible=false
         }
+        if(charCount>1) binding.editTextEnterNumber.text.delete(charCount - 1, charCount)
     }
-
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.dial_pad_menu,menu)
         menu.findItem(R.id.dialPadFragment).isVisible=false
         menu.findItem(R.id.menu_item_myaccount).isVisible=false
+        menu.findItem(R.id.menu_item_sync_contacts).isVisible=false
 
         //da li je Paste item visible
-
         menu.findItem(R.id.menu_item_paste).isEnabled=
                 // This disables the paste menu item, since the clipboard has data but it is not plain text
             when {
@@ -226,7 +218,8 @@ class DialPadFragment : Fragment() {
     }
 
     private fun isValidPhoneNumber(phone: String?): Boolean {
-        return PhoneNumberUtils.isGlobalPhoneNumber(phone)
+        return true
+        //return PhoneNumberUtils.isGlobalPhoneNumber(phone)
     }
 
     private fun showSnackBar(s:String) {

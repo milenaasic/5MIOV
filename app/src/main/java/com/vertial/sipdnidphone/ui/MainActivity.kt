@@ -2,12 +2,14 @@ package com.vertial.sipdnidphone.ui
 
 import android.content.Intent
 import android.graphics.Color
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -31,9 +33,17 @@ import com.vertial.sipdnidphone.utils.EMPTY_TOKEN
 private const val MY_TAG="MY_MainActivity"
 class MainActivity : AppCompatActivity() {
 
-     lateinit var binding: ActivityMainBinding
+    lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
     private lateinit var viewModel: MainActivityViewModel
+
+    companion object{
+        const val CURRENT_FRAGMENT="current_fragment"
+        const val MAIN_FRAGMENT=0
+        const val DIAL_PAD_FRAGMENT=1
+        const val DETAIL_FRAGMENT=2
+
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,24 +70,73 @@ class MainActivity : AppCompatActivity() {
                when(destination.id){
 
                     R.id.mainFragment->{
-                        binding.toolbarMain.elevation=(3 * resources.displayMetrics.density)
+                        setMainFragmentUI()
+
                     }
 
                     R.id.dialPadFragment->{
-                        binding.toolbarMain.navigationIcon=resources.getDrawable(R.drawable.ic_close_button,null)
-                        binding.toolbarMain.elevation=0f
+                        setDialPadFragmentUI()
+                    }
 
+                    R.id.detailContact->{
+                        setDetailContactFragmentUI()
                     }
 
                }
 
         }
 
+        if(savedInstanceState!=null){
+            Log.i(MY_TAG,"usao u onSaveInstance nije null")
 
+            when(savedInstanceState.get(CURRENT_FRAGMENT)){
+                MAIN_FRAGMENT->{}
+                DIAL_PAD_FRAGMENT->{setDialPadFragmentUI()}
+                DETAIL_FRAGMENT->{setDetailContactFragmentUI()}
+            }
+
+        }
 
         //PROBA WEB ACTIVITY
         //val intent= Intent(this,WebViewActivity::class.java)
         //startActivity(intent)
+
+    }
+
+    private fun setMainFragmentUI() {
+        binding.toolbarMain.apply {
+            elevation=(3 * resources.displayMetrics.density)
+            title=resources.getString(R.string.app_name)
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                setBackgroundColor(resources.getColor(android.R.color.background_light,null))
+            }else{
+                setBackgroundColor(resources.getColor(android.R.color.background_light))
+            }
+
+         }
+    }
+
+    private fun setDialPadFragmentUI() {
+        binding.toolbarMain.apply {
+            navigationIcon = resources.getDrawable(R.drawable.ic_back_black, null)
+            elevation = 0f
+            title=resources.getString(R.string.empty_string)
+        }
+    }
+
+    private fun setDetailContactFragmentUI(){
+        binding.toolbarMain.apply {
+            elevation=0f
+            navigationIcon=resources.getDrawable(R.drawable.ic_back_white,null)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                setBackgroundColor(resources.getColor(R.color.colorPrimaryDark,null))
+            }else{
+                setBackgroundColor(resources.getColor(R.color.colorPrimaryDark))
+            }
+            title=resources.getString(R.string.empty_string)
+
+         }
 
     }
 
@@ -91,6 +150,17 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        var currentFragment= MAIN_FRAGMENT
+        when (navController.currentDestination?.id) {
+            R.id.mainFragment->{}
+            R.id.dialPadFragment->currentFragment= DIAL_PAD_FRAGMENT
+            R.id.detailContact->currentFragment= DETAIL_FRAGMENT
+        }
+
+        outState.putInt(CURRENT_FRAGMENT,currentFragment)
+    }
 
 
 }
