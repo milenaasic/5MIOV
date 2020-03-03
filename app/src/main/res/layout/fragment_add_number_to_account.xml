@@ -8,145 +8,140 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
 
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context=".ui.RegistrationAuthorization.AddNumberToAccount">
+            android:id="@+id/root_add_number_constr_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:focusableInTouchMode="true"
+            tools:context=".ui.RegistrationAuthorization.AddNumberToAccount">
 
-        <TextView
-            android:id="@+id/logo_textVIew2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/_5miov"
-            android:textAppearance="@style/TextAppearance.AppCompat.Display1"
-            android:textColor="@color/colorPrimaryDark"
-            app:layout_constraintBottom_toTopOf="@+id/guideline10"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            <TextView
+                android:id="@+id/logo_textVIew2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/_5miov"
+                android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+                android:textColor="@color/colorPrimaryDark"
+                app:layout_constraintBottom_toTopOf="@+id/guideline10"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
 
-        <TextView
-            android:id="@+id/ad_number_textView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="64dp"
-            android:layout_marginEnd="64dp"
-            android:text="To add phone number to your account fill your account credentials"
-            android:textAlignment="center"
-            android:textAppearance="@style/TextAppearance.AppCompat.Body2"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/guideline10" />
+            <TextView
+                android:id="@+id/ad_number_textView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="64dp"
+                android:layout_marginEnd="64dp"
+                android:text="@string/to_assign_phone_number_to_your_account_fill_your_account_credentials"
+                android:textAlignment="center"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/guideline10" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/addphone_button"
-            style="@style/Widget.MaterialComponents.Button"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:background="@color/colorPrimary"
-            android:backgroundTint="@color/colorPrimary"
-            android:text="ADD PHONE NUMBER"
-            android:textColor="@android:color/black"
-            app:layout_constraintEnd_toEndOf="@+id/enter_pass_textInputLayout"
-            app:layout_constraintStart_toStartOf="@+id/enter_pass_textInputLayout"
-            app:layout_constraintTop_toBottomOf="@+id/enter_pass_textInputLayout" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/addphone_button"
+                style="@style/Widget.MaterialComponents.Button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:text="@string/assign_phone_number"
+                android:textColor="@android:color/black"
+                app:layout_constraintEnd_toEndOf="@+id/enter_pass_textInputLayout"
+                app:layout_constraintStart_toStartOf="@+id/enter_pass_textInputLayout"
+                app:layout_constraintTop_toBottomOf="@+id/enter_pass_textInputLayout" />
 
-        <TextView
-            android:id="@+id/addphone_textView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/_5miov_will_send_sms_with_token_to_verify_your_number"
-            android:textAlignment="center"
-            android:textAppearance="@style/TextAppearance.AppCompat.Body2"
-            app:layout_constraintEnd_toEndOf="@+id/ad_number_textView"
-            app:layout_constraintStart_toStartOf="@+id/ad_number_textView"
-            app:layout_constraintTop_toBottomOf="@+id/ad_number_textView" />
+            <TextView
+                android:id="@+id/addphone_textView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/_5miov_will_send_sms_with_token_to_verify_your_number"
+                android:textAlignment="center"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+                app:layout_constraintEnd_toEndOf="@+id/ad_number_textView"
+                app:layout_constraintStart_toStartOf="@+id/ad_number_textView"
+                app:layout_constraintTop_toBottomOf="@+id/ad_number_textView" />
 
-        <androidx.constraintlayout.widget.Guideline
+            <androidx.constraintlayout.widget.Guideline
                 android:id="@+id/guideline10"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 app:layout_constraintGuide_percent="0.2" />
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/add_phone_textInputLayout"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="48dp"
-            android:hint="@string/phone_number"
-            app:layout_constraintEnd_toEndOf="@+id/addphone_textView"
-            app:layout_constraintStart_toStartOf="@+id/addphone_textView"
-            app:layout_constraintTop_toBottomOf="@+id/addphone_textView">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/add_phone_editText"
-                android:layout_width="match_parent"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/add_phone_textInputLayout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:inputType="textPassword"
-                android:singleLine="true"
-                android:textColorHighlight="@color/colorPrimary"
-                android:textColorHint="@color/colorPrimary"
-                android:textColorLink="@color/colorPrimary" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:layout_marginTop="24dp"
+                android:hint="@string/phone_number"
+                app:layout_constraintEnd_toEndOf="@+id/addphone_textView"
+                app:layout_constraintStart_toStartOf="@+id/addphone_textView"
+                app:layout_constraintTop_toBottomOf="@+id/addphone_textView">
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/enter_email_textInputLayout"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:hint="e-mail"
-            app:layout_constraintEnd_toEndOf="@+id/add_phone_textInputLayout"
-            app:layout_constraintStart_toStartOf="@+id/add_phone_textInputLayout"
-            app:layout_constraintTop_toBottomOf="@+id/add_phone_textInputLayout">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/add_phone_editText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="32dp"
+                    android:inputType="phone"
+                    android:singleLine="true"
+                    android:textColorHighlight="@color/colorPrimary"
+                    android:textColorHint="@color/colorPrimary"
+                    android:textColorLink="@color/colorPrimary" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/email_editText"
-                android:layout_width="match_parent"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/enter_email_textInputLayout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:inputType="textEmailAddress"
-                android:singleLine="true"
-                android:textColorHighlight="@color/colorPrimary"
-                android:textColorHint="@color/colorPrimary"
-                android:textColorLink="@color/colorPrimary" />
+                android:layout_marginTop="16dp"
+                android:hint="@string/e_mail_hint"
+                app:layout_constraintEnd_toEndOf="@+id/add_phone_textInputLayout"
+                app:layout_constraintStart_toStartOf="@+id/add_phone_textInputLayout"
+                app:layout_constraintTop_toBottomOf="@+id/add_phone_textInputLayout">
 
-        </com.google.android.material.textfield.TextInputLayout>
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/email_editText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textEmailAddress"
+                    android:singleLine="true" />
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/enter_pass_textInputLayout"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:hint="password"
-            app:layout_constraintEnd_toEndOf="@+id/enter_email_textInputLayout"
-            app:layout_constraintStart_toStartOf="@+id/enter_email_textInputLayout"
-            app:layout_constraintTop_toBottomOf="@+id/enter_email_textInputLayout">
+            </com.google.android.material.textfield.TextInputLayout>
 
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/pass_editText"
-                android:layout_width="match_parent"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/enter_pass_textInputLayout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:inputType="textPassword"
-                android:singleLine="true"
-                android:textColorHighlight="@color/colorPrimary"
-                android:textColorHint="@color/colorPrimary"
-                android:textColorLink="@color/colorPrimary" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:layout_marginTop="16dp"
+                android:hint="@string/password_hint"
+                app:layout_constraintEnd_toEndOf="@+id/enter_email_textInputLayout"
+                app:layout_constraintStart_toStartOf="@+id/enter_email_textInputLayout"
+                app:layout_constraintTop_toBottomOf="@+id/enter_email_textInputLayout">
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/pass_editText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="32dp"
+                    android:imeOptions="actionDone"
+                    android:inputType="textPassword"
+                    android:singleLine="true" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <ProgressBar
-            android:id="@+id/progressBar2"
+            android:id="@+id/add_number_progressBar"
             style="?android:attr/progressBarStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

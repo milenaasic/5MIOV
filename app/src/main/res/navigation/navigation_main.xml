@@ -7,16 +7,19 @@
 
     <fragment
         android:id="@+id/mainFragment"
-        android:name="com.vertial.sipdnidphone.ui.fragment_main.MainFragment"
+        android:name="com.vertial.fivemiov.ui.fragment_main.MainFragment"
         android:label="@string/_5miov"
         tools:layout="@layout/fragment_main" >
         <action
             android:id="@+id/action_mainFragment_to_detailContact"
             app:destination="@id/detailContact" />
+        <action
+            android:id="@+id/action_mainFragment_to_setEmailAndPasswordFragment"
+            app:destination="@id/setEmailAndPasswordFragment" />
     </fragment>
     <fragment
         android:id="@+id/detailContact"
-        android:name="com.vertial.sipdnidphone.ui.fragment_detail_contact.DetailContact"
+        android:name="com.vertial.fivemiov.ui.fragment_detail_contact.DetailContact"
         android:label="@string/empty_string"
         tools:layout="@layout/fragment_detail_contact" >
         <argument
@@ -28,7 +31,11 @@
     </fragment>
     <fragment
         android:id="@+id/dialPadFragment"
-        android:name="com.vertial.sipdnidphone.ui.fragment_dial_pad.DialPadFragment"
+        android:name="com.vertial.fivemiov.ui.fragment_dial_pad.DialPadFragment"
         android:label=" "
         tools:layout="@layout/fragment_dial_pad" />
+    <fragment
+        android:id="@+id/setEmailAndPasswordFragment"
+        android:name="com.vertial.fivemiov.ui.fragment_set_email_and_password.SetEmailAndPasswordFragment"
+        android:label="SetEmailAndPasswordFragment" />
 </navigation>

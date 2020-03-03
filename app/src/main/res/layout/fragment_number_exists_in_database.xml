@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+<FrameLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.RegistrationAuthorization.NumberExistsInDatabase">
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/nmb_exists_root"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:focusableInTouchMode="true">
+
+        <View
+            android:id="@+id/nmb_divider1"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="8dp"
+            android:background="?android:attr/listDivider"
+            app:layout_constraintBottom_toTopOf="@+id/dont_have_account_button"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/guideline7"
+            app:layout_constraintTop_toBottomOf="@+id/nmb_exists_submit_button" />
+
+        <TextView
+            android:id="@+id/or_textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:text="@string/or"
+            app:layout_constraintBottom_toBottomOf="@+id/nmb_divider2"
+            app:layout_constraintEnd_toStartOf="@+id/nmb_divider1"
+            app:layout_constraintStart_toEndOf="@+id/nmb_divider2"
+            app:layout_constraintTop_toTopOf="@+id/nmb_divider2"
+            app:layout_constraintVertical_bias="0.435" />
+
+        <View
+            android:id="@+id/nmb_divider2"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="16dp"
+            android:background="?android:attr/listDivider"
+            app:layout_constraintBottom_toTopOf="@+id/dont_have_account_button"
+            app:layout_constraintEnd_toStartOf="@+id/guideline7"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/nmb_exists_submit_button" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/nmb_exists_email_textInputLayout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="@string/e_mail_hint"
+            app:layout_constraintEnd_toEndOf="@+id/nmb_exists_number_textView2"
+            app:layout_constraintStart_toStartOf="@+id/nmb_exists_number_textView2"
+            app:layout_constraintTop_toBottomOf="@+id/nmb_exists_number_textView2">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/nmb_exists_email_editText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textEmailAddress"
+                android:singleLine="true" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/enter_pass_textInputLayout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="@string/password_hint"
+            app:layout_constraintEnd_toEndOf="@+id/nmb_exists_email_textInputLayout"
+            app:layout_constraintStart_toStartOf="@+id/nmb_exists_email_textInputLayout"
+            app:layout_constraintTop_toBottomOf="@+id/nmb_exists_email_textInputLayout">
+
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/pass_editText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:imeOptions="actionDone"
+                android:inputType="textPassword"
+                android:singleLine="true" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/nmb_exists_submit_button"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/submit"
+
+            android:textColor="@android:color/black"
+            app:layout_constraintEnd_toEndOf="@+id/enter_pass_textInputLayout"
+            app:layout_constraintStart_toStartOf="@+id/enter_pass_textInputLayout"
+            app:layout_constraintTop_toBottomOf="@+id/enter_pass_textInputLayout" />
+
+        <TextView
+            android:id="@+id/nmb_exists_number_textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="32dp"
+            android:text="@string/fill_your_account_credentials"
+            android:textAlignment="center"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/num_exists_text2" />
+
+        <TextView
+            android:id="@+id/logo_auth_textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/_5miov"
+            android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+            android:textColor="@color/colorPrimaryDark"
+            app:layout_constraintBottom_toTopOf="@+id/guideline6"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/number_exists_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="32dp"
+            android:text="@string/phone_number_registered"
+            android:textAlignment="center"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/guideline6" />
+
+        <TextView
+            android:id="@+id/num_exists_phone_textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/_234123123123"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+            app:layout_constraintEnd_toEndOf="@+id/number_exists_text"
+            app:layout_constraintStart_toStartOf="@+id/number_exists_text"
+            app:layout_constraintTop_toBottomOf="@+id/number_exists_text" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.15" />
+
+        <TextView
+            android:id="@+id/num_exists_text2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/is_already_registered"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+            app:layout_constraintEnd_toEndOf="@+id/number_exists_text"
+            app:layout_constraintStart_toStartOf="@+id/number_exists_text"
+            app:layout_constraintTop_toBottomOf="@+id/num_exists_phone_textView" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/dont_have_account_button"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/i_do_not_have_account"
+            android:textColor="@android:color/black"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/enter_pass_textInputLayout"
+            app:layout_constraintStart_toStartOf="@+id/enter_pass_textInputLayout"
+            app:layout_constraintTop_toBottomOf="@+id/nmb_exists_submit_button"
+            app:layout_constraintVertical_bias="0.6"
+            app:strokeColor="@color/colorPrimary" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline7"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.50121653" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ProgressBar
+        android:id="@+id/progressBarNumExists"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        tools:layout_editor_absoluteX="179dp"
+        tools:layout_editor_absoluteY="328dp" />
+
+
+
+
+</FrameLayout>
+</layout>

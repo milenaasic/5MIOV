@@ -7,15 +7,15 @@
 
     <variable
         name="phoneItem"
-        type="com.vertial.sipdnidphone.ui.fragment_detail_contact.PhoneItem" />
+        type="com.vertial.fivemiov.ui.fragment_detail_contact.PhoneItem" />
 
         <variable
             name="sipClick"
-            type="com.vertial.sipdnidphone.ui.fragment_detail_contact.SipItemClickListener" />
+            type="com.vertial.fivemiov.ui.fragment_detail_contact.SipItemClickListener" />
 
         <variable
             name="prenumberClick"
-            type="com.vertial.sipdnidphone.ui.fragment_detail_contact.PrenumberItemClickListener" />
+            type="com.vertial.fivemiov.ui.fragment_detail_contact.PrenumberItemClickListener" />
 
 
     </data>
@@ -36,7 +36,7 @@
             app:layout_constraintGuide_percent="0.5" />
 
         <TextView
-            android:id="@+id/phone_textView"
+            android:id="@+id/num_exists_phone_textView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
@@ -56,7 +56,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="@+id/phone_textView"
+            app:layout_constraintStart_toStartOf="@+id/num_exists_phone_textView"
             app:layout_constraintTop_toTopOf="@+id/guideline5"
             app:layout_constraintVertical_bias="0.01"
             app:setPhoneType="@{phoneItem}"
@@ -76,7 +76,7 @@
             app:icon="@drawable/ic_call_action"
             app:iconGravity="textStart"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/phone_textView"
+            app:layout_constraintStart_toEndOf="@+id/num_exists_phone_textView"
             app:layout_constraintTop_toTopOf="parent" />
 
         <com.google.android.material.button.MaterialButton

@@ -31,17 +31,36 @@
     <string name="token_expires_in_5_minutes">Token expires in 5 minutes</string>
     <string name="_234123123123">+234123123123</string>
     <string name="enter_phone_hint">enter phone number</string>
+    <string name="asign_number_to_existing_account">Assign number to existing account?</string>
+    <string name="assign_phone_number">ASSIGN NUMBER</string>
+    <string name="to_assign_phone_number_to_your_account_fill_your_account_credentials">To assign phone number to your account fill your account credentials</string>
+    <string name="phone_number_registered">Phone number</string>
+    <string name="is_already_registered">is already registered</string>
+    <string name="fill_your_account_credentials">Please, fill your account credentials</string>
+    <string name="i_do_not_have_account">I do not have account</string>
+    <string name="password_hint">password</string>
+    <string name="e_mail_hint">e-mail</string>
 
+    <!-- string sa formatiranjem-->
+    <string name="nb_of_contacts_found">%1$d found</string>
+
+
+    <!-- layout items messages errors-->
+    <string name="not_valid_phone_number">Not a valid phone number </string>
+    <string name="not_valid_email">Not a valid email </string>
+    <string name="not_valid_password">Password must be >5 characters </string>
+    <string name="enter_token">Enter token</string>
 
     <!-- snackbar messages-->
     <string name="no_permission_read_contacts">No permission to load contacts</string>
     <string name="no_permission_make_phone_call">Sorry,no permission to make phone calls!</string>
-    <string name="not_valid_phone_number">Not a valid phone number </string>
     <string name="unable_to_make_call">Unable to make a call</string>
     <string name="clipboard_invalid_data_type">Clipboard contains an invalid data type</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <!-- set account dialog-->
+    <string name="set_account_dialog">To protect your account you need to set e-mail and password. If not, 5MIOV can not be held responsible for potential misuse!</string>
+
+
 
 
 </resources>
