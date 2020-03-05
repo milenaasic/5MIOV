@@ -1,5 +1,6 @@
 package com.vertial.fivemiov.ui.fragment_main
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -7,7 +8,7 @@ import com.vertial.fivemiov.databinding.FragmentMainRecViewItemType1Binding
 
 
 private val MYTAG="MY_MainFragmentAdapter"
-class MainFragmentAdapter(val clickListener: ContactItemClickListener)
+class MainFragmentAdapter(val clickListener: ContactItemClickListener,val myColor: String)
     : RecyclerView.Adapter<MainFragmentAdapter.MyViewHolder>() {
 
 
@@ -36,7 +37,7 @@ class MainFragmentAdapter(val clickListener: ContactItemClickListener)
                 viewType= MyViewHolderType(SHOW_FIRST_LETTER)
         }
 
-        holder.bind(clickListener,dataList[position],viewType,stringToColor)
+        holder.bind(clickListener,dataList[position],viewType,stringToColor,myColor)
     }
 
     companion object{
@@ -49,11 +50,12 @@ class MainFragmentAdapter(val clickListener: ContactItemClickListener)
     class MyViewHolder private constructor(val binding: FragmentMainRecViewItemType1Binding):
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(clickListener: ContactItemClickListener,item:ContactItem,viewType:MyViewHolderType,stringToColor:String?){
+        fun bind(clickListener: ContactItemClickListener,item:ContactItem,viewType:MyViewHolderType,stringToColor:String?,myColor: String){
            binding.clickListener=clickListener
             binding.contactItem=item
             binding.viewType=viewType
             binding.textToColor=stringToColor
+            binding.myColor=myColor
             binding.executePendingBindings()
         }
 

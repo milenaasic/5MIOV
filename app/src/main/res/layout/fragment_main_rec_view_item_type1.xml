@@ -8,6 +8,7 @@
         <variable name="contactItem" type="com.vertial.fivemiov.ui.fragment_main.ContactItem" />
         <variable name="viewType" type="com.vertial.fivemiov.ui.fragment_main.MyViewHolderType" />
         <variable name="textToColor" type="String" />
+        <variable name="myColor" type="String" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -30,6 +31,7 @@
             android:singleLine="true"
             app:setNameWithColoredLetters="@{contactItem}"
             app:textToColor="@{textToColor}"
+            app:mycolor="@{myColor}"
             android:textAlignment="textStart"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
             app:layout_constraintBottom_toBottomOf="parent"

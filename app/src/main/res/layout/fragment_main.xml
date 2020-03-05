@@ -57,6 +57,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
         android:layout_marginEnd="4dp"
+        android:layout_marginBottom="8dp"
         android:backgroundTint="@color/design_default_color_error"
         android:text="set account e-mail and password"
         android:textColor="@android:color/white"

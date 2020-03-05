@@ -1,6 +1,8 @@
 package com.vertial.fivemiov.ui.fragment_detail_contact
 
 
+import android.animation.ObjectAnimator
+import android.animation.PropertyValuesHolder
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -8,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.DividerItemDecoration
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 
@@ -46,19 +49,33 @@ class DetailContact : Fragment() {
         viewModel=ViewModelProvider(this,DetailContactViewModelFactory(args.contactLookUpKey,repo,requireActivity().application)).get(DetailContactViewModel::class.java)
 
         phoneAdapter= DetailContactAdapter(
+                PhoneNumberClickListener (resources.displayMetrics.density),
                 SipItemClickListener{
                     Log.i(MYTAG,"sip item click listener")
                 },
                 PrenumberItemClickListener {
                     Log.i(MYTAG,"prenumber item click listener")
                 }
+
         )
 
+
         binding.detailContactRecView.adapter=phoneAdapter
+        //binding.detailContactRecView.addItemDecoration(DividerItemDecoration(requireActivity(),DividerItemDecoration.VERTICAL))
 
         binding.displayNameTextView.text=args.displayName
 
         return binding.root
+
+    }
+
+    private fun animation(view: View) {
+        val scaleY = PropertyValuesHolder.ofFloat(View.SCALE_Y, 2f)
+        val animator = ObjectAnimator.ofPropertyValuesHolder(
+            view.parent,scaleY)
+        animator.repeatCount = 1
+        //animator.repeatMode = ObjectAnimator.REVERSE
+        animator.start()
 
     }
 

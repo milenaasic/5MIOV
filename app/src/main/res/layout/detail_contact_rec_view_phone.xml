@@ -10,6 +10,10 @@
         type="com.vertial.fivemiov.ui.fragment_detail_contact.PhoneItem" />
 
         <variable
+            name="phoneClick"
+            type="com.vertial.fivemiov.ui.fragment_detail_contact.PhoneNumberClickListener" />
+
+        <variable
             name="sipClick"
             type="com.vertial.fivemiov.ui.fragment_detail_contact.SipItemClickListener" />
 
@@ -25,81 +29,84 @@
 
         android:id="@+id/root_phone_item"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="?attr/actionBarSize">
 
-
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guideline5"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.5" />
 
         <TextView
             android:id="@+id/num_exists_phone_textView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="4dp"
             android:gravity="center_vertical"
+            android:onClick="@{(view) -> phoneClick.onClick(view)}"
             android:text="@{phoneItem.phoneNumber}"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
-            app:layout_constraintBottom_toTopOf="@+id/guideline5"
+            app:layout_constraintBottom_toTopOf="@+id/phone_type_textView"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="1"
+            app:layout_constraintVertical_chainStyle="packed"
             tools:text="1-156-56-256987" />
 
         <TextView
             android:id="@+id/phone_type_textView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/divider3"
             app:layout_constraintStart_toStartOf="@+id/num_exists_phone_textView"
-            app:layout_constraintTop_toTopOf="@+id/guideline5"
-            app:layout_constraintVertical_bias="0.01"
+            app:layout_constraintTop_toBottomOf="@+id/num_exists_phone_textView"
             app:setPhoneType="@{phoneItem}"
             tools:text="Mobile" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/prenumberCallButton"
-            style="@style/Widget.MaterialComponents.Button.Icon"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton.MyCallButtons"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"
-            android:backgroundTint="@android:color/holo_green_light"
             android:onClick="@{() -> prenumberClick.onClick(phoneItem.phoneNumber)}"
             android:text="CALL"
             app:icon="@drawable/ic_call_action"
             app:iconGravity="textStart"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/num_exists_phone_textView"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:iconTint="@android:color/holo_green_dark"
+            app:layout_constraintEnd_toStartOf="@+id/sipCallButton"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/divider3"
+            app:strokeColor="@android:color/holo_green_dark" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/sipCallButton"
-            style="@style/Widget.MaterialComponents.Button.Icon"
-            android:layout_width="wrap_content"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton.MyCallButtons"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"
-            android:backgroundTint="@android:color/holo_green_light"
+            android:layout_marginEnd="32dp"
+            android:backgroundTint="@android:color/background_light"
             android:onClick="@{()-> sipClick.onClick(phoneItem.phoneNumber)}"
             android:text="SIP"
             app:icon="@drawable/ic_call_action_sip"
             app:iconGravity="textStart"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:iconTint="@android:color/holo_green_dark"
+            app:layout_constraintBottom_toBottomOf="@+id/prenumberCallButton"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/prenumberCallButton"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.0">
+            app:layout_constraintTop_toTopOf="@+id/prenumberCallButton"
+            app:layout_constraintVertical_bias="0.0"
+            app:strokeColor="@android:color/holo_green_dark">
 
         </com.google.android.material.button.MaterialButton>
+
+        <View
+            android:id="@+id/divider3"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_marginTop="56dp"
+            android:background="@android:color/transparent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

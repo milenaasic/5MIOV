@@ -70,7 +70,7 @@ class MainFragment : Fragment() {
         contactsAdapter=MainFragmentAdapter(ContactItemClickListener {
             val action=MainFragmentDirections.actionMainFragmentToDetailContact(it.lookUpKey,it.name)
             findNavController().navigate(action)
-        })
+        },getColorForHighlightLetters().toString())
         binding.recViewMainFragment.adapter=contactsAdapter
         val search:String?=null
         viewModel.populateContactList(search)
@@ -163,6 +163,19 @@ class MainFragment : Fragment() {
     override fun onStart() {
         super.onStart()
         showSetAccountDialog()
+    }
+
+    private fun getColorForHighlightLetters():String{
+        var color=0
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            color= resources.getColor(R.color.colorAccent)
+        }else{
+            color= resources.getColor(R.color.colorAccent,null)
+
+        }
+        Log.i(MYTAG, "boja je ${color.toUInt().toString(16)}")
+        return "#${color.toUInt().toString(16)}"
+
     }
 
     private fun checkForPermissions():Boolean{

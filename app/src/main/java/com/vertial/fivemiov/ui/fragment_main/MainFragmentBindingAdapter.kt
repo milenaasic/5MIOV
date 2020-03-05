@@ -1,5 +1,6 @@
 package com.vertial.fivemiov.ui.fragment_main
 
+import android.graphics.Color
 import android.text.SpannableString
 import android.util.Log
 import android.view.View
@@ -12,12 +13,12 @@ import com.vertial.fivemiov.R
 
 private val MYTAG="MY_MainBindingAdapter"
 
-@BindingAdapter("setNameWithColoredLetters","textToColor")
-fun setNameWithColoredLetters(view:TextView,item:ContactItem,textToColor:String?){
+@BindingAdapter("setNameWithColoredLetters","textToColor","mycolor")
+fun setNameWithColoredLetters(view:TextView,item:ContactItem,textToColor:String?,color:String){
     Log.i(MYTAG,"contact je $item, za bojenje je $textToColor")
     if(textToColor==null)view.text=item.name
     else {
-        view.text=item.name.collorLetters(textToColor)?:item.name
+        view.text=item.name.collorLetters(textToColor,Color.parseColor(color))?:item.name
     }
 }
 
