@@ -24,9 +24,11 @@ import com.google.android.material.snackbar.Snackbar
 import com.vertial.fivemiov.R
 import com.vertial.fivemiov.api.MyAPI
 import com.vertial.fivemiov.data.Repo
+import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentDialPadBinding
 import com.vertial.fivemiov.ui.fragment_main.MainFragment
+import com.vertial.fivemiov.utils.isValidPhoneNumber
 
 
 private val MYTAG="MY_DialPadFragment"
@@ -56,7 +58,7 @@ class DialPadFragment : Fragment() {
 
         val database=MyDatabase.getInstance(requireContext()).myDatabaseDao
         val apiService=MyAPI.retrofitService
-        val repo=Repo(database,apiService)
+        val repo=RepoContacts(requireActivity().contentResolver,database,apiService)
 
         viewModel = ViewModelProvider(this, DialpadFragmentViewModelFactory(repo,requireActivity().application))
             .get(DialpadFragmViewModel::class.java)
@@ -155,7 +157,7 @@ class DialPadFragment : Fragment() {
     private fun pastePhoneNumber() {
         val item = clipboard.primaryClip?.getItemAt(0)
         val pasteData:CharSequence? = item?.text
-        if(pasteData!=null && isValidPhoneNumber(pasteData.toString())){
+        if(pasteData!=null &&(pasteData.toString().isValidPhoneNumber())){
             binding.editTextEnterNumber.text=Editable.Factory.getInstance().newEditable(pasteData)
         } else showSnackBar(resources.getString(R.string.clipboard_invalid_data_type))
     }
@@ -200,7 +202,7 @@ class DialPadFragment : Fragment() {
         //TODO PROVERI DA LI IMA RESOLVE ACTIVITY ZA PHONE CALL
         val phone = PhoneNumberUtils.normalizeNumber(binding.editTextEnterNumber.text.toString())
         Log.i(MYTAG, "normalizovan broj je $phone")
-        if (isValidPhoneNumber(phone)) {
+        if (phone.isValidPhoneNumber()) {
             val intentToCall = Intent(Intent.ACTION_CALL).apply {
                 setData(Uri.parse("tel:$myPrenumber,$phone"))
                 Log.i(MYTAG, "uri je tel:$myPrenumber,$phone ")
@@ -214,10 +216,7 @@ class DialPadFragment : Fragment() {
 
     }
 
-    private fun isValidPhoneNumber(phone: String?): Boolean {
-        return true
-        //return PhoneNumberUtils.isGlobalPhoneNumber(phone)
-    }
+
 
     private fun showSnackBar(s:String) {
         Snackbar.make(binding.root,s, Snackbar.LENGTH_LONG).show()

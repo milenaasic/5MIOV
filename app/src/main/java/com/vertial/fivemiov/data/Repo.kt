@@ -1,5 +1,10 @@
 package com.vertial.fivemiov.data
 
+import android.content.ContentResolver
+import android.database.Cursor
+import android.net.Uri
+import android.os.AsyncTask
+import android.provider.ContactsContract
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -8,6 +13,7 @@ import com.vertial.fivemiov.api.NetRequest_AddNumberToAccount
 import com.vertial.fivemiov.api.NetRequest_Authorization
 import com.vertial.fivemiov.api.NetRequest_Registration
 import com.vertial.fivemiov.database.MyDatabaseDao
+import com.vertial.fivemiov.ui.fragment_main.ContactItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -16,8 +22,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPIService: MyAPIService){
 
     //User Live Data
     fun getUserData()=myDatabaseDao.getUser()
-    // Live Data
-    fun getPremunber()=myDatabaseDao.getPrenumber()
+
 
     private val _registrationNetworkError= MutableLiveData<String>()
     val registrationNetworkError: LiveData<String>

@@ -4,9 +4,10 @@ import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.vertial.fivemiov.data.Repo
+import com.vertial.fivemiov.data.RepoContacts
 
 class DialpadFragmentViewModelFactory(
-    val repository: Repo,
+    val repository: RepoContacts,
     val application: Application
 ): ViewModelProvider.Factory{
 

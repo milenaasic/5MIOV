@@ -2,15 +2,20 @@ package com.vertial.fivemiov.ui.fragment_set_email_and_password
 
 
 import android.app.Activity
+import android.location.SettingInjectorService
 import android.os.Bundle
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
 
 import com.vertial.fivemiov.R
+import com.vertial.fivemiov.api.MyAPI
+import com.vertial.fivemiov.data.Repo
+import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentSetEmailAndPasswordBinding
 import com.vertial.fivemiov.ui.RegistrationAuthorization.isEmailValid
 import com.vertial.fivemiov.ui.RegistrationAuthorization.isPasswordValid
@@ -20,7 +25,7 @@ import com.vertial.fivemiov.ui.RegistrationAuthorization.isPhoneNumberValid
 class SetEmailAndPasswordFragment : Fragment() {
 
     private lateinit var binding: FragmentSetEmailAndPasswordBinding
-    //private lateinit var viewModel:
+    private lateinit var viewModel:SetEmailPassFragmentViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,6 +39,12 @@ class SetEmailAndPasswordFragment : Fragment() {
 
         binding= DataBindingUtil.inflate(inflater,R.layout.fragment_set_email_and_password,container,false)
 
+        val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
+        val apiService= MyAPI.retrofitService
+        val repo= Repo(database,apiService)
+
+        viewModel = ViewModelProvider(this, SetEmailPassViewModelFactory(repo,requireActivity().application))
+            .get(SetEmailPassFragmentViewModel::class.java)
 
 
         return binding.root

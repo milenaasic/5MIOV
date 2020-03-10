@@ -43,7 +43,7 @@
 
     <!-- string sa formatiranjem-->
     <string name="nb_of_contacts_found">%1$d found</string>
-
+    <string name="prenumber_call">tel:%1$s,%2$s#</string>
 
     <!-- layout items messages errors-->
     <string name="not_valid_phone_number">Not a valid phone number </string>

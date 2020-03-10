@@ -2,13 +2,17 @@ package com.vertial.fivemiov.ui.fragment_detail_contact
 
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
+import android.app.Activity
 import android.graphics.Color
+import android.graphics.drawable.Drawable
+import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
+import com.vertial.fivemiov.R
 import com.vertial.fivemiov.databinding.DetailContactRecViewPhoneBinding
 
 
@@ -81,11 +85,11 @@ class SipItemClickListener(val clickListener:(key:String)->Unit ){
     fun onClick(phone:String)=clickListener(phone)
 }
 
-class PrenumberItemClickListener(val clickListener:(key:String)->Unit ){
-    fun onClick(phone:String)=clickListener(phone)
+class PrenumberItemClickListener(val activity: Activity,val clickListener:(activity:Activity,phone:String)->Unit ){
+    fun onClick(phone:String)=clickListener(activity,phone)
 }
 
-class PhoneNumberClickListener(val density: Float){
+class PhoneNumberClickListener(val activity: Activity,val density: Float){
     fun onClick(view:View){
 
         if(shouldViewExpand(view)) {
@@ -96,15 +100,13 @@ class PhoneNumberClickListener(val density: Float){
 
     }
 
-
     private fun shrinkOtherViews(currentView: View) {
 
         val currentViewParent=currentView.parent as ConstraintLayout
         val recView=currentViewParent.parent as RecyclerView
 
         when (recView.childCount){
-            null->{}
-            1->{}
+            0,1->{}
             else->{
                 for(n in 0..recView.childCount-1){
                      val view=recView.getChildAt(n)
@@ -129,8 +131,15 @@ class PhoneNumberClickListener(val density: Float){
 
         val parent=view.parent as ConstraintLayout
 
-        parent.elevation=12f*density
-        parent.setBackgroundColor(Color.parseColor("#0D20176A"))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            parent.background= activity.resources.getDrawable(R.drawable.dummy_background,null)
+        }else{
+            parent.background= activity.resources.getDrawable(R.drawable.dummy_background)
+        }
+
+       // parent.elevation=2f*density
+       parent.elevation=2f
+
         val currentHeight=parent.height
 
         val extendedHeight=currentHeight.times(2)
@@ -142,7 +151,6 @@ class PhoneNumberClickListener(val density: Float){
             parent.layoutParams.height = value
             parent.requestLayout()
          }
-
 
         animator.start()
 

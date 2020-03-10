@@ -1,9 +1,16 @@
 package com.vertial.fivemiov.ui.fragment_detail_contact
 
 
+import android.Manifest
 import android.animation.ObjectAnimator
 import android.animation.PropertyValuesHolder
+import android.app.Activity
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.telephony.PhoneNumberUtils
 import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
@@ -13,12 +20,17 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
+import com.google.android.material.snackbar.Snackbar
 
 import com.vertial.fivemiov.R
 import com.vertial.fivemiov.api.MyAPI
 import com.vertial.fivemiov.data.Repo
+import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentDetailContactBinding
+import com.vertial.fivemiov.ui.fragment_dial_pad.DialPadFragment
+import com.vertial.fivemiov.ui.fragment_main.MainFragment
+import com.vertial.fivemiov.utils.isValidPhoneNumber
 
 private val MYTAG="MY_DetailContact"
 
@@ -28,6 +40,14 @@ class DetailContact : Fragment() {
     private lateinit var viewModel: DetailContactViewModel
     private lateinit var args:DetailContactArgs
     private lateinit var phoneAdapter:DetailContactAdapter
+
+    private lateinit var myPrefixNumber:String
+
+
+    companion object{
+        val MY_PERMISSIONS_REQUEST_MAKE_PHONE_CALL=15
+
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,20 +64,22 @@ class DetailContact : Fragment() {
 
         val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
         val apiService= MyAPI.retrofitService
-        val repo= Repo(database,apiService)
+        val repo= RepoContacts(requireActivity().contentResolver,database,apiService)
 
         viewModel=ViewModelProvider(this,DetailContactViewModelFactory(args.contactLookUpKey,repo,requireActivity().application)).get(DetailContactViewModel::class.java)
 
         phoneAdapter= DetailContactAdapter(
-                PhoneNumberClickListener (resources.displayMetrics.density),
+                PhoneNumberClickListener (requireActivity(),resources.displayMetrics.density),
                 SipItemClickListener{
                     Log.i(MYTAG,"sip item click listener")
-                },
-                PrenumberItemClickListener {
-                    Log.i(MYTAG,"prenumber item click listener")
-                }
 
-        )
+                },
+                PrenumberItemClickListener(requireActivity()) {activity, phone ->
+                        if(checkForPermissions()) makePrenumberPhoneCall(activity,phone)
+                    }
+
+                )
+
 
 
         binding.detailContactRecView.adapter=phoneAdapter
@@ -69,38 +91,48 @@ class DetailContact : Fragment() {
 
     }
 
-    private fun animation(view: View) {
-        val scaleY = PropertyValuesHolder.ofFloat(View.SCALE_Y, 2f)
-        val animator = ObjectAnimator.ofPropertyValuesHolder(
-            view.parent,scaleY)
-        animator.repeatCount = 1
-        //animator.repeatMode = ObjectAnimator.REVERSE
-        animator.start()
+   fun makePrenumberPhoneCall(activity: Activity, myphone:String){
 
-    }
+       //TODO NAPRAVI FUNKCIJU ZA NORMALIZACIJU
+
+       val phone = PhoneNumberUtils.normalizeNumber(myphone)
+
+       if (phone.isValidPhoneNumber()) {
+           val intentToCall = Intent(Intent.ACTION_CALL).apply {
+               setData(Uri.parse(resources.getString(R.string.prenumber_call,myPrefixNumber,phone)))
+
+           }
+
+           if (intentToCall.resolveActivity(requireActivity().packageManager) != null) {
+               startActivity(intentToCall)
+           } else showSnackBar(resources.getString(R.string.unable_to_make_call))
+
+       } else showSnackBar(resources.getString(R.string.not_valid_phone_number))
+
+
+   }
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         viewModel.phoneList.observe(viewLifecycleOwner, Observer {
-            Log.i(MYTAG,"broj kontakata u listi  ${it}")
-                phoneAdapter.dataList=it
-                //setLargePhoto(it[0])
+
+                phoneAdapter.dataList=it.toSet().toList()
+
          })
+
+         viewModel.prefixNumber.observe(viewLifecycleOwner, Observer {
+            myPrefixNumber=it
+          })
     }
 
-    private fun setLargePhoto(phoneItem: PhoneItem) {
-        Log.i(MYTAG,"photo uri je ${phoneItem.photoFileId}")
-        if(phoneItem.photoUri!=null){
+    private fun noDuplicatesList(list:List<String>) {
 
-            Glide.with(this)
-                .load(phoneItem.photoUri)
-                .apply(RequestOptions().fallback(R.drawable.thumbnail_background))
-                .into(binding.imageView)
-
-        }
+        list.toSet()
 
     }
+
 
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -108,6 +140,46 @@ class DetailContact : Fragment() {
         menu.findItem(R.id.dialPadFragment).isVisible=false
         menu.findItem(R.id.menu_item_myaccount).isVisible=false
         menu.findItem(R.id.menu_item_sync_contacts).isVisible=false
+    }
+
+    private fun showSnackBar(s:String) {
+        Snackbar.make(binding.root,s, Snackbar.LENGTH_LONG).show()
+    }
+
+
+    private fun checkForPermissions():Boolean{
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true
+        else {
+            if (requireActivity().checkSelfPermission(Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(arrayOf(Manifest.permission.CALL_PHONE),
+                    DialPadFragment.MY_PERMISSIONS_REQUEST_MAKE_PHONE_CALL
+                )
+                return false
+            } else return true
+        }
+
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+
+        when (requestCode) {
+            MainFragment.MY_PERMISSIONS_REQUEST_READ_CONTACTS -> {
+                // If request is cancelled, the result arrays are empty.
+                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    //makePhoneCall()
+                } else {
+                    showSnackBar(resources.getString(R.string.no_permission_make_phone_call))
+                }
+                return
+            }
+
+            else -> { }
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
 

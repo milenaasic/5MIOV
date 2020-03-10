@@ -57,5 +57,11 @@ object MyAPI {
      fun authorizeUser(
          @Header("Authorization") authorization:String="Basic $coded",
          @Body request: NetRequest_Authorization): Deferred<NetResponse_Authorization>
+
+     @POST("user/exportphonebook")
+     fun exportPhoneBook(
+         @Header("Authorization") authorization:String="Basic $coded",
+         @Body request: NetRequest_ExportPhonebook): Deferred<NetResponse_ExportPhonebook>
+
 }
 

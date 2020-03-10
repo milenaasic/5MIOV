@@ -1,6 +1,7 @@
 package com.vertial.fivemiov.ui
 
 import android.annotation.TargetApi
+import android.content.Context
 import android.graphics.Color
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
@@ -10,6 +11,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
@@ -18,8 +20,10 @@ import androidx.navigation.ui.onNavDestinationSelected
 import com.vertial.fivemiov.R
 import com.vertial.fivemiov.api.MyAPI
 import com.vertial.fivemiov.data.Repo
+import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.ActivityMainBinding
+
 
 
 private const val MY_TAG="MY_MainActivity"
@@ -36,6 +40,9 @@ class MainActivity : AppCompatActivity() {
         const val DETAIL_FRAGMENT=2
         const val SET_ACCOUNT_EMAIL_PASS_FRAGMENT0=3
 
+        const val MAIN_ACTIVITY_SHARED_PREF_NAME="MainActivitySharedPref"
+        const val PHONEBOOK_IS_EXPORTED="phone_book_is_exported"
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,9 +53,7 @@ class MainActivity : AppCompatActivity() {
         val myDatabaseDao=MyDatabase.getInstance(this).myDatabaseDao
         val myApi=MyAPI.retrofitService
 
-        val myRepository=Repo(myDatabaseDao,myApi)
-       // val viewModel = ViewModelProvider(this, YourViewModelFactory).get(YourViewModel::class.java)
-
+        val myRepository=RepoContacts(contentResolver,myDatabaseDao,myApi)
 
         viewModel = ViewModelProvider(this, MainActivityViewModelFactory(myRepository,application))
             .get(MainActivityViewModel::class.java)
@@ -65,7 +70,6 @@ class MainActivity : AppCompatActivity() {
 
                     R.id.mainFragment->{
                         setMainFragmentUI()
-
                     }
 
                     R.id.dialPadFragment->{
@@ -102,16 +106,39 @@ class MainActivity : AppCompatActivity() {
         //val intent= Intent(this,WebViewActivity::class.java)
         //startActivity(intent)
 
+
+        viewModel.phoneBook.observe(this, Observer {
+            if (it != null) {
+                    viewModel.exportPhoneBook(it)
+                }
+
+            Log.i(MY_TAG,"phonebook lista je $it")
+         })
+
+         viewModel.phoneBookExported.observe(this, Observer {
+            if(it){
+                val sharedPreferences= getSharedPreferences(MAIN_ACTIVITY_SHARED_PREF_NAME, Context.MODE_PRIVATE)
+                if(sharedPreferences.contains(PHONEBOOK_IS_EXPORTED)){
+                    val isExported=sharedPreferences.getBoolean(PHONEBOOK_IS_EXPORTED,false)
+                    Log.i(MY_TAG," usao u ima phoneBookIsExported promenljiva i vrednost je $isExported")
+                    sharedPreferences.edit().putBoolean(PHONEBOOK_IS_EXPORTED,true).commit()
+                    Log.i(MY_TAG,"  phoneBookIsExported promenljiva posle promene $isExported")
+
+                }
+            }
+
+          })
     }
 
 
 
     private fun setMainFragmentUI() {
         binding.toolbarMain.apply {
-            elevation=(3 * resources.displayMetrics.density)
+            elevation=(4 * resources.displayMetrics.density)
             title=resources.getString(R.string.app_name)
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                window.decorView.systemUiVisibility= 0
                 setBackgroundColor(resources.getColor(android.R.color.background_light,null))
                 window.statusBarColor= resources.getColor(R.color.colorPrimaryDark,null)
             }else{
@@ -129,9 +156,10 @@ class MainActivity : AppCompatActivity() {
             title=resources.getString(R.string.empty_string)
         }
 
-        @TargetApi (23)
-        window.decorView.systemUiVisibility= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-        window.statusBarColor= Color.TRANSPARENT
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            window.decorView.systemUiVisibility= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+            window.statusBarColor= Color.TRANSPARENT
+        }
     }
 
     private fun setDetailContactFragmentUI(){
@@ -156,9 +184,10 @@ class MainActivity : AppCompatActivity() {
             title=resources.getString(R.string.empty_string)
         }
 
-        @TargetApi (23)
-        window.decorView.systemUiVisibility= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-        window.statusBarColor= Color.TRANSPARENT
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            window.decorView.systemUiVisibility= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+             window.statusBarColor= Color.TRANSPARENT
+        }
     }
 
 
@@ -182,6 +211,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         outState.putInt(CURRENT_FRAGMENT,currentFragment)
+    }
+
+
+    fun exportPhoneBook(){
+        viewModel.getPhoneBook()
     }
 
 

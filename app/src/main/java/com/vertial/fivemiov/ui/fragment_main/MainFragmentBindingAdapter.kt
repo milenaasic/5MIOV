@@ -11,7 +11,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.vertial.fivemiov.R
 
-private val MYTAG="MY_MainBindingAdapter"
+private val MYTAG="MY_MainFragBindAdapter"
 
 @BindingAdapter("setNameWithColoredLetters","textToColor","mycolor")
 fun setNameWithColoredLetters(view:TextView,item:ContactItem,textToColor:String?,color:String){

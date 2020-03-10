@@ -2,7 +2,9 @@ package com.vertial.fivemiov.ui.fragment_main
 
 
 import android.Manifest
+import android.content.Context
 import android.content.DialogInterface
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Build
@@ -13,6 +15,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.SearchView
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -20,7 +23,14 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.vertial.fivemiov.R
+import com.vertial.fivemiov.api.MyAPI
+import com.vertial.fivemiov.data.RepoContacts
+import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentMainBinding
+import com.vertial.fivemiov.ui.MainActivity
+import com.vertial.fivemiov.ui.MainActivity.Companion.MAIN_ACTIVITY_SHARED_PREF_NAME
+import com.vertial.fivemiov.ui.MainActivity.Companion.PHONEBOOK_IS_EXPORTED
+import com.vertial.fivemiov.ui.MainActivityViewModel
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -32,6 +42,7 @@ class MainFragment : Fragment() {
 
     private lateinit var binding: FragmentMainBinding
     private lateinit var viewModel:MainFragmentViewModel
+    private lateinit var activityViewModel:MainActivityViewModel
     private lateinit var contactsAdapter:MainFragmentAdapter
     private lateinit var searchViewActionBar: SearchView
 
@@ -51,9 +62,22 @@ class MainFragment : Fragment() {
     ): View? {
 
         binding= DataBindingUtil.inflate(inflater,R.layout.fragment_main,container,false)
-        viewModel= ViewModelProvider(this).get(MainFragmentViewModel::class.java)
 
-        if(checkForPermissions()) initalizeAdapter()
+        val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
+        val apiService= MyAPI.retrofitService
+        val repo=RepoContacts(requireActivity().contentResolver,database,apiService)
+
+        viewModel = ViewModelProvider(this, MainFragmentViewModelFactory(repo,requireActivity().application))
+            .get(MainFragmentViewModel::class.java)
+
+
+
+
+        if(checkForPermissions()) {
+                initalizeAdapter()
+                if(shouldExportPhoneBook()) (requireActivity() as MainActivity).exportPhoneBook()
+
+        }
 
         binding.setEmailAndPassButton.setOnClickListener{
 
@@ -63,6 +87,24 @@ class MainFragment : Fragment() {
 
 
         return binding.root
+    }
+
+    private fun shouldExportPhoneBook(): Boolean {
+       val sharedPreferences= requireActivity().getSharedPreferences(MAIN_ACTIVITY_SHARED_PREF_NAME,Context.MODE_PRIVATE)
+
+       if(sharedPreferences.contains(PHONEBOOK_IS_EXPORTED)){
+            val isExported=sharedPreferences.getBoolean(PHONEBOOK_IS_EXPORTED,false)
+           Log.i(MYTAG," usao u ima phoneBookIsExported promenljiva i vrednost je $isExported")
+            if(!isExported) return true
+            else return false
+
+       }else{
+
+            sharedPreferences.edit().putBoolean(PHONEBOOK_IS_EXPORTED,false).commit()
+           Log.i(MYTAG," nema phoneBookIsExported promenljive i sada je napravljena")
+           return true
+       }
+
     }
 
     private fun initalizeAdapter(){

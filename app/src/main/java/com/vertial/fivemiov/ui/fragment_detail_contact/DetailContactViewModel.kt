@@ -9,104 +9,41 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.vertial.fivemiov.data.Repo
+import com.vertial.fivemiov.data.RepoContacts
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import java.lang.Exception
 
 private val MYTAG="MY_DetailContViewModel"
-class DetailContactViewModel(val contactLookUp:String,myRepository: Repo, application: Application) : AndroidViewModel(application) {
+class DetailContactViewModel(val contactLookUp:String,val myRepository: RepoContacts, application: Application) : AndroidViewModel(application) {
 
-    val contentResolver = getApplication<Application>().contentResolver
 
     private val _phoneList = MutableLiveData<List<PhoneItem>>()
     val phoneList: LiveData<List<PhoneItem>>
         get() = _phoneList
 
-
+    val prefixNumber=myRepository.getPremunber()
 
     init {
         getContactPhoneNumbers()
 
-
     }
 
     private fun getContactPhoneNumbers() {
-        GetContactsNumbers(contentResolver,lookUpKey = contactLookUp).execute()
-        Log.i(MYTAG,"usao u get contacts phone ")
-
-    }
-
-
-    inner class GetContactsNumbers(val contentResolver: ContentResolver, val lookUpKey:String):
-        AsyncTask<Unit, Unit, List<PhoneItem>>() {
-
-
-        private val CURSOR_ID=0
-        private val CURSOR_PHONE=1
-        private val CURSOR_PHONE_TYPE=2
-        private val CURSOR_PHOTO_URI=3
-        private val CURSOR_PHOTO_FILE_ID=4
-
-
-
-        private val PROJECTION: Array<out String> = arrayOf(
-            ContactsContract.CommonDataKinds.Phone._ID,
-            ContactsContract.CommonDataKinds.Phone.NUMBER,
-            ContactsContract.CommonDataKinds.Phone.TYPE,
-            ContactsContract.CommonDataKinds.Photo.PHOTO_URI,
-            ContactsContract.CommonDataKinds.Photo.PHOTO_FILE_ID
-        )
-
-        private val SELECTION: String = "${ContactsContract.CommonDataKinds.Phone.LOOKUP_KEY} = ?"
-
-        val selectionArguments=arrayOf<String>(lookUpKey)
-
-        override fun doInBackground(vararg p0: Unit?): List<PhoneItem> {
-            Log.i(MYTAG,"u do in background phone mime type ${ContactsContract.CommonDataKinds.Phone.CONTENT_URI}")
-
-            val cursor = contentResolver.query(
-                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                PROJECTION,
-                SELECTION,
-                selectionArguments,
-                null
-            )
-
-
-            return convertCursorToList(cursor)
-        }
-
-        private fun convertCursorToList(cursor: Cursor?): List<PhoneItem> {
-
-            if (cursor == null) return emptyList()
-
-            val list = mutableListOf<PhoneItem>()
-
-            try {
-                while (cursor.moveToNext()) {
-                    list.add(
-                        PhoneItem(
-                            cursor.getString(CURSOR_PHONE),
-                            cursor.getInt(CURSOR_PHONE_TYPE),
-                            cursor.getString(CURSOR_PHOTO_URI),
-                            cursor.getString(CURSOR_PHOTO_FILE_ID)
-                        )
-
-                    )
-                }
-            } finally {
-                cursor.close();
+        viewModelScope.launch {
+            val deferredList=async(IO) {
+                myRepository.getPhoneNumbersForContact(contactLookUp)
             }
-            Log.i(MYTAG,"convert cursor u listu $list")
-            return list
-
+           try {
+               val resultPhoneList=deferredList.await()
+               _phoneList.value=resultPhoneList
+           }catch (e:Exception){
+                Log.i(MYTAG,e.message?:"no message")
+           }
         }
-
-
-        override fun onPostExecute(result: List<PhoneItem>) {
-            _phoneList.value=result
-
-        }
-
-
     }
 
 
