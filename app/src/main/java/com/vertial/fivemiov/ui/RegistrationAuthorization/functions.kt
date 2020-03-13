@@ -21,9 +21,7 @@ fun String.isPasswordValid():Boolean{
 }
 
  fun String.removePlus():String{
-    Log.i(MY_TAG,"pre obrade ${this.trim().startsWith("+",false)}")
     if(this.trim().startsWith("+",false)){
-        Log.i(MY_TAG,"posle obrade ${this.removePrefix("+")}")
         return this.removePrefix("+")
     }else return this
 

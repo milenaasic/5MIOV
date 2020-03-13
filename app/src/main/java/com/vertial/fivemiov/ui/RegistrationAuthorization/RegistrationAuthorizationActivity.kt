@@ -37,6 +37,7 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
         val myRepository= Repo(myDatabaseDao,myApi)
         // val viewModel = ViewModelProvider(this, YourViewModelFactory).get(YourViewModel::class.java)
 
+        //TODO provera internet veze
 
         viewModel = ViewModelProvider(this, RegAuthViewModelFactory(myRepository,application))
             .get(RegAuthActivityViewModel::class.java)
@@ -44,15 +45,18 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
         viewModel.userData.observe(this, Observer {user->
 
             Log.i(MYTAG,("user u bazi je $user"))
-            if(user.userToken != EMPTY_TOKEN){
-                startActivity(Intent(this, MainActivity::class.java))
-                finish()
+            if(user!=null) {
+                if (user.userToken != EMPTY_TOKEN) {
+                    startActivity(Intent(this, MainActivity::class.java))
+                    finish()
 
-            }else {
+                } else {
 
-                findNavController(R.id.registration_navhost_fragment).navigate(
-                        EmptyLogoFragmentDirections.actionEmptyLogoFragmentToRegistrationFragment())
+                    findNavController(R.id.registration_navhost_fragment).navigate(
+                        EmptyLogoFragmentDirections.actionEmptyLogoFragmentToRegistrationFragment()
+                    )
 
+                }
             }
 
          })

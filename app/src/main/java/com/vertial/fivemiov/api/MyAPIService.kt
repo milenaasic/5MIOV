@@ -41,22 +41,43 @@ object MyAPI {
 
  interface MyAPIService {
 
-
-    @POST("user/signup")
+    //Registrationa and Authorization Process
+    @POST("api/user/signup")
     fun sendRegistrationToServer(
         @Header("Authorization") authorization:String="Basic $coded",
         @Body request: NetRequest_Registration): Deferred<NetResponse_Registration>
 
-     @POST("addnumber")
-     fun sendAddNumberToAccountToServer(
+     @POST("api/user/signup")
+     fun sendAddNumberToAccount(
          @Header("Authorization") authorization:String="Basic $coded",
          @Body request: NetRequest_AddNumberToAccount): Deferred<NetResponse_AddNumberToAccount>
 
 
-     @POST("user/create")
+     @POST("api/user/signup")
+     fun numberExistsInDBVerifyAccount(
+         @Header("Authorization") authorization:String="Basic $coded",
+         @Body request: NetRequest_NmbExistsInDB_UserHasAccount): Deferred<NetResponse_NmbExistsInDB>
+
+     @POST("api/user/signup")
+     fun numberExistsInDB_NOAccount(
+         @Header("Authorization") authorization:String="Basic $coded",
+         @Body request: NetRequest_NmbExistsInDB_NoAccount): Deferred<NetResponse_NmbExistsInDB>
+
+
+
+
+     @POST("api/user/create")
      fun authorizeUser(
          @Header("Authorization") authorization:String="Basic $coded",
          @Body request: NetRequest_Authorization): Deferred<NetResponse_Authorization>
+
+
+
+     //Registered User
+     @POST("user/setAccountAndEmail")
+     fun setAccountEmailAndPasswordForUser(
+         @Header("Authorization") authorization:String="Basic $coded",
+         @Body request: NetRequest_SetAccountEmailAndPass): Deferred<NetResponse_SetAccountEmailAndPass>
 
      @POST("user/exportphonebook")
      fun exportPhoneBook(

@@ -13,14 +13,17 @@ data class User (
     @PrimaryKey(autoGenerate = true)
     var id:Long= 0L,
 
-    @ColumnInfo(name="user_name")
-    val userName:String= EMPTY_USERNAME,
+    /*@ColumnInfo(name="user_name")
+    val userName:String= EMPTY_USERNAME,*/
 
     @ColumnInfo(name="user_phone")
     val userPhone:String= EMPTY_PHONE_NUMBER,
 
     @ColumnInfo(name= "token")
-    val userToken: String = EMPTY_TOKEN
+    val userToken: String = EMPTY_TOKEN,
+
+    @ColumnInfo(name= "email")
+    val userEmail: String = EMPTY_TOKEN
 
 
 )

@@ -2,7 +2,18 @@ package com.vertial.fivemiov.api
 
 import com.squareup.moshi.Json
 
-data class NetRequest_AddNumberToAccount (
+data class NetRequest_NmbExistsInDB_NoAccount(
+
+    @Json(name="number")
+    val phoneNumber:String,
+
+    @Json(name="signin")
+    val signin:String="true"
+
+
+)
+
+data class NetRequest_NmbExistsInDB_UserHasAccount(
 
     @Json(name="number")
     val phoneNumber:String,
@@ -15,9 +26,9 @@ data class NetRequest_AddNumberToAccount (
 
 )
 
-data class NetResponse_AddNumberToAccount (
+data class NetResponse_NmbExistsInDB(
 
     @Json(name="message")
     val message:String
-)
 
+)

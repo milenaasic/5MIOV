@@ -168,7 +168,7 @@ class PhoneNumberClickListener(val activity: Activity,val density: Float){
         Log.i("MYTAG","view shrink height je $shrinkHeight")
 
         val animator = ValueAnimator.ofInt(currentHeight,shrinkHeight)
-
+        //animator.setDuration(10)
         animator.addUpdateListener {
             val value = it.getAnimatedValue() as Int
             parent.layoutParams.height = value

@@ -39,24 +39,24 @@ class AddNumberToAccount : Fragment() {
 
 
         binding.addphoneButton.setOnClickListener {
-            Log.i(MY_TAG,"registrtion button je clicked}")
+            it.isEnabled=false
             hidekeyboard()
-
             if(allEnteredFieldsAreValid()){
-                it.isEnabled=false
                 showProgressBar(true)
                 activityViewModel.addNumberToAccountButtonClicked(
-                    (binding.addPhoneEditText.text.toString()).removePlus(),
-                    binding.emailEditText.text.toString(),
-                    binding.emailEditText.text.toString()
+                    (binding.addNmbPhoneEditText.text.toString()).removePlus(),
+                    binding.addNmbEmailEditText.text.toString(),
+                    binding.addNmbPassEditText.text.toString()
                     )
+            }else{
+                it.isEnabled=true
             }
 
         }
 
-        binding.passEditText.setOnEditorActionListener { view, action, keyEvent ->
+        binding.addNmbPassEditText.setOnEditorActionListener { view, action, keyEvent ->
             when (action){
-                EditorInfo.IME_ACTION_DONE-> {
+                EditorInfo.IME_ACTION_DONE,EditorInfo.IME_ACTION_UNSPECIFIED-> {
                     hidekeyboard()
                     view.clearFocus()
                     true
@@ -96,17 +96,17 @@ class AddNumberToAccount : Fragment() {
 
     private fun allEnteredFieldsAreValid(): Boolean {
         var b:Boolean=true
-        if(!(binding.addPhoneEditText.text.toString()).isPhoneNumberValid()) {
+        if(!(binding.addNmbPhoneEditText.text.toString()).isPhoneNumberValid()) {
             b=false
-            binding.addPhoneEditText.setError(resources.getString(R.string.not_valid_phone_number))
+            binding.addNmbPhoneEditText.setError(resources.getString(R.string.not_valid_phone_number))
         }
-        if(!(binding.emailEditText.text.toString()).isEmailValid()) {
+        if(!(binding.addNmbEmailEditText.text.toString()).isEmailValid()) {
             b=false
-            binding.emailEditText.setError(resources.getString(R.string.not_valid_email))
+            binding.addNmbEmailEditText.setError(resources.getString(R.string.not_valid_email))
         }
-        if(!(binding.passEditText.text.toString()).isPasswordValid()) {
+        if(!(binding.addNmbPassEditText.text.toString()).isPasswordValid()) {
             b=false
-            binding.passEditText.setError(resources.getString(R.string.not_valid_password))
+            binding.addNmbPassEditText.setError(resources.getString(R.string.not_valid_password))
         }
         return b
     }

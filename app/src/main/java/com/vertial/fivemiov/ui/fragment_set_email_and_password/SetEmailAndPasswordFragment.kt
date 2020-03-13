@@ -4,12 +4,16 @@ package com.vertial.fivemiov.ui.fragment_set_email_and_password
 import android.app.Activity
 import android.location.SettingInjectorService
 import android.os.Bundle
+import android.util.Log
 import android.view.*
+import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 
 import com.vertial.fivemiov.R
@@ -47,7 +51,49 @@ class SetEmailAndPasswordFragment : Fragment() {
             .get(SetEmailPassFragmentViewModel::class.java)
 
 
+        binding.setAccountSubmitButton.setOnClickListener {
+            hidekeyboard()
+            if(allEnteredFieldsAreValid()) {
+                it.isEnabled=false
+                showProgressBar(true)
+                    viewModel.setAccountAndEmailForUser(
+                                binding.setAccountEmailEditText.text.toString(),
+                                binding.setAccountPassEditText.text.toString()
+                    )
+
+            }
+         }
+
+        binding.setAccountConfirmpassEditText.setOnEditorActionListener { view, action, keyEvent ->
+           // Log.i(MY_TAG,"action listener , action je $action")
+            when (action){
+                EditorInfo.IME_ACTION_DONE-> {
+                    hidekeyboard()
+                    view.clearFocus()
+                    true
+                }
+                else->false
+            }
+        }
+
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        viewModel.setAccountEmailAndPassSuccess.observe(viewLifecycleOwner, Observer {
+            showToast(getString(R.string.account_email_is_set))
+            showProgressBar(false)
+            findNavController().navigate(SetEmailAndPasswordFragmentDirections.actionSetEmailAndPasswordFragmentToMainFragment())
+         })
+
+         viewModel.setAccountEmailAndPassError.observe(viewLifecycleOwner, Observer {
+             showSnackBar(getString(R.string.something_went_wrong))
+             showProgressBar(false)
+             binding.setAccountSubmitButton.isEnabled=true
+          })
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -68,6 +114,11 @@ class SetEmailAndPasswordFragment : Fragment() {
         if(!(binding.setAccountPassEditText.text.toString()).isPasswordValid()) {
             b=false
             binding.setAccountPassEditText.setError(resources.getString(R.string.not_valid_password))
+        }
+
+        if(!binding.setAccountConfirmpassEditText.text.toString().equals(binding.setAccountPassEditText.text.toString())){
+            b=false
+            binding.setAccountConfirmpassEditText.setError(getString(R.string.confirm_password_error))
         }
         return b
     }

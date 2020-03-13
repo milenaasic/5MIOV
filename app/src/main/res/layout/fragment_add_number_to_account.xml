@@ -85,7 +85,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/addphone_textView">
 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/add_phone_editText"
+                    android:id="@+id/add_nmb_phone_editText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="32dp"
@@ -108,7 +108,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/add_phone_textInputLayout">
 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/email_editText"
+                    android:id="@+id/add_nmb_email_editText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textEmailAddress"
@@ -129,7 +129,7 @@
 
 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/pass_editText"
+                    android:id="@+id/add_nmb_pass_editText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="32dp"

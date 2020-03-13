@@ -12,21 +12,33 @@ private const val MY_TAG="MY_RegAuthActivVieModel"
 class RegAuthActivityViewModel(val myRepository: Repo, application: Application) : AndroidViewModel(application) {
 
     lateinit var enteredPhoneNumber:String
+    var enteredEmail:String?=null
+    var enteredPassword:String?=null
 
     val userData=myRepository.getUserData()
 
 
     val registrationNetworkError=myRepository.registrationNetworkError
-    val registrationNetworkSuccess=myRepository.registrationSuccess
+    val registrationNetSuccessIsNmbAssigned=myRepository.registrationSuccessIsNmbAssigned
 
     val addNumberToAccuntNetworkError=myRepository.addNumberToAccountNetworkError
     val addNumberToAccuntNetworkSuccess=myRepository.addNumberToAccountNetworkSuccess
 
+
+    val nmbExistsInDBUserHasAccountSuccess=myRepository.nmbExistsInDBUserHasAccountSuccess
+    val nmbExistsInDBUserHasAccountError=myRepository.nmbExistsInDBUserHasAccountError
+    val nmbExistsInDB_NoAccountSuccess=myRepository.nmbExistsInDB_NoAccountSuccess
+    val nmbExistsInDB_NoAccountError=myRepository.nmbExistsInDB_NoAccountError
+
+
+
     val authorizationNetworkError=myRepository.authorizationNetworkError
     val authorizationNetworkSuccess=myRepository.authorizationSuccess
 
-    init {
 
+
+
+    init {
         Log.i(MY_TAG,("init"))
     }
 
@@ -41,17 +53,37 @@ class RegAuthActivityViewModel(val myRepository: Repo, application: Application)
 
     }
 
-    //add number fragment
+    //add number to existing account fragment
     fun addNumberToAccountButtonClicked(phoneNumber:String,email:String,password:String){
         enteredPhoneNumber=phoneNumber
+        enteredEmail=email
+        enteredPassword=password
         Log.i(MY_TAG,("add number button clicked"))
         //send add phone, email and pass to server and go to authorization fragment
         viewModelScope.launch {
-            myRepository.sendAddPhoneNumberToAccountToServer(phoneNumber,email,password)
+            myRepository.assignPhoneNumberToAccount(phoneNumber,email,password)
         }
-
-
     }
+
+
+    //number exists in DB fragment
+    fun numberExistsInDBVerifyAccount(email: String,password: String){
+        enteredEmail=email
+        enteredPassword=password
+        viewModelScope.launch {
+            myRepository.numberExistsInDBVerifyAccount(enteredPhoneNumber,email,password)
+        }
+    }
+
+    fun numberExistsInDb_NoAccount(){
+        viewModelScope.launch {
+            myRepository.numberExistsInDB_NOAccount(enteredPhoneNumber)
+        }
+    }
+
+
+
+
 
     //authorization fragment
     fun submitButtonClicked(smsToken:String){

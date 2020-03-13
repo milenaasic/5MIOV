@@ -4,11 +4,18 @@ import com.squareup.moshi.Json
 
 data class NetRequest_Authorization(
 
-    @Json(name="useralias")
+    @Json(name="number")
     val phoneNumber:String,
 
     @Json(name="token")
-    val smstoken:String
+    val smstoken:String,
+
+    @Json(name="email")
+    val email:String="",
+
+    @Json(name="password")
+    val password:String=""
+
 )
 
 

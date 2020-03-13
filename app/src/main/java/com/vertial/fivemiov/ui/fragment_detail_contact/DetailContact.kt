@@ -17,6 +17,7 @@ import androidx.fragment.app.Fragment
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
@@ -71,7 +72,7 @@ class DetailContact : Fragment() {
         phoneAdapter= DetailContactAdapter(
                 PhoneNumberClickListener (requireActivity(),resources.displayMetrics.density),
                 SipItemClickListener{
-                    Log.i(MYTAG,"sip item click listener")
+                    findNavController().navigate(DetailContactDirections.actionDetailContactToSipFragment(args.displayName))
 
                 },
                 PrenumberItemClickListener(requireActivity()) {activity, phone ->

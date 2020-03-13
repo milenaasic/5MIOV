@@ -1,11 +1,15 @@
 package com.vertial.fivemiov.ui.RegistrationAuthorization
 
 
+import android.app.Activity
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
@@ -39,6 +43,18 @@ class AuthorizationFragment : Fragment() {
             else activityViewModel.submitButtonClicked(binding.tokenEditText.text.toString())
         }
 
+        binding.tokenEditText.setOnEditorActionListener { view, action, keyEvent ->
+            when (action){
+                EditorInfo.IME_ACTION_DONE,EditorInfo.IME_ACTION_UNSPECIFIED-> {
+                    hidekeyboard()
+                    view.clearFocus()
+
+                    true
+                }
+                else->false
+            }
+        }
+
         return binding.root
     }
 
@@ -66,4 +82,8 @@ class AuthorizationFragment : Fragment() {
     }
 
 
+    private fun hidekeyboard(){
+        val inputMethodManager = requireActivity().getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(binding.root.windowToken, 0)
+    }
 }

@@ -39,6 +39,7 @@ class RegistrationFragment : Fragment() {
 
         binding.registerButton.setOnClickListener {
             Log.i(MY_TAG,"registrtion button je clicked}")
+            it.isEnabled=false
             hidekeyboard()
             val enteredPhoneNumber=binding.phoneNumberEditText.text.toString()
             if(enteredPhoneNumber.isPhoneNumberValid()){
@@ -46,7 +47,10 @@ class RegistrationFragment : Fragment() {
                     showProgressBar(true)
                     activityViewModel.registerButtonClicked(enteredPhoneNumber.removePlus())
 
-                }else binding.phoneNumberEditText.setError(resources.getString(R.string.not_valid_phone_number))
+                }else {
+                    it.isEnabled=true
+                     binding.phoneNumberEditText.setError(resources.getString(R.string.not_valid_phone_number))
+                }
         }
 
         binding.addNumToAccountButton.setOnClickListener {
@@ -57,7 +61,8 @@ class RegistrationFragment : Fragment() {
         binding.phoneNumberEditText.setOnEditorActionListener { view, action, keyEvent ->
         Log.i(MY_TAG,"action listener , action je $action")
             when (action){
-                EditorInfo.IME_ACTION_DONE-> {
+                EditorInfo.IME_ACTION_DONE,EditorInfo.IME_ACTION_UNSPECIFIED-> {
+                    Log.i(MY_TAG,"action listener , usao u action done")
                     hidekeyboard()
                     view.clearFocus()
                     true
@@ -74,19 +79,19 @@ class RegistrationFragment : Fragment() {
 
         activityViewModel.registrationNetworkError.observe(viewLifecycleOwner, Observer {
             if(it!=null){
-                showSnackBar(it)
+                showSnackBar(resources.getString(R.string.something_went_wrong))
             }
             binding.registerButton.isEnabled=true
             showProgressBar(false)
-            //privremeno proba
-            //findNavController().navigate(RegistrationFragmentDirections.actionRegistrationFragmentToNumberExistsInDatabase())
+
          })
 
-         activityViewModel.registrationNetworkSuccess.observe(viewLifecycleOwner, Observer {
-             if(it!=null){
-                 showToast(it)
+         activityViewModel.registrationNetSuccessIsNmbAssigned.observe(viewLifecycleOwner, Observer {isNumberAssigned->
+             if(!isNumberAssigned){
+                 //showToast(it)
                  findNavController().navigate(RegistrationFragmentDirections.actionRegistrationFragmentToAuthorizationFragment())
-
+             }else {
+                 findNavController().navigate(RegistrationFragmentDirections.actionRegistrationFragmentToNumberExistsInDatabase())
              }
              binding.registerButton.isEnabled=true
              showProgressBar(false)

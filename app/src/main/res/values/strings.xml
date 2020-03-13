@@ -38,27 +38,38 @@
     <string name="is_already_registered">is already registered</string>
     <string name="fill_your_account_credentials">Please, fill your account credentials</string>
     <string name="i_do_not_have_account">I do not have account</string>
+    <string name="choose_password_hint">choose password</string>
     <string name="password_hint">password</string>
     <string name="e_mail_hint">e-mail</string>
+    <string name="have_an_account_already_sign_in_to_start_using_your_existing_credit">Have an account already?\nSign in to start using your existing credit!</string>
 
     <!-- string sa formatiranjem-->
     <string name="nb_of_contacts_found">%1$d found</string>
     <string name="prenumber_call">tel:%1$s,%2$s#</string>
+    <string name="phone_number_format">Number %1$s</string>
+
 
     <!-- layout items messages errors-->
     <string name="not_valid_phone_number">Not a valid phone number </string>
     <string name="not_valid_email">Not a valid email </string>
     <string name="not_valid_password">Password must be >5 characters </string>
     <string name="enter_token">Enter token</string>
+    <string name="confirm_password_error">Confirm password</string>
 
     <!-- snackbar messages-->
     <string name="no_permission_read_contacts">No permission to load contacts</string>
     <string name="no_permission_make_phone_call">Sorry,no permission to make phone calls!</string>
     <string name="unable_to_make_call">Unable to make a call</string>
     <string name="clipboard_invalid_data_type">Clipboard contains an invalid data type</string>
+    <string name="account_email_is_set">Your account is set</string>
+    <string name="something_went_wrong">Something went wrong</string>
 
     <!-- set account dialog-->
-    <string name="set_account_dialog">To protect your account you need to set e-mail and password. If not, 5MIOV can not be held responsible for potential misuse!</string>
+    <string name="set_account_dialog">To secure your account and current credits please set email and password by clicking on the red button at the bottom of the screen.
+    If email and password are not set, you will not be able to recover credits if you reinstall the app, insert SIM card into another device, lose SIM card or phone.\n
+    In the meantime feel free to buy credits and use the app with no limits.
+    </string>
+
 
 
 

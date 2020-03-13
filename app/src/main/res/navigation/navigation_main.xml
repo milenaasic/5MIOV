@@ -28,6 +28,9 @@
         <argument
             android:name="displayName"
             app:argType="string" />
+        <action
+            android:id="@+id/action_detailContact_to_sipFragment"
+            app:destination="@id/sipFragment" />
     </fragment>
     <fragment
         android:id="@+id/dialPadFragment"
@@ -37,5 +40,20 @@
     <fragment
         android:id="@+id/setEmailAndPasswordFragment"
         android:name="com.vertial.fivemiov.ui.fragment_set_email_and_password.SetEmailAndPasswordFragment"
-        android:label="SetEmailAndPasswordFragment" />
+        android:label="SetEmailAndPasswordFragment" >
+        <action
+            android:id="@+id/action_setEmailAndPasswordFragment_to_mainFragment"
+            app:destination="@id/mainFragment"
+            app:popUpTo="@+id/setEmailAndPasswordFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/sipFragment"
+        android:name="com.vertial.fivemiov.ui.sipfragment.SipFragment"
+        android:label="fragment_sip"
+        tools:layout="@layout/fragment_sip" >
+        <argument
+            android:name="contactName"
+            app:argType="string" />
+    </fragment>
 </navigation>

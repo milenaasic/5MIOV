@@ -22,7 +22,9 @@
             app:popUpToInclusive="true" />
         <action
             android:id="@+id/action_registrationFragment_to_numberExistsInDatabase"
-            app:destination="@id/numberExistsInDatabase" />
+            app:destination="@id/numberExistsInDatabase"
+            app:popUpTo="@+id/registrationFragment"
+            app:popUpToInclusive="true" />
     </fragment>
     <fragment
         android:id="@+id/authorizationFragment"
@@ -43,7 +45,8 @@
     <fragment
         android:id="@+id/addNumberToAccount"
         android:name="com.vertial.fivemiov.ui.RegistrationAuthorization.AddNumberToAccount"
-        android:label="AddNumberToAccount" >
+        android:label="AddNumberToAccount"
+        tools:layout="@layout/fragment_add_number_to_account" >
         <action
             android:id="@+id/action_addNumberToAccount_to_authorizationFragment"
             app:destination="@id/authorizationFragment"
@@ -53,9 +56,12 @@
     <fragment
         android:id="@+id/numberExistsInDatabase"
         android:name="com.vertial.fivemiov.ui.RegistrationAuthorization.NumberExistsInDatabase"
-        android:label="NumberExistsInDatabase" >
+        android:label="NumberExistsInDatabase"
+        tools:layout="@layout/fragment_number_exists_in_database">
         <action
             android:id="@+id/action_numberExistsInDatabase_to_authorizationFragment"
-            app:destination="@id/authorizationFragment" />
+            app:destination="@id/authorizationFragment"
+            app:popUpTo="@+id/numberExistsInDatabase"
+            app:popUpToInclusive="true" />
     </fragment>
 </navigation>

@@ -15,6 +15,12 @@ interface MyDatabaseDao {
     @Query("UPDATE user_table SET user_phone=:phoneNb,token=:token WHERE ID=1")
     fun updateUsersPhoneAndToken(phoneNb:String,token:String)
 
+    @Query("SELECT token FROM user_table WHERE id=1")
+    fun getToken():String
+
+    @Query("UPDATE user_table SET email=:email WHERE ID=1")
+    fun updateUserEmail(email:String)
+
 
     //PRENUMBER TABLE
     @Query("SELECT prenumber FROM prenumber_table WHERE id=1")
