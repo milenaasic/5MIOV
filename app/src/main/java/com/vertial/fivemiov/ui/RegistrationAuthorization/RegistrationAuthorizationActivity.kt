@@ -35,7 +35,6 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
         val myApi= MyAPI.retrofitService
 
         val myRepository= Repo(myDatabaseDao,myApi)
-        // val viewModel = ViewModelProvider(this, YourViewModelFactory).get(YourViewModel::class.java)
 
         //TODO provera internet veze
 

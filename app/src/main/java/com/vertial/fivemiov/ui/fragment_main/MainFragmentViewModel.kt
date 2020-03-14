@@ -22,7 +22,8 @@ private val MYTAG="MY_MAINFRAGM_VIEWMODEL"
 
 class MainFragmentViewModel(val repoContacts: RepoContacts,application: Application) :AndroidViewModel(application) {
 
-
+    //live data from database
+    val userData=repoContacts.getUserData()
 
     private val _contactList = MutableLiveData<List<ContactItem>>()
     val contactList: LiveData<List<ContactItem>>

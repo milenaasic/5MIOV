@@ -2,6 +2,8 @@ package com.vertial.fivemiov.ui
 
 import android.annotation.TargetApi
 import android.content.Context
+import android.content.DialogInterface
+import android.content.Intent
 import android.graphics.Color
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
@@ -10,6 +12,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -23,7 +26,10 @@ import com.vertial.fivemiov.data.Repo
 import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.ActivityMainBinding
-
+import com.vertial.fivemiov.model.User
+import com.vertial.fivemiov.ui.RegistrationAuthorization.RegistrationAuthorizationActivity
+import com.vertial.fivemiov.utils.EMPTY_EMAIL
+import com.vertial.fivemiov.utils.EMPTY_PHONE_NUMBER
 
 
 private const val MY_TAG="MY_MainActivity"
@@ -32,6 +38,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
     private lateinit var viewModel: MainActivityViewModel
+    private var userHasEmailAndPass: Boolean=false
 
     companion object{
         const val CURRENT_FRAGMENT="current_fragment"
@@ -106,12 +113,21 @@ class MainActivity : AppCompatActivity() {
         //val intent= Intent(this,WebViewActivity::class.java)
         //startActivity(intent)
 
+        viewModel.userData.observe(this, Observer {user->
+
+                if(user.userPhone.equals(EMPTY_PHONE_NUMBER)){
+                    startActivity(Intent(this,RegistrationAuthorizationActivity::class.java))
+                    finish()
+                }
+
+                userHasEmailAndPass=!user.userEmail.equals(EMPTY_EMAIL)
+
+         })
 
         viewModel.phoneBook.observe(this, Observer {
             if (it != null) {
                     viewModel.exportPhoneBook(it)
                 }
-
             Log.i(MY_TAG,"phonebook lista je $it")
          })
 
@@ -197,7 +213,43 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return item.onNavDestinationSelected(navController) || super.onOptionsItemSelected(item)
+        when(item.itemId){
+            R.id.menu_item_logout-> {
+                                    handleLogOut()
+                                    return true
+                                    }
+            else->return item.onNavDestinationSelected(navController) || super.onOptionsItemSelected(item)
+
+        }
+
+    }
+
+    private fun handleLogOut() {
+       if(userHasEmailAndPass) logout()
+        else showAlertDialog()
+
+    }
+
+    private fun logout() {
+        Log.i(MY_TAG,"   log out funkcija")
+        viewModel.logout()
+    }
+
+    private fun showAlertDialog(){
+        val alertDialog=AlertDialog.Builder(this)
+            .setMessage("please set account email or your credit will be lost after log out")
+            .setPositiveButton("LOG OUT ANYWAY",object:DialogInterface.OnClickListener {
+                override fun onClick(p0: DialogInterface?, p1: Int) {
+                    logout()
+                }
+            })
+            .setNeutralButton("CANCEL",object :DialogInterface.OnClickListener{
+                override fun onClick(p0: DialogInterface?, p1: Int) {
+                    p0?.dismiss()}
+                })
+
+        alertDialog.show()
+
     }
 
 

@@ -38,6 +38,13 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
 
     }
 
+    fun logout(){
+        viewModelScope.launch {
+            myRepository.logout()
+        }
+    }
+
+
     fun getPhoneBook(){
         Log.i(MY_TAG,"get phone boook")
 

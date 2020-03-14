@@ -13,9 +13,6 @@ data class User (
     @PrimaryKey(autoGenerate = true)
     var id:Long= 0L,
 
-    /*@ColumnInfo(name="user_name")
-    val userName:String= EMPTY_USERNAME,*/
-
     @ColumnInfo(name="user_phone")
     val userPhone:String= EMPTY_PHONE_NUMBER,
 

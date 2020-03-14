@@ -94,7 +94,6 @@ class DetailContact : Fragment() {
 
    fun makePrenumberPhoneCall(activity: Activity, myphone:String){
 
-       //TODO NAPRAVI FUNKCIJU ZA NORMALIZACIJU
 
        val phone = PhoneNumberUtils.normalizeNumber(myphone)
 
@@ -140,7 +139,7 @@ class DetailContact : Fragment() {
         super.onCreateOptionsMenu(menu, inflater)
         menu.findItem(R.id.dialPadFragment).isVisible=false
         menu.findItem(R.id.menu_item_myaccount).isVisible=false
-        menu.findItem(R.id.menu_item_sync_contacts).isVisible=false
+        menu.findItem(R.id.menu_item_logout).isVisible=false
     }
 
     private fun showSnackBar(s:String) {

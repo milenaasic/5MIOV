@@ -15,9 +15,10 @@ import com.vertial.fivemiov.api.NetResponse_ExportPhonebook
 import com.vertial.fivemiov.database.MyDatabaseDao
 import com.vertial.fivemiov.ui.fragment_detail_contact.PhoneItem
 import com.vertial.fivemiov.ui.fragment_main.ContactItem
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.async
+import com.vertial.fivemiov.utils.EMPTY_EMAIL
+import com.vertial.fivemiov.utils.EMPTY_PHONE_NUMBER
+import com.vertial.fivemiov.utils.EMPTY_TOKEN
+import kotlinx.coroutines.*
 
 private const val MY_TAG="MY_ContactsRepository"
 class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDatabaseDao, val myAPIService: MyAPIService) {
@@ -33,6 +34,15 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
     private val _exportPhoneBookNetworkSuccess = MutableLiveData<Boolean>()
     val exportPhoneBookNetworkSuccess: LiveData<Boolean>
         get() = _exportPhoneBookNetworkSuccess
+
+
+    suspend fun logout(){
+        withContext(Dispatchers.IO){
+            myDatabaseDao.logout(EMPTY_PHONE_NUMBER, EMPTY_TOKEN, EMPTY_EMAIL)
+        }
+
+    }
+
 
 
     fun getAllContacts(uri: Uri):List<ContactItem>{
@@ -77,7 +87,6 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
                         cursor.getString(CURSOSR_PHOTO_THUMBNAIL_URI),
                         cursor.getString(CURSOR_HAS_PHONE_NUMBER)
                     )
-
                 )
             }
             } finally {

@@ -31,6 +31,7 @@ import com.vertial.fivemiov.ui.MainActivity
 import com.vertial.fivemiov.ui.MainActivity.Companion.MAIN_ACTIVITY_SHARED_PREF_NAME
 import com.vertial.fivemiov.ui.MainActivity.Companion.PHONEBOOK_IS_EXPORTED
 import com.vertial.fivemiov.ui.MainActivityViewModel
+import com.vertial.fivemiov.utils.EMPTY_EMAIL
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -121,8 +122,14 @@ class MainFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        viewModel.userData.observe(viewLifecycleOwner, Observer {user->
+
+            if(user.userEmail== EMPTY_EMAIL) binding.setEmailAndPassButton.visibility=View.VISIBLE
+            else binding.setEmailAndPassButton.visibility=View.GONE
+        })
+
         viewModel.contactList.observe(viewLifecycleOwner, Observer {list->
-            //list.add()
             contactsAdapter.dataList=list
          })
 
@@ -143,7 +150,7 @@ class MainFragment : Fragment() {
         val mitem=menu.findItem(R.id.menu_item_search)
         val itemMyAccount= menu.findItem(R.id.menu_item_myaccount)
         val itemDialPad=menu.findItem(R.id.dialPadFragment)
-        val itemSyncContacts=menu.findItem(R.id.menu_item_sync_contacts)
+        val itemLogout=menu.findItem(R.id.menu_item_logout)
         searchViewActionBar=menu.findItem(R.id.menu_item_search).actionView as SearchView
         searchViewActionBar.setQueryHint(getString(R.string.search_hint))
 
@@ -153,7 +160,7 @@ class MainFragment : Fragment() {
                 Log.i(MYTAG,"on search expand listener")
                 itemMyAccount.isVisible=false
                 itemDialPad.isVisible=false
-                itemSyncContacts.isVisible=false
+                itemLogout.isVisible=false
                 searchViewActionBar.isIconified=false
                 return true
             }
@@ -162,7 +169,7 @@ class MainFragment : Fragment() {
                 searchViewActionBar.isIconified=true
                 itemMyAccount.isVisible=true
                 itemDialPad.isVisible=true
-                itemSyncContacts.isVisible=true
+                itemLogout.isVisible=true
                 searchViewActionBar.clearFocus()
                 return true
             }
