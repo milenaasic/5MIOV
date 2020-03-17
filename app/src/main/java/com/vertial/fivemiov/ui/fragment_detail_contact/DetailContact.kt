@@ -77,8 +77,8 @@ class DetailContact : Fragment() {
                 },
                 PrenumberItemClickListener(requireActivity()) {activity, phone ->
                         if(checkForPermissions()) makePrenumberPhoneCall(activity,phone)
-                    }
-
+                    },
+                requireActivity().application
                 )
 
 
@@ -127,12 +127,11 @@ class DetailContact : Fragment() {
           })
     }
 
-    private fun noDuplicatesList(list:List<String>) {
 
-        list.toSet()
-
+    override fun onResume() {
+        super.onResume()
+        phoneAdapter.notifyDataSetChanged()
     }
-
 
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

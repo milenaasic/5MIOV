@@ -1,7 +1,6 @@
-package com.vertial.fivemiov.ui
+package com.vertial.fivemiov.ui.webView
 
 import android.app.Application
-import android.database.Cursor
 import android.provider.ContactsContract
 import android.telephony.PhoneNumberUtils
 import android.util.Log
@@ -10,21 +9,15 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.vertial.fivemiov.data.PhoneBookItem
-import com.vertial.fivemiov.data.Repo
 import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.ui.fragment_detail_contact.PhoneItem
-import kotlinx.coroutines.*
-import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import java.lang.Exception
 
-
-private const val MY_TAG="MY_MainActivViewModel"
-class MainActivityViewModel(val myRepository: RepoContacts, application: Application) : AndroidViewModel(application) {
-
-
-
-    //live data from database
-    val userData=myRepository.getUserData()
+private const val MY_TAG="MY_WebViewActivViewMode"
+class WebViewViewModel(val myRepository: RepoContacts, application: Application) : AndroidViewModel(application) {
 
     //phonebook
     private val _phoneBook = MutableLiveData<List<PhoneBookItem>>()
@@ -34,30 +27,23 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
     val phoneBookExported=myRepository.exportPhoneBookNetworkSuccess
 
     init {
-        Log.i(MY_TAG,("init"))
-
-    }
-
-    fun logout(){
-        viewModelScope.launch {
-            myRepository.logout()
-        }
+        getPhoneBook()
     }
 
 
     fun getPhoneBook(){
-        Log.i(MY_TAG,"get phone boook")
+        Log.i(MY_TAG,"get phone boook webview")
 
         viewModelScope.launch {
-            val deferredList=viewModelScope.async(IO){
-             myRepository.getAllContacts(ContactsContract.Contacts.CONTENT_URI)
+            val deferredList=viewModelScope.async(Dispatchers.IO){
+                myRepository.getAllContacts(ContactsContract.Contacts.CONTENT_URI)
             }
             try {
                 val phoneBookList= mutableListOf<PhoneBookItem>()
                 val resultList=deferredList.await()
                 Log.i(MY_TAG,"get phone book lista $resultList")
                 val defferedPhones=(resultList.indices).map {
-                    viewModelScope.async(IO) {
+                    viewModelScope.async(Dispatchers.IO) {
                         val list=myRepository.getPhoneNumbersForContact(resultList[it].lookUpKey)
                         val phoneArray=convertPhoneListToPhoneArray(list)
                         Log.i(MY_TAG,"get phone book phonearray ${phoneArray.toList()}")
@@ -71,10 +57,10 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
                 _phoneBook.value=phoneBookList
 
 
-            }catch (e:Exception){
+            }catch (e: Exception){
                 Log.i(MY_TAG,e.message?:"no message")
             }
-          }
+        }
 
     }
 
@@ -93,5 +79,8 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
         }
 
     }
+
+
+
 
 }

@@ -18,6 +18,9 @@ interface MyDatabaseDao {
     @Query("SELECT token FROM user_table WHERE id=1")
     fun getToken():String
 
+    @Query("SELECT user_phone FROM user_table WHERE id=1")
+    fun getPhone():String
+
     @Query("UPDATE user_table SET email=:email WHERE ID=1")
     fun updateUserEmail(email:String)
 

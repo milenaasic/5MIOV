@@ -19,6 +19,9 @@ import com.google.android.material.snackbar.Snackbar
 
 import com.vertial.fivemiov.R
 import com.vertial.fivemiov.databinding.FragmentRegistrationBinding
+import com.vertial.fivemiov.utils.isOnline
+import com.vertial.fivemiov.utils.isPhoneNumberValid
+import com.vertial.fivemiov.utils.removePlus
 
 private const val MY_TAG="MY_RegistrationFragment"
 class RegistrationFragment : Fragment() {
@@ -38,9 +41,17 @@ class RegistrationFragment : Fragment() {
 
 
         binding.registerButton.setOnClickListener {
+
+            hidekeyboard()
+
+            if(!isOnline(requireActivity().application)) {
+                showSnackBar(resources.getString(R.string.no_internet))
+                return@setOnClickListener}
+
+
             Log.i(MY_TAG,"registrtion button je clicked}")
             it.isEnabled=false
-            hidekeyboard()
+
             val enteredPhoneNumber=binding.phoneNumberEditText.text.toString()
             if(enteredPhoneNumber.isPhoneNumberValid()){
                     it.isEnabled=false
@@ -54,7 +65,6 @@ class RegistrationFragment : Fragment() {
         }
 
         binding.addNumToAccountButton.setOnClickListener {
-            //Log.i(MY_TAG,"registrtion button je clicked}")
             findNavController().navigate(RegistrationFragmentDirections.actionRegistrationFragmentToAddNumberToAccount())
         }
 

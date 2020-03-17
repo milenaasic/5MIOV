@@ -38,7 +38,12 @@
     <string name="is_already_registered">is already registered</string>
     <string name="fill_your_account_credentials">Please, fill your account credentials</string>
     <string name="i_do_not_have_account">I do not have account</string>
-    <string name="choose_password_hint">choose password</string>
+
+    <string name="to_protect_your_account_enter_e_mail_and_password">To protect your account set e-mail and password</string>
+    <string name="choose_password_hint">choose password*</string>
+    <string name="confirm_password">confirm password</string>
+    <string name="password_instructions">*Password must be >7 chars long, must have at least one uppercase, one lowercase and one special character </string>
+
     <string name="password_hint">password</string>
     <string name="e_mail_hint">e-mail</string>
     <string name="have_an_account_already_sign_in_to_start_using_your_existing_credit">Have an account already?\nSign in to start using your existing credit!</string>
@@ -52,11 +57,12 @@
     <!-- layout items messages errors-->
     <string name="not_valid_phone_number">Not a valid phone number </string>
     <string name="not_valid_email">Not a valid email </string>
-    <string name="not_valid_password">Password must be >5 characters </string>
+    <string name="not_valid_password">Password must be >7 chars long, must have at least one uppercase, one lowercase and one special character</string>
     <string name="enter_token">Enter token</string>
     <string name="confirm_password_error">Confirm password</string>
 
     <!-- snackbar messages-->
+    <string name="no_internet">No Internet</string>
     <string name="no_permission_read_contacts">No permission to load contacts</string>
     <string name="no_permission_make_phone_call">Sorry,no permission to make phone calls!</string>
     <string name="unable_to_make_call">Unable to make a call</string>

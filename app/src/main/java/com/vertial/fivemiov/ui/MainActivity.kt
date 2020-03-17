@@ -20,6 +20,11 @@ import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.onNavDestinationSelected
+import com.google.android.play.core.appupdate.AppUpdateManager
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.install.model.AppUpdateType
+import com.google.android.play.core.install.model.AppUpdateType.IMMEDIATE
+import com.google.android.play.core.install.model.UpdateAvailability
 import com.vertial.fivemiov.R
 import com.vertial.fivemiov.api.MyAPI
 import com.vertial.fivemiov.data.Repo
@@ -28,6 +33,7 @@ import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.ActivityMainBinding
 import com.vertial.fivemiov.model.User
 import com.vertial.fivemiov.ui.RegistrationAuthorization.RegistrationAuthorizationActivity
+import com.vertial.fivemiov.ui.webView.WebViewActivity
 import com.vertial.fivemiov.utils.EMPTY_EMAIL
 import com.vertial.fivemiov.utils.EMPTY_PHONE_NUMBER
 
@@ -35,115 +41,186 @@ import com.vertial.fivemiov.utils.EMPTY_PHONE_NUMBER
 private const val MY_TAG="MY_MainActivity"
 class MainActivity : AppCompatActivity() {
 
+
     lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
     private lateinit var viewModel: MainActivityViewModel
-    private var userHasEmailAndPass: Boolean=false
+    private var userHasEmailAndPass: Boolean = false
 
-    companion object{
-        const val CURRENT_FRAGMENT="current_fragment"
-        const val MAIN_FRAGMENT=0
-        const val DIAL_PAD_FRAGMENT=1
-        const val DETAIL_FRAGMENT=2
-        const val SET_ACCOUNT_EMAIL_PASS_FRAGMENT0=3
+    private lateinit var appUpdateManager: AppUpdateManager
+    private val MY_UPDATE_REQUEST_CODE = 10
 
-        const val MAIN_ACTIVITY_SHARED_PREF_NAME="MainActivitySharedPref"
-        const val PHONEBOOK_IS_EXPORTED="phone_book_is_exported"
+    companion object {
+        const val CURRENT_FRAGMENT = "current_fragment"
+        const val MAIN_FRAGMENT = 0
+        const val DIAL_PAD_FRAGMENT = 1
+        const val DETAIL_FRAGMENT = 2
+        const val SET_ACCOUNT_EMAIL_PASS_FRAGMENT0 = 3
+
+        const val MAIN_ACTIVITY_SHARED_PREF_NAME = "MainActivitySharedPref"
+        const val PHONEBOOK_IS_EXPORTED = "phone_book_is_exported"
 
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding= DataBindingUtil.setContentView(this, R.layout.activity_main)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         setSupportActionBar(binding.toolbarMain)
 
-        val myDatabaseDao=MyDatabase.getInstance(this).myDatabaseDao
-        val myApi=MyAPI.retrofitService
+        val myDatabaseDao = MyDatabase.getInstance(this).myDatabaseDao
+        val myApi = MyAPI.retrofitService
 
-        val myRepository=RepoContacts(contentResolver,myDatabaseDao,myApi)
+        val myRepository = RepoContacts(contentResolver, myDatabaseDao, myApi)
 
-        viewModel = ViewModelProvider(this, MainActivityViewModelFactory(myRepository,application))
+        viewModel = ViewModelProvider(this, MainActivityViewModelFactory(myRepository, application))
             .get(MainActivityViewModel::class.java)
 
 
-        navController=findNavController(R.id.navfragment_main)
-        NavigationUI.setupWithNavController(binding.toolbarMain,navController)
+        navController = findNavController(R.id.navfragment_main)
+        NavigationUI.setupWithNavController(binding.toolbarMain, navController)
 
 
 
-       navController.addOnDestinationChangedListener { controller, destination, arguments ->
+        navController.addOnDestinationChangedListener { controller, destination, arguments ->
 
-               when(destination.id){
+            when (destination.id) {
 
-                    R.id.mainFragment->{
-                        setMainFragmentUI()
-                    }
+                R.id.mainFragment -> {
+                    setMainFragmentUI()
+                }
 
-                    R.id.dialPadFragment->{
-                        setDialPadFragmentUI()
-                    }
+                R.id.dialPadFragment -> {
+                    setDialPadFragmentUI()
+                }
 
-                    R.id.detailContact->{
-                        setDetailContactFragmentUI()
-                    }
+                R.id.detailContact -> {
+                    setDetailContactFragmentUI()
+                }
 
-                    R.id.setEmailAndPasswordFragment->{
-                        setEmailAndAccountFragmentUI()
-                    }
+                R.id.setEmailAndPasswordFragment -> {
+                    setEmailAndAccountFragmentUI()
+                }
 
-               }
-
-        }
-
-        if(savedInstanceState!=null){
-            Log.i(MY_TAG,"usao u onSaveInstance nije null")
-
-            when(savedInstanceState.get(CURRENT_FRAGMENT)){
-                MAIN_FRAGMENT->{}
-                DIAL_PAD_FRAGMENT->{setDialPadFragmentUI()}
-                DETAIL_FRAGMENT->{setDetailContactFragmentUI()}
-                SET_ACCOUNT_EMAIL_PASS_FRAGMENT0->{setEmailAndAccountFragmentUI()}
             }
 
         }
 
-        //TODO dodaj automatski update
+        if (savedInstanceState != null) {
+            Log.i(MY_TAG, "usao u onSaveInstance nije null")
 
-        //PROBA WEB ACTIVITY
-        //val intent= Intent(this,WebViewActivity::class.java)
-        //startActivity(intent)
-
-        viewModel.userData.observe(this, Observer {user->
-
-                if(user.userPhone.equals(EMPTY_PHONE_NUMBER)){
-                    startActivity(Intent(this,RegistrationAuthorizationActivity::class.java))
-                    finish()
+            when (savedInstanceState.get(CURRENT_FRAGMENT)) {
+                MAIN_FRAGMENT -> {
                 }
+                DIAL_PAD_FRAGMENT -> {
+                    setDialPadFragmentUI()
+                }
+                DETAIL_FRAGMENT -> {
+                    setDetailContactFragmentUI()
+                }
+                SET_ACCOUNT_EMAIL_PASS_FRAGMENT0 -> {
+                    setEmailAndAccountFragmentUI()
+                }
+            }
 
-                userHasEmailAndPass=!user.userEmail.equals(EMPTY_EMAIL)
+        }
 
-         })
+        showSetAccountDialog()
+
+        viewModel.userData.observe(this, Observer { user ->
+
+            if (user.userPhone.equals(EMPTY_PHONE_NUMBER)) {
+                startActivity(Intent(this, RegistrationAuthorizationActivity::class.java))
+                finish()
+            }
+
+            userHasEmailAndPass = !user.userEmail.equals(EMPTY_EMAIL)
+
+        })
 
         viewModel.phoneBook.observe(this, Observer {
             if (it != null) {
-                    viewModel.exportPhoneBook(it)
-                }
-            Log.i(MY_TAG,"phonebook lista je $it")
-         })
+                viewModel.exportPhoneBook(it)
+            }
+            Log.i(MY_TAG, "phonebook lista je main activity $it")
+        })
 
-         viewModel.phoneBookExported.observe(this, Observer {
-            if(it){
-                val sharedPreferences= getSharedPreferences(MAIN_ACTIVITY_SHARED_PREF_NAME, Context.MODE_PRIVATE)
-                if(sharedPreferences.contains(PHONEBOOK_IS_EXPORTED)){
-                    val isExported=sharedPreferences.getBoolean(PHONEBOOK_IS_EXPORTED,false)
-                    Log.i(MY_TAG," usao u ima phoneBookIsExported promenljiva i vrednost je $isExported")
-                    sharedPreferences.edit().putBoolean(PHONEBOOK_IS_EXPORTED,true).commit()
-                    Log.i(MY_TAG,"  phoneBookIsExported promenljiva posle promene $isExported")
+        viewModel.phoneBookExported.observe(this, Observer {
+            if (it) {
+                val sharedPreferences =
+                    getSharedPreferences(MAIN_ACTIVITY_SHARED_PREF_NAME, Context.MODE_PRIVATE)
+                if (sharedPreferences.contains(PHONEBOOK_IS_EXPORTED)) {
+                    val isExported = sharedPreferences.getBoolean(PHONEBOOK_IS_EXPORTED, false)
+                    Log.i(
+                        MY_TAG,
+                        " usao u ima phoneBookIsExported promenljiva i vrednost je $isExported"
+                    )
+                    sharedPreferences.edit().putBoolean(PHONEBOOK_IS_EXPORTED, true).commit()
+                    Log.i(MY_TAG, "  phoneBookIsExported promenljiva posle promene $isExported")
 
                 }
             }
 
-          })
+        })
+
+        //IN APP UPDATE
+        // Creates instance of the manager.
+        appUpdateManager = AppUpdateManagerFactory.create(this)
+        // Returns an intent object that you use to check for an update.
+        val appUpdateInfoTask = appUpdateManager.appUpdateInfo
+
+        // Checks that the platform will allow the specified type of update.
+        appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
+            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
+                && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)
+            ) {
+                // Request the update
+                appUpdateManager.startUpdateFlowForResult(
+                    // Pass the intent that is returned by 'getAppUpdateInfo()'.
+                    appUpdateInfo,
+                    // Or 'AppUpdateType.FLEXIBLE' for flexible updates.
+                    AppUpdateType.IMMEDIATE,
+                    // The current activity making the update request.
+                    this,
+                    // Include a request code to later monitor this update request.
+                    MY_UPDATE_REQUEST_CODE
+                )
+            }
+        }
+
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        appUpdateManager
+            .appUpdateInfo
+            .addOnSuccessListener { appUpdateInfo ->
+                if (appUpdateInfo.updateAvailability()
+                    == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS
+                ) {
+                    // If an in-app update is already running, resume the update.
+                    appUpdateManager.startUpdateFlowForResult(
+                        appUpdateInfo,
+                        IMMEDIATE,
+                        this,
+                        MY_UPDATE_REQUEST_CODE
+                    )
+                }
+            }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == MY_UPDATE_REQUEST_CODE) {
+            Log.i(MY_TAG, "Update flow Result code: $resultCode")
+            if (resultCode != RESULT_OK) {
+                Log.i(MY_TAG, "Update flow failed! Result code: $resultCode")
+                // If the update is cancelled or fails,
+                // you can request to start the update again.
+            }
+        }
+
     }
 
 
@@ -218,6 +295,10 @@ class MainActivity : AppCompatActivity() {
                                     handleLogOut()
                                     return true
                                     }
+            R.id.menu_item_myaccount->{
+                                    startActivity(Intent(this, WebViewActivity::class.java))
+                                    return true
+            }
             else->return item.onNavDestinationSelected(navController) || super.onOptionsItemSelected(item)
 
         }
@@ -268,6 +349,24 @@ class MainActivity : AppCompatActivity() {
 
     fun exportPhoneBook(){
         viewModel.getPhoneBook()
+    }
+
+    private fun showSetAccountDialog(){
+
+        val builder: AlertDialog.Builder? = AlertDialog.Builder(this)
+
+        builder?.apply {
+            setMessage(R.string.set_account_dialog)
+                .setTitle("Important")
+                .setNeutralButton("I Understand", { dialog, id ->
+                    dialog.dismiss()
+                })
+
+                .setCancelable(false)
+
+        }
+        builder?.create()?.show()
+
     }
 
 

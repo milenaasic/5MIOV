@@ -27,7 +27,6 @@ class SipFragment : Fragment() {
     private var sipProfile: SipProfile? = null
 
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         args= SipFragmentArgs.fromBundle(arguments!!)

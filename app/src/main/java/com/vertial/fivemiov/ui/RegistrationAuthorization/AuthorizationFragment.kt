@@ -19,6 +19,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.vertial.fivemiov.R
 import com.vertial.fivemiov.databinding.FragmentAuthorizationBinding
 import com.vertial.fivemiov.databinding.FragmentRegistrationBinding
+import com.vertial.fivemiov.utils.isOnline
 
 
 class AuthorizationFragment : Fragment() {
@@ -39,8 +40,22 @@ class AuthorizationFragment : Fragment() {
         binding.authPhoneTextView.text=activityViewModel.enteredPhoneNumber
 
         binding.submitButton.setOnClickListener {
-            if(binding.tokenEditText.text.toString().isNullOrBlank()) binding.tokenEditText.setError(resources.getString(R.string.enter_token))
-            else activityViewModel.submitButtonClicked(binding.tokenEditText.text.toString())
+
+            hidekeyboard()
+
+            if(!isOnline(requireActivity().application)) {
+                showSnackBar(resources.getString(R.string.no_internet))
+                return@setOnClickListener}
+
+            it.isEnabled=false
+
+            if(binding.tokenEditText.text.toString().isNullOrBlank()){
+                        binding.tokenEditText.setError(resources.getString(R.string.enter_token))
+                        it.isEnabled=true
+            } else {
+                    showProgressBar(true)
+                    activityViewModel.submitButtonClicked(binding.tokenEditText.text.toString())
+            }
         }
 
         binding.tokenEditText.setOnEditorActionListener { view, action, keyEvent ->
@@ -64,12 +79,14 @@ class AuthorizationFragment : Fragment() {
 
         activityViewModel.authorizationNetworkSuccess.observe(viewLifecycleOwner, Observer {
             showToast(it)
-
+            showProgressBar(false)
+            binding.submitButton.isEnabled=true
         })
 
         activityViewModel.authorizationNetworkError.observe(viewLifecycleOwner, Observer {
-            showSnackBar(it)
-
+            if(it!=null)showSnackBar(it)
+            showProgressBar(false)
+            binding.submitButton.isEnabled=true
         })
     }
 
@@ -86,4 +103,16 @@ class AuthorizationFragment : Fragment() {
         val inputMethodManager = requireActivity().getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(binding.root.windowToken, 0)
     }
+
+    private fun showProgressBar(bool:Boolean){
+        if(bool){
+            binding.authorizationRootLayout.alpha=0.2f
+            binding.authProgressBar.visibility=View.VISIBLE
+        }else{
+            binding.authorizationRootLayout.alpha=1f
+            binding.authProgressBar.visibility=View.GONE
+        }
+
+    }
+
 }

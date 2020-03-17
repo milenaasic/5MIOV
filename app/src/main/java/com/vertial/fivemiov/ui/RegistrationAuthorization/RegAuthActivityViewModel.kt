@@ -87,8 +87,9 @@ class RegAuthActivityViewModel(val myRepository: Repo, application: Application)
 
     //authorization fragment
     fun submitButtonClicked(smsToken:String){
+
         viewModelScope.launch {
-            myRepository.authorizeThisUser(enteredPhoneNumber,smsToken)
+            myRepository.authorizeThisUser(enteredPhoneNumber,smsToken,enteredEmail?:"",enteredPassword?:"")
         }
 
     }

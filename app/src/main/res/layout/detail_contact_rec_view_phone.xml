@@ -29,8 +29,8 @@
 
         android:id="@+id/root_phone_item"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize">
-
+        android:layout_height="56dp"
+        android:background="@drawable/dummy_background">
 
         <TextView
             android:id="@+id/num_exists_phone_textView"
@@ -68,12 +68,10 @@
             android:text="CALL"
             app:icon="@drawable/ic_call_action"
             app:iconGravity="textStart"
-            app:iconTint="@android:color/holo_green_dark"
             app:layout_constraintEnd_toStartOf="@+id/sipCallButton"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/divider3"
-            app:strokeColor="@android:color/holo_green_dark" />
+            app:layout_constraintTop_toBottomOf="@+id/divider3" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/sipCallButton"
@@ -82,19 +80,16 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
             android:layout_marginEnd="32dp"
-            android:backgroundTint="@android:color/background_light"
             android:onClick="@{()-> sipClick.onClick(phoneItem.phoneNumber)}"
             android:text="SIP"
             app:icon="@drawable/ic_call_action_sip"
             app:iconGravity="textStart"
-            app:iconTint="@android:color/holo_green_dark"
             app:layout_constraintBottom_toBottomOf="@+id/prenumberCallButton"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/prenumberCallButton"
             app:layout_constraintTop_toTopOf="@+id/prenumberCallButton"
-            app:layout_constraintVertical_bias="0.0"
-            app:strokeColor="@android:color/holo_green_dark">
+            app:layout_constraintVertical_bias="0.0">
 
         </com.google.android.material.button.MaterialButton>
 
@@ -104,6 +99,7 @@
             android:layout_height="1dp"
             android:layout_marginTop="56dp"
             android:background="@android:color/transparent"
+            android:visibility="invisible"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />

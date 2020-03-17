@@ -19,6 +19,10 @@ import com.google.android.material.snackbar.Snackbar
 
 import com.vertial.fivemiov.R
 import com.vertial.fivemiov.databinding.FragmentAddNumberToAccountBinding
+import com.vertial.fivemiov.utils.isEmailValid
+import com.vertial.fivemiov.utils.isPasswordValid
+import com.vertial.fivemiov.utils.isPhoneNumberValid
+import com.vertial.fivemiov.utils.removePlus
 
 private const val MY_TAG="MY_AddNumberToAccount"
 class AddNumberToAccount : Fragment() {
@@ -38,7 +42,9 @@ class AddNumberToAccount : Fragment() {
         }
 
 
+
         binding.addphoneButton.setOnClickListener {
+            binding.rootAddNumberConstrLayout.isEnabled=false
             it.isEnabled=false
             hidekeyboard()
             if(allEnteredFieldsAreValid()){

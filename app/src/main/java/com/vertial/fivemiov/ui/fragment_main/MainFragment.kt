@@ -55,6 +55,7 @@ class MainFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
+        //showSetAccountDialog()
     }
 
     override fun onCreateView(
@@ -124,7 +125,7 @@ class MainFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         viewModel.userData.observe(viewLifecycleOwner, Observer {user->
-
+            Log.i(MYTAG," user je $user")
             if(user.userEmail== EMPTY_EMAIL) binding.setEmailAndPassButton.visibility=View.VISIBLE
             else binding.setEmailAndPassButton.visibility=View.GONE
         })
@@ -211,7 +212,7 @@ class MainFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        showSetAccountDialog()
+
     }
 
     private fun getColorForHighlightLetters():String{
@@ -277,7 +278,7 @@ class MainFragment : Fragment() {
     }
 
 
-    private fun showSetAccountDialog(){
+    /*private fun showSetAccountDialog(){
 
         val builder: AlertDialog.Builder? = activity?.let {
             AlertDialog.Builder(it)
@@ -289,16 +290,13 @@ class MainFragment : Fragment() {
                 .setNeutralButton("I Understand", { dialog, id ->
                         dialog.dismiss()
                 })
-                    /*.setPositiveButton("OK",{dialog,id->
-                        dialog.dismiss()
-                    })*/
 
                 .setCancelable(false)
 
          }
          builder?.create()?.show()
 
-    }
+    }*/
 
 
 }

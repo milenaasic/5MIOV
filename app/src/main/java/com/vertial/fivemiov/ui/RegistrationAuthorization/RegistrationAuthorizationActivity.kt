@@ -8,6 +8,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
+import com.google.android.material.snackbar.Snackbar
 import com.vertial.fivemiov.R
 import com.vertial.fivemiov.api.MyAPI
 import com.vertial.fivemiov.data.Repo
@@ -16,6 +17,7 @@ import com.vertial.fivemiov.databinding.ActivityRegistrationAuthorizationBinding
 import com.vertial.fivemiov.ui.MainActivity
 import com.vertial.fivemiov.ui.emty_logo_fragment.EmptyLogoFragmentDirections
 import com.vertial.fivemiov.utils.EMPTY_TOKEN
+import com.vertial.fivemiov.utils.isOnline
 
 private val MYTAG="MY_RegAuthActivity"
 
@@ -36,7 +38,7 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
         val myRepository= Repo(myDatabaseDao,myApi)
 
-        //TODO provera internet veze
+        if(!isOnline(application)) showSnackbar(resources.getString(R.string.no_internet))
 
         viewModel = ViewModelProvider(this, RegAuthViewModelFactory(myRepository,application))
             .get(RegAuthActivityViewModel::class.java)
@@ -60,5 +62,9 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
          })
 
+    }
+
+    private fun showSnackbar(message: String) {
+        Snackbar.make(binding.root,message, Snackbar.LENGTH_LONG).show()
     }
 }

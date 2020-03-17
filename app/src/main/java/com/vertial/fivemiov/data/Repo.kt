@@ -13,6 +13,9 @@ import com.vertial.fivemiov.database.MyDatabaseDao
 import com.vertial.fivemiov.ui.fragment_main.ContactItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 private const val MY_TAG="MY_Repository"
 class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
@@ -80,6 +83,25 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
 
 
     suspend fun sendRegistationToServer(phone:String){
+        Log.i(MY_TAG,"send registration $phone")
+
+        /*val call=myAPI.sendRegistrationToServer(request = NetRequest_Registration(phoneNumber = phone ))
+        call.enqueue(object :Callback<NetResponse_Registration>{
+            override fun onResponse(
+                call: Call<NetResponse_Registration>,
+                response: Response<NetResponse_Registration>
+            ) {
+                Log.i(MY_TAG,"send registration call je $call, response je $response")
+                Log.i(MY_TAG,"send registration call je $call, " +
+                        "   response is success ${response.isSuccessful}, body je ${response.body().toString()}, error body ${response.errorBody()?.string()}, message ${response.message()}, code je ${response.code()}")
+
+            }
+
+            override fun onFailure(call: Call<NetResponse_Registration>, t: Throwable) {
+                Log.i(MY_TAG,"send registration failure call je $call, a throwable je $t")
+            }
+
+        })*/
 
         Log.i(MY_TAG,"send registration $phone")
         val defResponse=myAPI.sendRegistrationToServer(request = NetRequest_Registration(phoneNumber = phone ))
@@ -89,7 +111,9 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
             Log.i(MY_TAG,"uspesna registracija $result")
             _registrationSuccessIsNmbAssigned.value=result.phoneNumberAlreadyAssigned
         }
-        catch (e:Exception){
+        catch (e:Throwable){
+            val m=e.cause
+            Log.i(MY_TAG,"sve sto ima u greski je ${e.message}, cause ${e.cause}, localized mesage  ${e.localizedMessage},stack ${e.stackTrace}, ${e.printStackTrace()}")
             val errorMessage:String?=e.message
             _registrationNetworkError.value=e.toString()
             Log.i(MY_TAG,"greska $errorMessage, a cela gresak je $e")
@@ -112,20 +136,24 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
             val errorMessage:String?=e.message
             _addNumberToAccountNetworkError.value=errorMessage
             Log.i(MY_TAG,"greska $errorMessage")
+            Log.i(MY_TAG,"greska ${e.localizedMessage}")
         }
 
     }
 
 
-    suspend fun authorizeThisUser(phone:String,smsToken:String){
+    suspend fun authorizeThisUser(phone:String,smsToken:String,email: String,password: String){
 
         Log.i(MY_TAG,"send authorization $phone i $smsToken")
-        val defResponse=myAPI.authorizeUser(request = NetRequest_Authorization(phoneNumber = phone,smstoken = smsToken ))
+        val defResponse=myAPI.authorizeUser(request = NetRequest_Authorization(phoneNumber = phone,smstoken = smsToken,email = email,password = password ))
         try{
             val result=defResponse.await()
             Log.i(MY_TAG,"uspesna autorizacija $result")
             _authorizationSuccess.value=result.message
+
             insertTokenAndPhoneIntoDatabase(phone,result.authToken)
+            if(email.isNotEmpty()) insertEmailIntoDatabase(email)
+
         }
         catch (e:Exception){
             val errorMessage:String?=e.message
@@ -135,8 +163,10 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
 
     }
 
-    suspend fun  setAccountEmailAndPasswordForUser(email: String,password: String, token: String){
-        val defResult=myAPI.setAccountEmailAndPasswordForUser(request = NetRequest_SetAccountEmailAndPass(email=email,password = password,token = token))
+    suspend fun  setAccountEmailAndPasswordForUser(phoneNumber:String,token: String,email: String,password: String){
+        Log.i(MY_TAG,"setcredentials $phoneNumber,$token,$email,$password")
+        val defResult=myAPI.setAccountEmailAndPasswordForUser(request = NetRequest_SetAccountEmailAndPass(
+                                                                                            phoneNumber=phoneNumber,authToken= token,email = email,password = password))
         try{
             val result=defResult.await()
             Log.i(MY_TAG,"uspesno setovanje accounta $result")
@@ -185,11 +215,8 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
     }
 
 
-
-
-    fun dontHaveAccount(phone: String){
-
-
+    fun getPhoneNumberFromDB():String{
+        return myDatabaseDao.getPhone()
     }
 
 
@@ -198,10 +225,13 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
 
     }
 
-    fun insertEmailIntoDatabase(email: String){
-        myDatabaseDao.updateUserEmail(email)
-    }
 
+    suspend fun insertEmailIntoDatabase(email: String){
+        Log.i(MY_TAG,"insert email into DB $email")
+        withContext(Dispatchers.IO) {
+            myDatabaseDao.updateUserEmail(email)
+        }
+    }
 
 
     suspend fun insertTokenAndPhoneIntoDatabase(phone:String,token:String) {

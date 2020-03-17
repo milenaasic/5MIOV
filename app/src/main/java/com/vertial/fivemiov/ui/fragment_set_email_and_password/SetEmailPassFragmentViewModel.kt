@@ -18,18 +18,31 @@ class SetEmailPassFragmentViewModel(val myrepository: Repo, application: Applica
     val setAccountEmailAndPassError=myrepository.setAccountEmailAndPassError
 
     fun setAccountAndEmailForUser(email:String,password:String){
-        //pokupi token iz baze u repo-u
+        var authtoken:String=""
+        var phoneNumber:String=""
+        //pokupi bojr i token iz baze u repo-u
             viewModelScope.launch {
-                val deferredToken = viewModelScope.async(IO) {
-                    myrepository.getTokenFromDB()
+                val deferredPhone = viewModelScope.async(IO) {
+                    myrepository.getPhoneNumberFromDB()
                 }
                 try {
-                    val token = deferredToken.await()
-                    myrepository.setAccountEmailAndPasswordForUser(email, password, token)
+                     phoneNumber = deferredPhone.await()
 
                 } catch (e: Exception) {
                     Log.i(MYTAG,"db greska ${e.message}")
                 }
+
+                val deferredToken = viewModelScope.async(IO) {
+                    myrepository.getTokenFromDB()
+                }
+                try {
+                    authtoken = deferredToken.await()
+
+                } catch (e: Exception) {
+                    Log.i(MYTAG,"db greska ${e.message}")
+                }
+
+                myrepository.setAccountEmailAndPasswordForUser(phoneNumber,authtoken,email, password)
             }
 
     }

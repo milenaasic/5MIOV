@@ -25,8 +25,10 @@
     </style>
 
     <style name="Widget.MaterialComponents.Button.OutlinedButton.MyCallButtons">
-        <item name="android:backgroundTint">@android:color/background_light</item>
-        <item name="android:textColor">@android:color/holo_green_dark</item>
+        <item name="rippleColor">@android:color/holo_green_dark</item>
+        <item name="android:textColor">@color/material_button_color_state_list</item>
+        <item name="iconTint">@color/material_button_color_state_list</item>
+        <item name="strokeColor">@color/material_button_color_state_list</item>
     </style>
 
 

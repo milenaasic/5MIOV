@@ -4,4 +4,8 @@
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">test.find.in.rs</domain>
     </domain-config>
+
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">example.com</domain>
+    </domain-config>
 </network-security-config>

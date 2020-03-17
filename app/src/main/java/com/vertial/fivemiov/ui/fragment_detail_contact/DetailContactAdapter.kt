@@ -3,6 +3,8 @@ package com.vertial.fivemiov.ui.fragment_detail_contact
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.app.Activity
+import android.app.Application
+import android.content.BroadcastReceiver
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.os.Build
@@ -11,23 +13,25 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.vertial.fivemiov.R
 import com.vertial.fivemiov.databinding.DetailContactRecViewPhoneBinding
+import com.vertial.fivemiov.utils.isOnline
 
 
 private val MYTAG="MY_DetailContactAdapter"
 
 class DetailContactAdapter(val clickListenerNumber:PhoneNumberClickListener,
                             val clickListenerSIP: SipItemClickListener,
-                            val clickListenerPrenumber:PrenumberItemClickListener
+                            val clickListenerPrenumber:PrenumberItemClickListener,
+                            val app: Application
                             )
     : RecyclerView.Adapter<DetailContactAdapter.MyViewHolder>() {
 
 
     var dataList= listOf<PhoneItem>()
         set(value) {
-            Log.i(MYTAG,"setvalue data list")
             Log.i(MYTAG,"setvalue $value")
             field=value
             notifyDataSetChanged()
@@ -47,7 +51,8 @@ class DetailContactAdapter(val clickListenerNumber:PhoneNumberClickListener,
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
 
-        holder.bind(clickListenerNumber,clickListenerSIP,clickListenerPrenumber,dataList[position])
+        holder.bind(clickListenerNumber,clickListenerSIP,clickListenerPrenumber,dataList[position],
+            isOnline(app))
     }
 
 
@@ -58,9 +63,12 @@ class DetailContactAdapter(val clickListenerNumber:PhoneNumberClickListener,
         fun bind(clickListenerNumber: PhoneNumberClickListener,
                 clickListenerSip: SipItemClickListener,
                 clickListenerPrenumber:PrenumberItemClickListener,
-                item:PhoneItem){
+                item:PhoneItem,
+                isOnline:Boolean){
 
             Log.i("MYTAG","phone item je $item")
+            if(!isOnline) binding.sipCallButton.isEnabled=false
+            else binding.sipCallButton.isEnabled=true
             binding.phoneItem=item
             binding.phoneClick=clickListenerNumber
             binding.sipClick=clickListenerSip
@@ -131,14 +139,14 @@ class PhoneNumberClickListener(val activity: Activity,val density: Float){
 
         val parent=view.parent as ConstraintLayout
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             parent.background= activity.resources.getDrawable(R.drawable.dummy_background,null)
         }else{
             parent.background= activity.resources.getDrawable(R.drawable.dummy_background)
-        }
+        }*/
 
        // parent.elevation=2f*density
-       parent.elevation=2f
+       parent.elevation=4f
 
         val currentHeight=parent.height
 
@@ -159,16 +167,15 @@ class PhoneNumberClickListener(val activity: Activity,val density: Float){
 
 
     private fun animationShrinkView(parent: View){
-        //val parent=view.parent as ConstraintLayout
+
+       // parent.setBackgroundColor(Color.WHITE)
         parent.elevation=0f
-        parent.setBackgroundColor(Color.WHITE)
         val currentHeight=parent.height
         Log.i("MYTAG","view current height je $currentHeight")
         val shrinkHeight=currentHeight.div(2)
         Log.i("MYTAG","view shrink height je $shrinkHeight")
 
         val animator = ValueAnimator.ofInt(currentHeight,shrinkHeight)
-        //animator.setDuration(10)
         animator.addUpdateListener {
             val value = it.getAnimatedValue() as Int
             parent.layoutParams.height = value

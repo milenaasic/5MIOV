@@ -5,6 +5,7 @@ import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterF
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.Deferred
+import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.*
@@ -47,6 +48,11 @@ object MyAPI {
         @Header("Authorization") authorization:String="Basic $coded",
         @Body request: NetRequest_Registration): Deferred<NetResponse_Registration>
 
+    /*fun sendRegistrationToServer(
+   @Header("Authorization") authorization:String="Basic $coded",
+   @Body request: NetRequest_Registration): Call<NetResponse_Registration>*/
+
+
      @POST("api/user/signup")
      fun sendAddNumberToAccount(
          @Header("Authorization") authorization:String="Basic $coded",
@@ -74,7 +80,7 @@ object MyAPI {
 
 
      //Registered User
-     @POST("user/setAccountAndEmail")
+     @POST("api/user/setCredentials")
      fun setAccountEmailAndPasswordForUser(
          @Header("Authorization") authorization:String="Basic $coded",
          @Body request: NetRequest_SetAccountEmailAndPass): Deferred<NetResponse_SetAccountEmailAndPass>

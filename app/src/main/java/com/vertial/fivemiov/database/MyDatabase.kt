@@ -50,7 +50,7 @@ abstract class MyDatabase:RoomDatabase(){
                                     put("email", EMPTY_EMAIL)
                                 }
                                 val myValues2=ContentValues().apply {
-                                    put("prenumber","+38111777111,")
+                                    put("prenumber","+38111777111")
 
                                  }
 

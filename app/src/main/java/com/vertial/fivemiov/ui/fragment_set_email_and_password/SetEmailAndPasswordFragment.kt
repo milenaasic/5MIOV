@@ -21,9 +21,10 @@ import com.vertial.fivemiov.api.MyAPI
 import com.vertial.fivemiov.data.Repo
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentSetEmailAndPasswordBinding
-import com.vertial.fivemiov.ui.RegistrationAuthorization.isEmailValid
-import com.vertial.fivemiov.ui.RegistrationAuthorization.isPasswordValid
-import com.vertial.fivemiov.ui.RegistrationAuthorization.isPhoneNumberValid
+import com.vertial.fivemiov.utils.isEmailValid
+
+import com.vertial.fivemiov.utils.isOnline
+import com.vertial.fivemiov.utils.isPasswordValid
 
 
 class SetEmailAndPasswordFragment : Fragment() {
@@ -53,6 +54,11 @@ class SetEmailAndPasswordFragment : Fragment() {
 
         binding.setAccountSubmitButton.setOnClickListener {
             hidekeyboard()
+
+            if(!isOnline(requireActivity().application)) {
+                showSnackBar(resources.getString(R.string.no_internet))
+                return@setOnClickListener}
+
             if(allEnteredFieldsAreValid()) {
                 it.isEnabled=false
                 showProgressBar(true)
@@ -67,7 +73,7 @@ class SetEmailAndPasswordFragment : Fragment() {
         binding.setAccountConfirmpassEditText.setOnEditorActionListener { view, action, keyEvent ->
            // Log.i(MY_TAG,"action listener , action je $action")
             when (action){
-                EditorInfo.IME_ACTION_DONE-> {
+                EditorInfo.IME_ACTION_DONE, EditorInfo.IME_ACTION_UNSPECIFIED-> {
                     hidekeyboard()
                     view.clearFocus()
                     true

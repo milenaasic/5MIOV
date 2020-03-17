@@ -11,10 +11,10 @@ data class NetRequest_Authorization(
     val smstoken:String,
 
     @Json(name="email")
-    val email:String="",
+    val email:String,
 
     @Json(name="password")
-    val password:String=""
+    val password:String
 
 )
 
