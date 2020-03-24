@@ -4,12 +4,20 @@ package com.vertial.fivemiov.ui.fragment_detail_contact
 import android.Manifest
 import android.animation.ObjectAnimator
 import android.animation.PropertyValuesHolder
+import android.annotation.SuppressLint
+import android.annotation.TargetApi
 import android.app.Activity
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
-import android.net.Uri
+import android.net.*
+import android.net.sip.SipManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.telephony.PhoneNumberUtils
 import android.util.Log
 import android.view.*
@@ -31,6 +39,7 @@ import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentDetailContactBinding
 import com.vertial.fivemiov.ui.fragment_dial_pad.DialPadFragment
 import com.vertial.fivemiov.ui.fragment_main.MainFragment
+import com.vertial.fivemiov.utils.isVOIPsupported
 import com.vertial.fivemiov.utils.isValidPhoneNumber
 
 private val MYTAG="MY_DetailContact"
@@ -44,9 +53,10 @@ class DetailContact : Fragment() {
 
     private lateinit var myPrefixNumber:String
 
+    private var br: BroadcastReceiver?=null
 
     companion object{
-        val MY_PERMISSIONS_REQUEST_MAKE_PHONE_CALL=15
+        val MY_PERMISSIONS_REQUEST_MAKE_PHONE_CALL_and_SIP_and_AUDIO=15
 
     }
 
@@ -54,6 +64,8 @@ class DetailContact : Fragment() {
         super.onCreate(savedInstanceState)
         args = DetailContactArgs.fromBundle(arguments!!)
         setHasOptionsMenu(true)
+
+        getNetworkStatusChangedInfo()
     }
 
     override fun onCreateView(
@@ -72,8 +84,11 @@ class DetailContact : Fragment() {
         phoneAdapter= DetailContactAdapter(
                 PhoneNumberClickListener (requireActivity(),resources.displayMetrics.density),
                 SipItemClickListener{
-                    findNavController().navigate(DetailContactDirections.actionDetailContactToSipFragment(args.displayName))
 
+                    if(isVOIPsupported(requireContext())){
+                        if(checkForPermissions())findNavController().navigate(DetailContactDirections.actionDetailContactToSipFragment(args.displayName))
+                    }
+                    else showSnackBar(resources.getString(R.string.VOIP_not_supported))
                 },
                 PrenumberItemClickListener(requireActivity()) {activity, phone ->
                         if(checkForPermissions()) makePrenumberPhoneCall(activity,phone)
@@ -82,17 +97,25 @@ class DetailContact : Fragment() {
                 )
 
 
-
         binding.detailContactRecView.adapter=phoneAdapter
-        //binding.detailContactRecView.addItemDecoration(DividerItemDecoration(requireActivity(),DividerItemDecoration.VERTICAL))
 
         binding.displayNameTextView.text=args.displayName
+
+        checkForPermissions()
 
         return binding.root
 
     }
 
-   fun makePrenumberPhoneCall(activity: Activity, myphone:String){
+
+
+    fun networkAvailabiltyChanged() {
+        Log.i(MYTAG,"funkcija networkAvailabiltyChanged ")
+        phoneAdapter.notifyDataSetChanged()
+    }
+
+
+    fun makePrenumberPhoneCall(activity: Activity, myphone:String){
 
 
        val phone = PhoneNumberUtils.normalizeNumber(myphone)
@@ -149,9 +172,12 @@ class DetailContact : Fragment() {
     private fun checkForPermissions():Boolean{
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true
         else {
-            if (requireActivity().checkSelfPermission(Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(arrayOf(Manifest.permission.CALL_PHONE),
-                    DialPadFragment.MY_PERMISSIONS_REQUEST_MAKE_PHONE_CALL
+            if (requireActivity().checkSelfPermission(Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED ||
+                requireActivity().checkSelfPermission(Manifest.permission.USE_SIP) != PackageManager.PERMISSION_GRANTED ||
+                requireActivity().checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED
+            ) {
+                requestPermissions(arrayOf(Manifest.permission.CALL_PHONE,Manifest.permission.USE_SIP,Manifest.permission.RECORD_AUDIO),
+                    MY_PERMISSIONS_REQUEST_MAKE_PHONE_CALL_and_SIP_and_AUDIO
                 )
                 return false
             } else return true
@@ -166,13 +192,30 @@ class DetailContact : Fragment() {
     ) {
 
         when (requestCode) {
-            MainFragment.MY_PERMISSIONS_REQUEST_READ_CONTACTS -> {
+            MY_PERMISSIONS_REQUEST_MAKE_PHONE_CALL_and_SIP_and_AUDIO-> {
                 // If request is cancelled, the result arrays are empty.
-                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                    //makePhoneCall()
-                } else {
-                    showSnackBar(resources.getString(R.string.no_permission_make_phone_call))
+                if (grantResults.isNotEmpty()) {
+
+                    if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                        Log.i(MYTAG,"grantResults 0 je ${grantResults[0]}")
+                    } else {
+                        showSnackBar(resources.getString(R.string.no_permission_make_phone_call))
+                    }
+
+
+                    if (grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+                        Log.i(MYTAG,"grantResults 1 je ${grantResults[1]}")
+                    } else {
+                        showSnackBar(resources.getString(R.string.no_SIP_permission))
+                    }
+
+                    if (grantResults[2] == PackageManager.PERMISSION_GRANTED) {
+                        Log.i(MYTAG,"grantResults 2 audio je ${grantResults[1]}")
+                    } else {
+                        showSnackBar("no audio permission")
+                    }
                 }
+
                 return
             }
 
@@ -180,6 +223,80 @@ class DetailContact : Fragment() {
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
+
+    private fun getNetworkStatusChangedInfo() {
+
+        val connMgr =
+            requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+        val networkRequest = NetworkRequest.Builder()
+            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            .build()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            Log.i(MYTAG, "Build.VERSION.SDK_INT >= 24")
+            connMgr.registerNetworkCallback(networkRequest,object : ConnectivityManager.NetworkCallback() {
+
+                override fun onAvailable(network: Network) {
+                    val h = Handler(Looper.getMainLooper())
+                    h.post {
+                        this@DetailContact.networkAvailabiltyChanged()
+                        Log.i(MYTAG, "network capability avail ${network}")
+                    }
+                }
+
+
+                override fun onLost(network: Network) {
+                    if (connMgr.activeNetwork==null) {
+                         val h = Handler(Looper.getMainLooper())
+                         h.post { this@DetailContact.networkAvailabiltyChanged()
+                             Log.i(MYTAG, "network capability LOST ${network}")}
+                    }
+                }
+            })
+
+        }
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+
+        br = object : BroadcastReceiver() {
+
+        override fun onReceive(p0: Context?, intent: Intent?) {
+        if (intent != null) {
+            if (intent.getExtras() != null) {
+                val ni = intent.getExtras()
+
+
+                val info:NetworkInfo=ni?.get(ConnectivityManager.EXTRA_NETWORK_INFO) as NetworkInfo
+                if (info != null && info?.state == NetworkInfo.State.CONNECTED) {
+                    Log.i("app", "Network " + info.getTypeName() + " connected")
+                    networkAvailabiltyChanged()
+                }
+            }
+
+            if(intent.getBooleanExtra(ConnectivityManager.EXTRA_NO_CONNECTIVITY,false)) {
+                Log.i("app", "There's no network connectivity ")
+                networkAvailabiltyChanged()
+                }
+        }
+
+
+        }
+        }
+
+        val filter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
+        requireActivity().registerReceiver(br, filter)
+
+
+        }
+
+    }
+
+        override fun onDestroy() {
+        super.onDestroy()
+        if(br!=null) requireActivity().unregisterReceiver(br)
+        }
+
 
 
 }

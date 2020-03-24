@@ -4,10 +4,13 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.net.ConnectivityManager
+import android.net.sip.SipManager
 import android.os.Build
 import android.telephony.PhoneNumberUtils
+import android.util.Log
 import android.util.Patterns
 
+private val MYTAG="MY_helpers"
 
 fun isOnline(application: Application):Boolean{
 
@@ -54,6 +57,15 @@ fun String.removePlus():String{
     if(this.trim().startsWith("+",false)){
         return this.removePrefix("+")
     }else return this
+}
+
+
+fun isVOIPsupported(context:Context):Boolean{
+    Log.i(MYTAG," is voip supoported ${SipManager.isVoipSupported(context)}")
+    Log.i(MYTAG," is sip api supoported ${SipManager.isApiSupported(context)}")
+    return (SipManager.isVoipSupported(context)&& SipManager.isApiSupported(context))
+
+
 }
 
 

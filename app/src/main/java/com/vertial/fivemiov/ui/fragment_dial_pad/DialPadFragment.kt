@@ -204,7 +204,7 @@ class DialPadFragment : Fragment() {
         Log.i(MYTAG, "normalizovan broj je $phone")
         if (phone.isValidPhoneNumber()) {
             val intentToCall = Intent(Intent.ACTION_CALL).apply {
-                setData(Uri.parse("tel:$myPrenumber,$phone"))
+                setData(Uri.parse(resources.getString(R.string.prenumber_call,myPrenumber,phone)))
                 Log.i(MYTAG, "uri je tel:$myPrenumber,$phone ")
             }
 

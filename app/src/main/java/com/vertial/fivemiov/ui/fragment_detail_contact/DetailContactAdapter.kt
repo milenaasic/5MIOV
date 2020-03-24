@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.vertial.fivemiov.R
 import com.vertial.fivemiov.databinding.DetailContactRecViewPhoneBinding
 import com.vertial.fivemiov.utils.isOnline
+import com.vertial.fivemiov.utils.isVOIPsupported
 
 
 private val MYTAG="MY_DetailContactAdapter"
@@ -29,6 +30,7 @@ class DetailContactAdapter(val clickListenerNumber:PhoneNumberClickListener,
                             )
     : RecyclerView.Adapter<DetailContactAdapter.MyViewHolder>() {
 
+    val isVOIPSupported= isVOIPsupported(app)
 
     var dataList= listOf<PhoneItem>()
         set(value) {
@@ -39,12 +41,10 @@ class DetailContactAdapter(val clickListenerNumber:PhoneNumberClickListener,
         }
 
     override fun getItemCount(): Int {
-        Log.i(MYTAG,"data list size ${dataList.size}")
         return dataList.size
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int):MyViewHolder {
-        Log.i("MYTAG","onCreateViewHolder funkcija")
         return MyViewHolder.from(parent)
     }
 
@@ -52,7 +52,7 @@ class DetailContactAdapter(val clickListenerNumber:PhoneNumberClickListener,
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
 
         holder.bind(clickListenerNumber,clickListenerSIP,clickListenerPrenumber,dataList[position],
-            isOnline(app))
+            isVOIPSupported&&isOnline(app))
     }
 
 
@@ -101,8 +101,9 @@ class PhoneNumberClickListener(val activity: Activity,val density: Float){
     fun onClick(view:View){
 
         if(shouldViewExpand(view)) {
-            animationExpandView(view)
             shrinkOtherViews(view)
+            animationExpandView(view)
+
         }
         else animationShrinkView(view.parent as ConstraintLayout)
 

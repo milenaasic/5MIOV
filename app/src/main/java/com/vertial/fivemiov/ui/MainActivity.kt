@@ -5,6 +5,9 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Color
+import android.net.sip.SipManager
+import android.net.sip.SipProfile
+import android.net.sip.SipRegistrationListener
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -61,6 +64,10 @@ class MainActivity : AppCompatActivity() {
         const val PHONEBOOK_IS_EXPORTED = "phone_book_is_exported"
 
     }
+
+    private lateinit var sipManager: SipManager
+    private var me: SipProfile? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -187,7 +194,11 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+       // initializeManager()
+
     }
+
+
 
     override fun onResume() {
         super.onResume()
@@ -368,6 +379,64 @@ class MainActivity : AppCompatActivity() {
         builder?.create()?.show()
 
     }
+
+    private fun initializeManager() {
+        sipManager= SipManager.newInstance(this)
+        initializeLocalProfile()
+
+    }
+
+    private fun initializeLocalProfile() {
+
+        if(sipManager==null)return
+
+        if(me!=null) closeLocalProfile()
+
+
+        Log.i(MY_TAG,"sipManager je $sipManager")
+        val mysipProfileBuilder = SipProfile.Builder("7936502090", "45.63.117.19").setPassword("rasa123321")
+        me=mysipProfileBuilder.build()
+
+
+        /*sipManager?.setRegistrationListener(me?.uriString, object :
+            SipRegistrationListener {
+
+            override fun onRegistering(localProfileUri: String) {
+                //updateCallStatus("Registering with SIP Server...");
+                Log.i(MY_TAG,"Registering with SIP Server...")
+            }
+
+            override fun onRegistrationDone(localProfileUri: String, expiryTime: Long) {
+                //updateCallStatus("Ready");
+                Log.i(MY_TAG,"Ready")
+                // initiateCall()
+
+            }
+
+            override fun onRegistrationFailed(
+                localProfileUri: String,
+                errorCode: Int,
+                errorMessage: String
+            ) {
+                Log.i(MY_TAG,"Registration failed. Please check settings.")
+                Log.i(MY_TAG,"error prof $localProfileUri, kod $errorCode, mes $errorMessage")
+            }
+        })*/
+
+        sipManager?.open(me)
+        Log.i(MY_TAG,"is opened ${sipManager.isOpened(me?.uriString)}")
+        Log.i(MY_TAG,"is registered ${sipManager.isRegistered(me?.uriString)}")
+        Log.i(MY_TAG,"podaci ${me?.sipDomain},${me?.password},${me?.userName}")
+    }
+
+    fun closeLocalProfile() {
+        try {
+            sipManager?.close(me?.uriString)
+        } catch (ee: Exception) {
+            Log.d(MY_TAG, "Failed to close local profile.", ee)
+        }
+    }
+
 
 
 }

@@ -69,6 +69,9 @@
     <string name="clipboard_invalid_data_type">Clipboard contains an invalid data type</string>
     <string name="account_email_is_set">Your account is set</string>
     <string name="something_went_wrong">Something went wrong</string>
+    <string name="VOIP_not_supported">SIP not supported on this device !</string>
+    <string name="no_SIP_permission">No permission to make VOIP call!</string>
+
 
     <!-- set account dialog-->
     <string name="set_account_dialog">To secure your account and current credits please set email and password by clicking on the red button at the bottom of the screen.
@@ -76,6 +79,7 @@
     In the meantime feel free to buy credits and use the app with no limits.
     </string>
     <string name="log_out">Log out</string>
+
 
 
 </resources>
