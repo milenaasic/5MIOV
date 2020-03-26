@@ -26,6 +26,13 @@ class SipViewModel(val mydatabaseDao: MyDatabaseDao, application: Application) :
     val timeoutReg:LiveData<Boolean>
         get() = _timeoutReg
 
+    /*private val _timeoutCallEnded= MutableLiveData<Boolean>()
+    val timeoutCallEnded:LiveData<Boolean>
+        get() = _timeoutCallEnded*/
+
+    private val _navigateUp= MutableLiveData<Boolean>()
+    val navigateUp:LiveData<Boolean>
+        get() = _navigateUp
 
     fun getSipAccountInfo():User?{
         var myUser:User?=null
@@ -66,12 +73,31 @@ class SipViewModel(val mydatabaseDao: MyDatabaseDao, application: Application) :
             delay(1000)
             _timeoutReg.value=true
         }
-
     }
 
     fun timeoutRegFinished(){
         _timeoutReg.value=false
     }
 
+    /*fun callEndedTimeout(){
+        viewModelScope.launch {
+            delay(1000)
+            _timeoutReg.value=true
+        }
+    }
 
+    fun callEndedTimeoutFinished(){
+        _timeoutCallEnded.value=false
+    }*/
+
+    fun navigateBack(){
+        viewModelScope.launch {
+            delay(1000)
+            _navigateUp.value=true
+        }
+    }
+
+    fun navigateBackFinished(){
+        _navigateUp.value=false
+    }
 }

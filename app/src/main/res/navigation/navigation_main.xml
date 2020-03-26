@@ -55,5 +55,8 @@
         <argument
             android:name="contactName"
             app:argType="string" />
+        <argument
+            android:name="contactNumber"
+            app:argType="string" />
     </fragment>
 </navigation>

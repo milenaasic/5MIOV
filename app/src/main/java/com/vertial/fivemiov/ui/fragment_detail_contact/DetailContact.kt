@@ -86,7 +86,7 @@ class DetailContact : Fragment() {
                 SipItemClickListener{
 
                     if(isVOIPsupported(requireContext())){
-                        if(checkForPermissions())findNavController().navigate(DetailContactDirections.actionDetailContactToSipFragment(args.displayName))
+                        if(checkForPermissions())findNavController().navigate(DetailContactDirections.actionDetailContactToSipFragment(args.displayName,it))
                     }
                     else showSnackBar(resources.getString(R.string.VOIP_not_supported))
                 },

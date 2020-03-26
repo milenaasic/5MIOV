@@ -20,15 +20,17 @@
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="1.0"
-            app:srcCompat="@color/colorPrimaryDark" />
+            app:layout_constraintVertical_bias="0.0"
+            app:srcCompat="@color/design_default_color_background" />
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guideline5"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.4" />
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintGuide_percent="0.2"
+            app:layout_constraintTop_toBottomOf="@+id/statustextView" />
 
         <TextView
             android:id="@+id/nametextView"
@@ -36,12 +38,12 @@
             android:layout_height="wrap_content"
             android:text="@string/_5miov"
             android:textAppearance="@style/TextAppearance.AppCompat.Display1"
-            android:textColor="@android:color/background_light"
-            app:layout_constraintBottom_toTopOf="@+id/statustextView"
+            android:textColor="@color/colorPrimaryDark"
+            app:layout_constraintBottom_toTopOf="@+id/sipnumbertextView"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_chainStyle="packed" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/statustextView"
@@ -49,14 +51,16 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="Calling..."
-            android:textColor="@android:color/background_light"
-            app:layout_constraintBottom_toBottomOf="@+id/imageView3"
-            app:layout_constraintEnd_toEndOf="@+id/nametextView"
-            app:layout_constraintStart_toStartOf="@+id/nametextView"
-            app:layout_constraintTop_toBottomOf="@+id/nametextView" />
+            android:textColor="@color/colorPrimaryDark"
+            app:layout_constraintBottom_toTopOf="@+id/guideline5"
+            app:layout_constraintEnd_toEndOf="@+id/sipnumbertextView"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="@+id/sipnumbertextView"
+            app:layout_constraintTop_toBottomOf="@+id/sipnumbertextView" />
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/sipendbutton"
+            style="@style/Widget.MaterialComponents.Button"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
@@ -67,6 +71,55 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/sipnumbertextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="+3811155123"
+            android:textColor="@color/colorPrimaryDark"
+            app:layout_constraintBottom_toTopOf="@+id/statustextView"
+            app:layout_constraintEnd_toEndOf="@+id/nametextView"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="@+id/nametextView"
+            app:layout_constraintTop_toBottomOf="@+id/nametextView" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/sip_mic_Button"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginEnd="32dp"
+
+            android:elevation="1dp"
+            android:tint="@color/colorPrimaryDark"
+            app:backgroundTint="@color/design_default_color_background"
+            app:layout_constraintBottom_toBottomOf="@+id/speaker_FAB"
+            app:layout_constraintEnd_toEndOf="parent"
+
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/speaker_FAB"
+            app:layout_constraintTop_toTopOf="@+id/speaker_FAB"
+            app:rippleColor="@color/colorPrimary"
+            app:srcCompat="@drawable/ic_mic_on" />
+
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/speaker_FAB"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="24dp"
+
+            android:elevation="1dp"
+            android:tint="@color/colorPrimaryDark"
+            app:backgroundTint="@color/design_default_color_background"
+            app:layout_constraintEnd_toStartOf="@+id/sip_mic_Button"
+            app:layout_constraintHorizontal_bias="0.5"
+
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/imageView3"
+            app:rippleColor="@color/colorPrimary"
+            app:srcCompat="@drawable/ic_volume_off" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

@@ -59,14 +59,13 @@ class MainActivity : AppCompatActivity() {
         const val DIAL_PAD_FRAGMENT = 1
         const val DETAIL_FRAGMENT = 2
         const val SET_ACCOUNT_EMAIL_PASS_FRAGMENT0 = 3
+        const val SIP_FRAGMENT = 4
 
         const val MAIN_ACTIVITY_SHARED_PREF_NAME = "MainActivitySharedPref"
         const val PHONEBOOK_IS_EXPORTED = "phone_book_is_exported"
 
     }
 
-    private lateinit var sipManager: SipManager
-    private var me: SipProfile? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -108,6 +107,10 @@ class MainActivity : AppCompatActivity() {
                     setEmailAndAccountFragmentUI()
                 }
 
+                R.id.sipFragment->{
+                    setSipFragmentUI()
+                }
+
             }
 
         }
@@ -126,6 +129,10 @@ class MainActivity : AppCompatActivity() {
                 }
                 SET_ACCOUNT_EMAIL_PASS_FRAGMENT0 -> {
                     setEmailAndAccountFragmentUI()
+                }
+
+                SIP_FRAGMENT-> {
+                    setSipFragmentUI()
                 }
             }
 
@@ -194,9 +201,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-       // initializeManager()
-
     }
+
 
 
 
@@ -268,16 +274,19 @@ class MainActivity : AppCompatActivity() {
 
     private fun setDetailContactFragmentUI(){
         binding.toolbarMain.apply {
-            elevation=0f
-            navigationIcon=resources.getDrawable(R.drawable.ic_back_white,null)
+            elevation = 0f
+            navigationIcon = resources.getDrawable(R.drawable.ic_back_white, null)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                setBackgroundColor(resources.getColor(R.color.colorPrimaryDark,null))
-            }else{
+                setBackgroundColor(resources.getColor(R.color.colorPrimaryDark, null))
+                window.decorView.systemUiVisibility = 0
+                window.statusBarColor = resources.getColor(R.color.colorPrimaryDark, null)
+            } else {
                 setBackgroundColor(resources.getColor(R.color.colorPrimaryDark))
+                window.statusBarColor = resources.getColor(R.color.colorPrimaryDark)
             }
-            title=resources.getString(R.string.empty_string)
+            title = resources.getString(R.string.empty_string)
 
-         }
+        }
 
     }
 
@@ -293,6 +302,24 @@ class MainActivity : AppCompatActivity() {
              window.statusBarColor= Color.TRANSPARENT
         }
     }
+
+    private fun setSipFragmentUI() {
+        binding.toolbarMain.apply {
+            navigationIcon = null
+            elevation = 0f
+            title = resources.getString(R.string.empty_string)
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                setBackgroundColor(resources.getColor(android.R.color.background_light, null))
+                window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                window.statusBarColor = Color.TRANSPARENT
+            } else {
+                setBackgroundColor(resources.getColor(android.R.color.background_light))
+                window.statusBarColor = Color.TRANSPARENT
+            }
+        }
+    }
+
 
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -378,63 +405,6 @@ class MainActivity : AppCompatActivity() {
         }
         builder?.create()?.show()
 
-    }
-
-    private fun initializeManager() {
-        sipManager= SipManager.newInstance(this)
-        initializeLocalProfile()
-
-    }
-
-    private fun initializeLocalProfile() {
-
-        if(sipManager==null)return
-
-        if(me!=null) closeLocalProfile()
-
-
-        Log.i(MY_TAG,"sipManager je $sipManager")
-        val mysipProfileBuilder = SipProfile.Builder("7936502090", "45.63.117.19").setPassword("rasa123321")
-        me=mysipProfileBuilder.build()
-
-
-        /*sipManager?.setRegistrationListener(me?.uriString, object :
-            SipRegistrationListener {
-
-            override fun onRegistering(localProfileUri: String) {
-                //updateCallStatus("Registering with SIP Server...");
-                Log.i(MY_TAG,"Registering with SIP Server...")
-            }
-
-            override fun onRegistrationDone(localProfileUri: String, expiryTime: Long) {
-                //updateCallStatus("Ready");
-                Log.i(MY_TAG,"Ready")
-                // initiateCall()
-
-            }
-
-            override fun onRegistrationFailed(
-                localProfileUri: String,
-                errorCode: Int,
-                errorMessage: String
-            ) {
-                Log.i(MY_TAG,"Registration failed. Please check settings.")
-                Log.i(MY_TAG,"error prof $localProfileUri, kod $errorCode, mes $errorMessage")
-            }
-        })*/
-
-        sipManager?.open(me)
-        Log.i(MY_TAG,"is opened ${sipManager.isOpened(me?.uriString)}")
-        Log.i(MY_TAG,"is registered ${sipManager.isRegistered(me?.uriString)}")
-        Log.i(MY_TAG,"podaci ${me?.sipDomain},${me?.password},${me?.userName}")
-    }
-
-    fun closeLocalProfile() {
-        try {
-            sipManager?.close(me?.uriString)
-        } catch (ee: Exception) {
-            Log.d(MY_TAG, "Failed to close local profile.", ee)
-        }
     }
 
 

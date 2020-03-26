@@ -32,31 +32,38 @@
         android:layout_height="56dp"
         android:background="@drawable/dummy_background">
 
-        <TextView
-            android:id="@+id/num_exists_phone_textView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="4dp"
-            android:gravity="center_vertical"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/phoneClickLayout"
             android:onClick="@{(view) -> phoneClick.onClick(view)}"
-            android:text="@{phoneItem.phoneNumber}"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
-            app:layout_constraintBottom_toTopOf="@+id/phone_type_textView"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_chainStyle="packed"
-            tools:text="1-156-56-256987" />
+            app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:id="@+id/phone_type_textView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintBottom_toTopOf="@+id/divider3"
-            app:layout_constraintStart_toStartOf="@+id/num_exists_phone_textView"
-            app:layout_constraintTop_toBottomOf="@+id/num_exists_phone_textView"
-            app:setPhoneType="@{phoneItem}"
-            tools:text="Mobile" />
+            <TextView
+                android:id="@+id/num_exists_phone_textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginTop="8dp"
+                android:gravity="center_vertical"
+                android:text="@{phoneItem.phoneNumber}"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="1-156-56-256987" />
+
+            <TextView
+                android:id="@+id/phone_type_textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                app:layout_constraintStart_toStartOf="@+id/num_exists_phone_textView"
+                app:layout_constraintTop_toBottomOf="@+id/num_exists_phone_textView"
+                app:setPhoneType="@{phoneItem}"
+                tools:text="Mobile" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/prenumberCallButton"

@@ -5,6 +5,7 @@ import android.Manifest
 import android.app.PendingIntent
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.net.sip.*
 import android.os.Build
 import android.os.Bundle
@@ -42,6 +43,7 @@ class SipFragment : Fragment() {
     private var me:SipProfile? = null
     private var peersipProfile:SipProfile?=null
     private var sipAudioCall:SipAudioCall?=null
+    private var setSpeakerMode:Boolean?=null
 
 
 
@@ -57,7 +59,12 @@ class SipFragment : Fragment() {
     ): View? {
 
         binding= DataBindingUtil.inflate(inflater, R.layout.fragment_sip,container,false)
-        binding.nametextView.text=args.contactName
+        binding.apply {
+            nametextView.text=args.contactName
+            sipnumbertextView.text=args.contactNumber
+            sipMicButton.isEnabled=false
+            speakerFAB.isEnabled=false
+        }
 
         val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
 
@@ -65,10 +72,62 @@ class SipFragment : Fragment() {
             .get(SipViewModel::class.java)
 
         binding.sipendbutton.setOnClickListener{
+            sipAudioCall?.endCall()
             closeLocalProfile()
-            findNavController().navigateUp()
+            viewModel.navigateBack()
 
         }
+
+        binding.sipMicButton.setOnClickListener{
+            if(sipAudioCall!=null) {
+                if (sipAudioCall?.isMuted == true) {
+                        sipAudioCall?.toggleMute()
+                    binding.sipMicButton.setImageResource(R.drawable.ic_mic_on)
+                        //resources.getDrawable(R.drawable.ic_volume_mute, null)
+                    Log.i(MYTAG, "mute button set to false")
+
+                } else {
+                    sipAudioCall?.toggleMute()
+                    binding.sipMicButton.setImageResource(R.drawable.ic_mic_off)
+                    //resources.getDrawable(R.drawable.ic_volume_off, null)
+                    Log.i(MYTAG, "mute button set to true ")
+                }
+
+            }
+        }
+
+
+        binding.speakerFAB.setOnClickListener {
+            if(sipAudioCall!=null) {
+                when (setSpeakerMode) {
+                    null -> {
+                        sipAudioCall?.setSpeakerMode(true)
+                        setSpeakerMode = true
+                        binding.speakerFAB.setImageResource(R.drawable.ic_volume_mute)
+                        /*binding.sipspeakerButton.icon =
+                            resources.getDrawable(R.drawable.ic_speaker, null)*/
+
+                    }
+                    true -> {
+                        sipAudioCall?.setSpeakerMode(false)
+                        setSpeakerMode = false
+                        binding.speakerFAB.setImageResource(R.drawable.ic_volume_off)
+                        //binding.sipspeakerButton.icon =
+                         //   resources.getDrawable(R.drawable.ic_close_icon, null)
+                    }
+                    false -> {
+                        sipAudioCall?.setSpeakerMode(true)
+                        setSpeakerMode = true
+                        binding.speakerFAB.setImageResource(R.drawable.ic_volume_mute)
+                        //binding.sipspeakerButton.icon =
+                           // resources.getDrawable(R.drawable.ic_speaker, null)
+
+                    }
+                }
+            }
+
+        }
+
 
         initializeManager()
 
@@ -76,6 +135,8 @@ class SipFragment : Fragment() {
         return binding.root
 
     }
+
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -93,7 +154,19 @@ class SipFragment : Fragment() {
             }
         })
 
+        /*viewModel.timeoutCallEnded.observe(viewLifecycleOwner, Observer {
+            if(it){
+                findNavController().navigateUp()
+                viewModel.callEndedTimeoutFinished()
+            }
+        })*/
 
+        viewModel.navigateUp.observe(viewLifecycleOwner, Observer {
+            if(it){
+                findNavController().navigateUp()
+                viewModel.navigateBackFinished()
+            }
+        })
 
     }
 
@@ -131,6 +204,7 @@ class SipFragment : Fragment() {
         Log.i(MYTAG,"me je ${me?.uriString}")
 
         val peer=SipProfile.Builder("ankeanke","iptel.org")
+        //val peer=SipProfile.Builder("38163352717","45.63.117.19")
         peersipProfile=peer.build()
         Log.i(MYTAG,"peer je ${peersipProfile?.uriString}")
         
@@ -139,53 +213,61 @@ class SipFragment : Fragment() {
             updateCallStatus("Opening connection...")
             Log.i(MYTAG," open ")
         }catch (s:SipException) {
-            updateCallStatus("open, ${s.message }, ${s.cause}")
+            showToast(getString(R.string.sip_failure_message))
+            viewModel.navigateBack()
             Log.i(MYTAG," open greska ${s.stackTrace}, ${s.cause}")
         }
+
         Log.i(MYTAG,"da li je otvoren ${sipManager.isOpened(me?.uriString)}")
 
         viewModel.startRegTimeout()
 
-        Log.i(MYTAG,"is opened ${sipManager.isOpened(me?.uriString)}")
+        /*Log.i(MYTAG,"is opened ${sipManager.isOpened(me?.uriString)}")
         Log.i(MYTAG,"is registered ${sipManager.isRegistered(me?.uriString)}")
-        Log.i(MYTAG,"podaci ${me?.sipDomain},${me?.password},${me?.userName}")
+        Log.i(MYTAG,"podaci ${me?.sipDomain},${me?.password},${me?.userName}")*/
 
     }
 
     private fun register() {
-        sipManager.register(me,10,object: SipRegistrationListener {
-            override fun onRegistering(p0: String?) {
-                Log.i(MYTAG,"registgering $p0")
-                val h=Handler(Looper.getMainLooper())
-                h.post(Runnable {
-                    updateCallStatus("on registering..")
+        try {
+            sipManager.register(me, 10, object : SipRegistrationListener {
+                override fun onRegistering(p0: String?) {
+                    Log.i(MYTAG, "registgering $p0")
+                    val h = Handler(Looper.getMainLooper())
+                    h.post(Runnable {
+                        updateCallStatus("on registering..")
 
-                })
-            }
-
-            override fun onRegistrationDone(p0: String?, p1: Long) {
-                Log.i(MYTAG,"registration done $p0, $p1")
-                val h=Handler(Looper.getMainLooper())
-                h.post(Runnable {
-                    updateCallStatus("registration DONE")
-                   viewModel.startTimeout()
-                })
-            }
-
-            override fun onRegistrationFailed(p0: String?, p1: Int, p2: String?) {
-                Log.i(MYTAG,"registration FAILED $p0, $p1,$p2")
-                val h=Handler(Looper.getMainLooper())
-                h.post(Runnable {
-                    updateCallStatus("registration FAILED")
-                    viewModel.startRegTimeout()
                     })
-            }
+                }
 
-        })
+                override fun onRegistrationDone(p0: String?, p1: Long) {
+                    Log.i(MYTAG, "registration done $p0, $p1")
+                    val h = Handler(Looper.getMainLooper())
+                    h.post(Runnable {
+                        updateCallStatus("registration DONE")
+                        viewModel.startTimeout()
+                    })
+                }
+
+                override fun onRegistrationFailed(p0: String?, p1: Int, p2: String?) {
+                    Log.i(MYTAG, "registration FAILED $p0, $p1,$p2")
+                    val h = Handler(Looper.getMainLooper())
+                    h.post(Runnable {
+                        updateCallStatus("registration FAILED")
+                        //viewModel.startRegTimeout()
+                    })
+                }
+            })
+        }catch (e:SipException){
+            Log.i(MYTAG,"Registration SIP Exception, ${e.message}")
+           showToast(getString(R.string.sip_failure_message))
+            closeLocalProfile()
+            viewModel.navigateBack()
+        }
     }
 
     private fun makeSipAudioCall() {
-        sipManager.makeAudioCall(me,peersipProfile,object: SipAudioCall.Listener(){
+       sipAudioCall=sipManager.makeAudioCall(me,peersipProfile,object: SipAudioCall.Listener(){
 
             override fun onCalling(call: SipAudioCall?) {
                 super.onCalling(call)
@@ -196,33 +278,58 @@ class SipFragment : Fragment() {
 
             }
 
+           override fun onCallBusy(call: SipAudioCall?) {
+               super.onCallBusy(call)
+               val h=Handler(Looper.getMainLooper())
+               h.post(Runnable {
+                   updateCallStatus("busy..")
+               })
+
+           }
+
+
             override fun onCallEstablished(call: SipAudioCall?) {
                 super.onCallEstablished(call)
                 val h=Handler(Looper.getMainLooper())
                 h.post(Runnable {
                     updateCallStatus("cal established..")
+                    binding.speakerFAB.isEnabled=true
+                    binding.sipMicButton.isEnabled=true
                 })
                 call?.startAudio()
-                //call?.setSpeakerMode(true)
-                if(call?.isMuted==true) call?.toggleMute()
+                call?.setSpeakerMode(false)
+                if(call?.isMuted==true) {
+                        call.toggleMute()
 
+                }
 
             }
+
+           override fun onCallEnded(call: SipAudioCall?) {
+               super.onCallEnded(call)
+               call?.endCall()
+               val h=Handler(Looper.getMainLooper())
+               h.post(Runnable {
+                   updateCallStatus("cal ended..")
+                   viewModel.navigateBack()
+               })
+
+           }
 
             override fun onError(call: SipAudioCall?, errorCode: Int, errorMessage: String?) {
                 super.onError(call, errorCode, errorMessage)
-                // code -2 je decline
+                call?.close()
                 val h=Handler(Looper.getMainLooper())
                 h.post(Runnable {
                     updateCallStatus("error, ${call.toString()}, code $errorCode, message $errorMessage")
-                    call?.close()
+                    closeLocalProfile()
+                    viewModel.navigateBack()
+                    showToast(getString(R.string.sip_failure_message))
                 })
-                //updateCallStatus("something went wrong...")
+
                 Log.i(MYTAG,"error, ${call.toString()}, code $errorCode, message $errorMessage")
             }
-
-
-        },20)
+        },10)
     }
 
 
@@ -230,15 +337,8 @@ class SipFragment : Fragment() {
             binding.statustextView.text=status
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        closeLocalProfile()
-    }
-
-
     fun closeLocalProfile() {
         try {
-            //ugasi call ako je u toku
             sipManager?.close(me?.uriString)
             Log.d(MYTAG, "closing profile me")
         } catch (ee: Exception) {
@@ -246,18 +346,19 @@ class SipFragment : Fragment() {
         }
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        sipAudioCall?.endCall()
+        closeLocalProfile()
+    }
 
     private fun showToast(message: String) {
         Toast.makeText(requireActivity(),message, Toast.LENGTH_LONG).show()
     }
 
-
-
-
     private fun showSnackBar(s:String) {
         Snackbar.make(binding.root,s, Snackbar.LENGTH_LONG).show()
     }
-
 
 
 }

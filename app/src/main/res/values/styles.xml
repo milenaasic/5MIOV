@@ -25,10 +25,16 @@
     </style>
 
     <style name="Widget.MaterialComponents.Button.OutlinedButton.MyCallButtons">
-        <item name="rippleColor">@android:color/holo_green_dark</item>
+        <item name="rippleColor">@color/gray_disabled</item>
         <item name="android:textColor">@color/material_button_color_state_list</item>
         <item name="iconTint">@color/material_button_color_state_list</item>
         <item name="strokeColor">@color/material_button_color_state_list</item>
+    </style>
+
+    <style name="Widget.MaterialComponents.Button.OutlinedButton.SipButtons">
+        <item name="rippleColor">@color/gray_disabled</item>
+        <item name="backgroundColor">@color/colorAccent</item>
+        <item name="strokeColor">@android:color/background_light</item>
     </style>
 
 

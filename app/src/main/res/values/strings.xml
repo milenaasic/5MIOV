@@ -79,7 +79,7 @@
     In the meantime feel free to buy credits and use the app with no limits.
     </string>
     <string name="log_out">Log out</string>
-
+    <string name="sip_failure_message">Something went wrong!</string>
 
 
 </resources>
