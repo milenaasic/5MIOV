@@ -7,7 +7,7 @@
 
     <variable
         name="phoneItem"
-        type="com.vertial.fivemiov.ui.fragment_detail_contact.PhoneItem" />
+        type="com.vertial.fivemiov.model.PhoneItem" />
 
         <variable
             name="phoneClick"

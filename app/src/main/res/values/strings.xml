@@ -79,7 +79,17 @@
     In the meantime feel free to buy credits and use the app with no limits.
     </string>
     <string name="log_out">Log out</string>
+
+
+    <!-- SIP messages-->
     <string name="sip_failure_message">Something went wrong!</string>
+    <string name="sip_registering">Registering...</string>
+    <string name="sip_reg_done">Registration Done.</string>
+    <string name="sip_reg_failed">Registration Failed.</string>
+    <string name="sip_calling">Calling...</string>
+    <string name="sip_busy">Busy.</string>
+    <string name="sip_call_established">Call Established.</string>
+    <string name="sip_call_ended">Call Ended.</string>
 
 
 </resources>

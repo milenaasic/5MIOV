@@ -103,6 +103,8 @@ class DetailContact : Fragment() {
 
         checkForPermissions()
 
+        requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
         return binding.root
 
     }

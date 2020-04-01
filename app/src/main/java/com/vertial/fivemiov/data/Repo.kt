@@ -1,21 +1,12 @@
 package com.vertial.fivemiov.data
 
-import android.content.ContentResolver
-import android.database.Cursor
-import android.net.Uri
-import android.os.AsyncTask
-import android.provider.ContactsContract
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.vertial.fivemiov.api.*
 import com.vertial.fivemiov.database.MyDatabaseDao
-import com.vertial.fivemiov.ui.fragment_main.ContactItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 private const val MY_TAG="MY_Repository"
 class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){

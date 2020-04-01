@@ -1,10 +1,10 @@
 package com.vertial.fivemiov.ui.fragment_main
 
-import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.vertial.fivemiov.databinding.FragmentMainRecViewItemType1Binding
+import com.vertial.fivemiov.model.ContactItem
 
 
 private val MYTAG="MY_MainFragmentAdapter"
@@ -50,7 +50,7 @@ class MainFragmentAdapter(val clickListener: ContactItemClickListener,val myColo
     class MyViewHolder private constructor(val binding: FragmentMainRecViewItemType1Binding):
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(clickListener: ContactItemClickListener,item:ContactItem,viewType:MyViewHolderType,stringToColor:String?,myColor: String){
+        fun bind(clickListener: ContactItemClickListener, item: ContactItem, viewType:MyViewHolderType, stringToColor:String?, myColor: String){
            binding.clickListener=clickListener
             binding.contactItem=item
             binding.viewType=viewType
@@ -71,8 +71,8 @@ class MainFragmentAdapter(val clickListener: ContactItemClickListener,val myColo
 
 }
 
-class ContactItemClickListener(val clickListener:(item:ContactItem)->Unit ){
-    fun onClick(item:ContactItem)=clickListener(item)
+class ContactItemClickListener(val clickListener:(item: ContactItem)->Unit ){
+    fun onClick(item: ContactItem)=clickListener(item)
 }
 
 data class MyViewHolderType(val type:Int)

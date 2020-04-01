@@ -1,11 +1,7 @@
 package com.vertial.fivemiov.ui.sipfragment
 
 
-import android.Manifest
-import android.app.PendingIntent
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.graphics.Color
+
 import android.net.sip.*
 import android.os.Build
 import android.os.Bundle
@@ -132,6 +128,7 @@ class SipFragment : Fragment() {
         initializeManager()
 
         requireActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
         return binding.root
 
     }
@@ -185,8 +182,7 @@ class SipFragment : Fragment() {
 
     private fun initializeLocalProfile() {
 
-        if(sipManager==null)return
-
+        //if(sipManager==null)return
 
         if(me!=null) {
             Log.i(MYTAG,"me nije null, zatvara se profil")
@@ -198,13 +194,13 @@ class SipFragment : Fragment() {
 
 
         Log.i(MYTAG,"sipManager je $sipManager")
-        //val mysipProfileBuilder = SipProfile.Builder("7936502090", "45.63.117.19").setPassword("rasa123321")
-        val mysipProfileBuilder = SipProfile.Builder("milena", "iptel.org").setPassword("Milena77")
+        val mysipProfileBuilder = SipProfile.Builder("7936502090", "45.63.117.19").setPassword("rasa123321")
+        //val mysipProfileBuilder = SipProfile.Builder("milena", "iptel.org").setPassword("Milena77")
         me=mysipProfileBuilder.build()
         Log.i(MYTAG,"me je ${me?.uriString}")
 
-        val peer=SipProfile.Builder("ankeanke","iptel.org")
-        //val peer=SipProfile.Builder("38163352717","45.63.117.19")
+        //val peer=SipProfile.Builder("ankeanke","iptel.org")
+        val peer=SipProfile.Builder("0038163352717","45.63.117.19")
         peersipProfile=peer.build()
         Log.i(MYTAG,"peer je ${peersipProfile?.uriString}")
         
@@ -235,7 +231,7 @@ class SipFragment : Fragment() {
                     Log.i(MYTAG, "registgering $p0")
                     val h = Handler(Looper.getMainLooper())
                     h.post(Runnable {
-                        updateCallStatus("on registering..")
+                        updateCallStatus(getString(R.string.sip_registering))
 
                     })
                 }
@@ -244,7 +240,7 @@ class SipFragment : Fragment() {
                     Log.i(MYTAG, "registration done $p0, $p1")
                     val h = Handler(Looper.getMainLooper())
                     h.post(Runnable {
-                        updateCallStatus("registration DONE")
+                        updateCallStatus(getString(R.string.sip_reg_done))
                         viewModel.startTimeout()
                     })
                 }
@@ -253,7 +249,7 @@ class SipFragment : Fragment() {
                     Log.i(MYTAG, "registration FAILED $p0, $p1,$p2")
                     val h = Handler(Looper.getMainLooper())
                     h.post(Runnable {
-                        updateCallStatus("registration FAILED")
+                        updateCallStatus(getString(R.string.sip_reg_failed))
                         //viewModel.startRegTimeout()
                     })
                 }
@@ -273,7 +269,7 @@ class SipFragment : Fragment() {
                 super.onCalling(call)
                 val h=Handler(Looper.getMainLooper())
                 h.post(Runnable {
-                    updateCallStatus("calling..")
+                    updateCallStatus(getString(R.string.sip_calling))
                  })
 
             }
@@ -282,7 +278,7 @@ class SipFragment : Fragment() {
                super.onCallBusy(call)
                val h=Handler(Looper.getMainLooper())
                h.post(Runnable {
-                   updateCallStatus("busy..")
+                   updateCallStatus(getString(R.string.sip_busy))
                })
 
            }
@@ -292,7 +288,7 @@ class SipFragment : Fragment() {
                 super.onCallEstablished(call)
                 val h=Handler(Looper.getMainLooper())
                 h.post(Runnable {
-                    updateCallStatus("cal established..")
+                    updateCallStatus(getString(R.string.sip_call_established))
                     binding.speakerFAB.isEnabled=true
                     binding.sipMicButton.isEnabled=true
                 })
@@ -310,7 +306,7 @@ class SipFragment : Fragment() {
                call?.endCall()
                val h=Handler(Looper.getMainLooper())
                h.post(Runnable {
-                   updateCallStatus("cal ended..")
+                   updateCallStatus(getString(R.string.sip_call_ended))
                    viewModel.navigateBack()
                })
 

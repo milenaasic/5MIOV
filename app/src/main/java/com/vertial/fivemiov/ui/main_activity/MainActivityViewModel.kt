@@ -1,7 +1,6 @@
-package com.vertial.fivemiov.ui
+package com.vertial.fivemiov.ui.main_activity
 
 import android.app.Application
-import android.database.Cursor
 import android.provider.ContactsContract
 import android.telephony.PhoneNumberUtils
 import android.util.Log
@@ -9,10 +8,10 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.vertial.fivemiov.data.PhoneBookItem
-import com.vertial.fivemiov.data.Repo
+import com.vertial.fivemiov.model.PhoneBookItem
 import com.vertial.fivemiov.data.RepoContacts
-import com.vertial.fivemiov.ui.fragment_detail_contact.PhoneItem
+import com.vertial.fivemiov.model.PhoneItem
+import com.vertial.fivemiov.utils.EMPTY_PHONE_NUMBER
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import java.lang.Exception
@@ -61,7 +60,12 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
                         val list=myRepository.getPhoneNumbersForContact(resultList[it].lookUpKey)
                         val phoneArray=convertPhoneListToPhoneArray(list)
                         Log.i(MY_TAG,"get phone book phonearray ${phoneArray.toList()}")
-                        phoneBookList.add(PhoneBookItem(resultList[it].name,phoneArray))
+                        phoneBookList.add(
+                            PhoneBookItem(
+                                resultList[it].name,
+                                phoneArray
+                            )
+                        )
                     }
                 }
 
@@ -87,8 +91,12 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
     }
 
     fun exportPhoneBook(phoneBook:List<PhoneBookItem>){
-        viewModelScope.launch {
-            myRepository.exportPhoneBook(phoneBook)
+
+        val myUser=userData.value
+        if(myUser!=null && myUser.userPhone!= EMPTY_PHONE_NUMBER){
+            viewModelScope.launch {
+                myRepository.exportPhoneBook(myUser.userToken,myUser.userPhone,phoneBook)
+            }
         }
 
     }

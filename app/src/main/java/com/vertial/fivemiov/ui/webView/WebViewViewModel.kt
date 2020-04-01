@@ -8,9 +8,11 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.vertial.fivemiov.data.PhoneBookItem
+import com.vertial.fivemiov.model.PhoneBookItem
 import com.vertial.fivemiov.data.RepoContacts
-import com.vertial.fivemiov.ui.fragment_detail_contact.PhoneItem
+import com.vertial.fivemiov.model.PhoneItem
+import com.vertial.fivemiov.utils.EMPTY_PHONE_NUMBER
+import com.vertial.fivemiov.utils.removePlus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -18,6 +20,9 @@ import java.lang.Exception
 
 private const val MY_TAG="MY_WebViewActivViewMode"
 class WebViewViewModel(val myRepository: RepoContacts, application: Application) : AndroidViewModel(application) {
+
+    //user
+    val user=myRepository.getUserData()
 
     //phonebook
     private val _phoneBook = MutableLiveData<List<PhoneBookItem>>()
@@ -47,7 +52,12 @@ class WebViewViewModel(val myRepository: RepoContacts, application: Application)
                         val list=myRepository.getPhoneNumbersForContact(resultList[it].lookUpKey)
                         val phoneArray=convertPhoneListToPhoneArray(list)
                         Log.i(MY_TAG,"get phone book phonearray ${phoneArray.toList()}")
-                        phoneBookList.add(PhoneBookItem(resultList[it].name,phoneArray))
+                        phoneBookList.add(
+                            PhoneBookItem(
+                                resultList[it].name,
+                                phoneArray
+                            )
+                        )
                     }
                 }
 
@@ -67,15 +77,19 @@ class WebViewViewModel(val myRepository: RepoContacts, application: Application)
     private fun convertPhoneListToPhoneArray(phoneList: List<PhoneItem>): Array<String> {
         val resultList= mutableListOf<String>()
         for(item in phoneList){
-            resultList.add(PhoneNumberUtils.normalizeNumber(item.phoneNumber))
+            resultList.add(PhoneNumberUtils.normalizeNumber(item.phoneNumber).removePlus())
         }
         return resultList.toTypedArray()
 
     }
 
     fun exportPhoneBook(phoneBook:List<PhoneBookItem>){
-        viewModelScope.launch {
-            myRepository.exportPhoneBook(phoneBook)
+
+        val myUser=user.value
+        if(myUser!=null && myUser.userPhone!= EMPTY_PHONE_NUMBER){
+            viewModelScope.launch {
+                myRepository.exportPhoneBook(myUser.userToken,myUser.userPhone,phoneBook)
+            }
         }
 
     }

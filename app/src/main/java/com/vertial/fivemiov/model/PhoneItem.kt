@@ -1,4 +1,4 @@
-package com.vertial.fivemiov.ui.fragment_detail_contact
+package com.vertial.fivemiov.model
 
 data class PhoneItem(
     val phoneNumber: String,

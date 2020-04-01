@@ -2,6 +2,7 @@ package com.vertial.fivemiov.ui.fragment_detail_contact
 
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
+import com.vertial.fivemiov.model.PhoneItem
 
 const val MOBILE_PHONE_TYPE="Mobile"
 const val HOME_PHONE_TYPE="Home"

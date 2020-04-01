@@ -3,19 +3,13 @@ package com.vertial.fivemiov.ui.fragment_main
 
 import android.Manifest
 import android.content.Context
-import android.content.DialogInterface
-import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.SearchView
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -27,12 +21,11 @@ import com.vertial.fivemiov.api.MyAPI
 import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentMainBinding
-import com.vertial.fivemiov.ui.MainActivity
-import com.vertial.fivemiov.ui.MainActivity.Companion.MAIN_ACTIVITY_SHARED_PREF_NAME
-import com.vertial.fivemiov.ui.MainActivity.Companion.PHONEBOOK_IS_EXPORTED
-import com.vertial.fivemiov.ui.MainActivityViewModel
+import com.vertial.fivemiov.ui.main_activity.MainActivity
+import com.vertial.fivemiov.ui.main_activity.MainActivity.Companion.MAIN_ACTIVITY_SHARED_PREF_NAME
+import com.vertial.fivemiov.ui.main_activity.MainActivity.Companion.PHONEBOOK_IS_EXPORTED
+import com.vertial.fivemiov.ui.main_activity.MainActivityViewModel
 import com.vertial.fivemiov.utils.EMPTY_EMAIL
-import kotlinx.android.synthetic.main.activity_main.*
 
 
 private val MYTAG="MY_MAIN_FRAGMENT"
@@ -43,7 +36,7 @@ class MainFragment : Fragment() {
 
     private lateinit var binding: FragmentMainBinding
     private lateinit var viewModel:MainFragmentViewModel
-    private lateinit var activityViewModel:MainActivityViewModel
+    private lateinit var activityViewModel: MainActivityViewModel
     private lateinit var contactsAdapter:MainFragmentAdapter
     private lateinit var searchViewActionBar: SearchView
 
@@ -96,6 +89,7 @@ class MainFragment : Fragment() {
 
        if(sharedPreferences.contains(PHONEBOOK_IS_EXPORTED)){
             val isExported=sharedPreferences.getBoolean(PHONEBOOK_IS_EXPORTED,false)
+            //val isExported=false PROBA
            Log.i(MYTAG," usao u ima phoneBookIsExported promenljiva i vrednost je $isExported")
             if(!isExported) return true
             else return false

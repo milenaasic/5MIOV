@@ -1,4 +1,4 @@
-package com.vertial.fivemiov.ui.fragment_main
+package com.vertial.fivemiov.model
 
 data class ContactItem(
     val id: Long=0,

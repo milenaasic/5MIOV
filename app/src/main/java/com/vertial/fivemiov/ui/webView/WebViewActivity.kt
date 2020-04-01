@@ -12,7 +12,7 @@ import com.vertial.fivemiov.api.MyAPI
 import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.ActivityWebViewBinding
-import com.vertial.fivemiov.ui.MainActivity
+import com.vertial.fivemiov.ui.main_activity.MainActivity
 
 private const val MY_TAG="MY_WebVIewActivity"
 class WebViewActivity : AppCompatActivity() {
@@ -39,6 +39,11 @@ class WebViewActivity : AppCompatActivity() {
             settings.javaScriptEnabled = true
 
         }
+
+        viewModel.user.observe(this, Observer {
+            Log.i(MY_TAG," user je $it")
+
+         })
 
         viewModel.phoneBook.observe(this, Observer {
             if (it != null) {

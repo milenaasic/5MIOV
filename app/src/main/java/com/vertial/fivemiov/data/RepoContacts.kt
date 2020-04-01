@@ -1,20 +1,17 @@
 package com.vertial.fivemiov.data
 
 import android.content.ContentResolver
-import android.database.Cursor
 import android.net.Uri
-import android.os.AsyncTask
 import android.provider.ContactsContract
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
 import com.vertial.fivemiov.api.MyAPIService
 import com.vertial.fivemiov.api.NetRequest_ExportPhonebook
-import com.vertial.fivemiov.api.NetResponse_ExportPhonebook
 import com.vertial.fivemiov.database.MyDatabaseDao
-import com.vertial.fivemiov.ui.fragment_detail_contact.PhoneItem
-import com.vertial.fivemiov.ui.fragment_main.ContactItem
+import com.vertial.fivemiov.model.PhoneBookItem
+import com.vertial.fivemiov.model.PhoneItem
+import com.vertial.fivemiov.model.ContactItem
 import com.vertial.fivemiov.utils.EMPTY_EMAIL
 import com.vertial.fivemiov.utils.EMPTY_PHONE_NUMBER
 import com.vertial.fivemiov.utils.EMPTY_TOKEN
@@ -152,17 +149,27 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
 
     }
 
-    suspend fun exportPhoneBook(phoneBook:List<PhoneBookItem>){
-        val deferredRes=myAPIService.exportPhoneBook(request = NetRequest_ExportPhonebook(phoneBook.toTypedArray()))
-        try {
-            val result=deferredRes.await()
-            _exportPhoneBookNetworkSuccess.value=true
+    suspend fun exportPhoneBook(token:String, phoneNumber:String,phoneBook:List<PhoneBookItem>){
+        Log.i(MY_TAG, "EXPORTING PHONEBOOK")
 
-        }catch (e:Exception){
-            Log.i(MY_TAG,"network greska je ${e.message}")
+            val deferredRes = myAPIService.exportPhoneBook(
+                request = NetRequest_ExportPhonebook(
+                    token,
+                    phoneNumber,
+                    phoneBook.toTypedArray()
+                )
+            )
+            try {
+                val result = deferredRes.await()
+                _exportPhoneBookNetworkSuccess.value = true
+                Log.i(MY_TAG, "EXPORTING PHONEBOOK SUCCESS")
+
+            } catch (e: Exception) {
+                Log.i(MY_TAG, "EXPORTING PHONEBOOK FAILURE")
+                Log.i(MY_TAG, "network greska je ${e.message}")
+            }
         }
 
-    }
 
 
 }

@@ -14,7 +14,7 @@ import com.vertial.fivemiov.api.MyAPI
 import com.vertial.fivemiov.data.Repo
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.ActivityRegistrationAuthorizationBinding
-import com.vertial.fivemiov.ui.MainActivity
+import com.vertial.fivemiov.ui.main_activity.MainActivity
 import com.vertial.fivemiov.ui.emty_logo_fragment.EmptyLogoFragmentDirections
 import com.vertial.fivemiov.utils.EMPTY_TOKEN
 import com.vertial.fivemiov.utils.isOnline

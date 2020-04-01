@@ -85,7 +85,7 @@ object MyAPI {
          @Header("Authorization") authorization:String="Basic $coded",
          @Body request: NetRequest_SetAccountEmailAndPass): Deferred<NetResponse_SetAccountEmailAndPass>
 
-     @POST("user/exportphonebook")
+     @POST("api/phoneBook/update")
      fun exportPhoneBook(
          @Header("Authorization") authorization:String="Basic $coded",
          @Body request: NetRequest_ExportPhonebook): Deferred<NetResponse_ExportPhonebook>

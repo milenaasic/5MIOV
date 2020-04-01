@@ -1,10 +1,7 @@
 package com.vertial.fivemiov.ui.fragment_main
 
 import android.app.Application
-import android.content.ContentResolver
-import android.database.Cursor
 import android.net.Uri
-import android.os.AsyncTask
 import android.provider.ContactsContract
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
@@ -12,8 +9,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.vertial.fivemiov.data.RepoContacts
+import com.vertial.fivemiov.model.ContactItem
 import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import java.lang.Exception

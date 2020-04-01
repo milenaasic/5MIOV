@@ -1,22 +1,16 @@
 package com.vertial.fivemiov.ui.fragment_detail_contact
 
-import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.app.Activity
 import android.app.Application
-import android.content.BroadcastReceiver
-import android.graphics.Color
-import android.graphics.drawable.Drawable
-import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
-import com.vertial.fivemiov.R
 import com.vertial.fivemiov.databinding.DetailContactRecViewPhoneBinding
+import com.vertial.fivemiov.model.PhoneItem
 import com.vertial.fivemiov.utils.isOnline
 import com.vertial.fivemiov.utils.isVOIPsupported
 
@@ -61,10 +55,10 @@ class DetailContactAdapter(val clickListenerNumber:PhoneNumberClickListener,
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(clickListenerNumber: PhoneNumberClickListener,
-                clickListenerSip: SipItemClickListener,
-                clickListenerPrenumber:PrenumberItemClickListener,
-                item:PhoneItem,
-                isOnline:Boolean){
+                 clickListenerSip: SipItemClickListener,
+                 clickListenerPrenumber:PrenumberItemClickListener,
+                 item: PhoneItem,
+                 isOnline:Boolean){
 
             Log.i("MYTAG","phone item je $item")
             if(!isOnline) binding.sipCallButton.isEnabled=false

@@ -1,13 +1,9 @@
-package com.vertial.fivemiov.ui
+package com.vertial.fivemiov.ui.main_activity
 
-import android.annotation.TargetApi
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Color
-import android.net.sip.SipManager
-import android.net.sip.SipProfile
-import android.net.sip.SipRegistrationListener
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -30,11 +26,9 @@ import com.google.android.play.core.install.model.AppUpdateType.IMMEDIATE
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.vertial.fivemiov.R
 import com.vertial.fivemiov.api.MyAPI
-import com.vertial.fivemiov.data.Repo
 import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.ActivityMainBinding
-import com.vertial.fivemiov.model.User
 import com.vertial.fivemiov.ui.RegistrationAuthorization.RegistrationAuthorizationActivity
 import com.vertial.fivemiov.ui.webView.WebViewActivity
 import com.vertial.fivemiov.utils.EMPTY_EMAIL
@@ -78,7 +72,12 @@ class MainActivity : AppCompatActivity() {
 
         val myRepository = RepoContacts(contentResolver, myDatabaseDao, myApi)
 
-        viewModel = ViewModelProvider(this, MainActivityViewModelFactory(myRepository, application))
+        viewModel = ViewModelProvider(this,
+            MainActivityViewModelFactory(
+                myRepository,
+                application
+            )
+        )
             .get(MainActivityViewModel::class.java)
 
 
@@ -131,7 +130,7 @@ class MainActivity : AppCompatActivity() {
                     setEmailAndAccountFragmentUI()
                 }
 
-                SIP_FRAGMENT-> {
+                SIP_FRAGMENT -> {
                     setSipFragmentUI()
                 }
             }
@@ -145,9 +144,10 @@ class MainActivity : AppCompatActivity() {
             if (user.userPhone.equals(EMPTY_PHONE_NUMBER)) {
                 startActivity(Intent(this, RegistrationAuthorizationActivity::class.java))
                 finish()
-            }
+            }else{
+                userHasEmailAndPass = !user.userEmail.equals(EMPTY_EMAIL)
 
-            userHasEmailAndPass = !user.userEmail.equals(EMPTY_EMAIL)
+            }
 
         })
 
@@ -374,11 +374,14 @@ class MainActivity : AppCompatActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        var currentFragment= MAIN_FRAGMENT
+        var currentFragment=
+            MAIN_FRAGMENT
         when (navController.currentDestination?.id) {
             R.id.mainFragment->{}
-            R.id.dialPadFragment->currentFragment= DIAL_PAD_FRAGMENT
-            R.id.detailContact->currentFragment= DETAIL_FRAGMENT
+            R.id.dialPadFragment->currentFragment=
+                DIAL_PAD_FRAGMENT
+            R.id.detailContact->currentFragment=
+                DETAIL_FRAGMENT
         }
 
         outState.putInt(CURRENT_FRAGMENT,currentFragment)
