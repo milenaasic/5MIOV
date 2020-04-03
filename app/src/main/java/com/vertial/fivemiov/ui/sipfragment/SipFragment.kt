@@ -20,6 +20,7 @@ import com.vertial.fivemiov.R
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentSipBinding
 import com.vertial.fivemiov.model.User
+import com.vertial.fivemiov.utils.removePlus
 
 
 private val MYTAG="MY_Sip fragment"
@@ -33,7 +34,6 @@ class SipFragment : Fragment() {
     /*val sipManager: SipManager? by lazy(LazyThreadSafetyMode.NONE) {
         SipManager.newInstance(context)
     }*/
-
 
     private lateinit var sipManager: SipManager
     private var me:SipProfile? = null
@@ -133,6 +133,10 @@ class SipFragment : Fragment() {
 
     }
 
+    private fun createPeerSipProfile(contactNumber: String) {
+        contactNumber.removePlus()
+
+    }
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -176,13 +180,21 @@ class SipFragment : Fragment() {
 
     private fun initializeManager() {
         sipManager=SipManager.newInstance(requireContext())
+        initalizePeerProfile()
         initializeLocalProfile()
 
     }
 
-    private fun initializeLocalProfile() {
+    private fun initalizePeerProfile() {
+        //val peer=SipProfile.Builder("ankeanke","iptel.org")
+        //val username=args.contactNumber.
 
-        //if(sipManager==null)return
+        val peer=SipProfile.Builder("0038163352717","45.63.117.19")
+        peersipProfile=peer.build()
+        Log.i(MYTAG,"peer je ${peersipProfile?.uriString}")
+    }
+
+    private fun initializeLocalProfile() {
 
         if(me!=null) {
             Log.i(MYTAG,"me nije null, zatvara se profil")
@@ -199,10 +211,7 @@ class SipFragment : Fragment() {
         me=mysipProfileBuilder.build()
         Log.i(MYTAG,"me je ${me?.uriString}")
 
-        //val peer=SipProfile.Builder("ankeanke","iptel.org")
-        val peer=SipProfile.Builder("0038163352717","45.63.117.19")
-        peersipProfile=peer.build()
-        Log.i(MYTAG,"peer je ${peersipProfile?.uriString}")
+
         
         try {
             sipManager.open(me)

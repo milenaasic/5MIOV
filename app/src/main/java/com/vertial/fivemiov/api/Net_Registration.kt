@@ -1,7 +1,9 @@
 package com.vertial.fivemiov.api
 
 import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
+@JsonClass(generateAdapter = true)
 data class NetRequest_Registration(
 
     @Json(name="number")
@@ -9,7 +11,7 @@ data class NetRequest_Registration(
 
 )
 
-
+@JsonClass(generateAdapter = true)
 data class NetResponse_Registration(
 
     @Json(name="message")
@@ -17,4 +19,6 @@ data class NetResponse_Registration(
 
     @Json(name="phoneNumberAlreadyAssigned")
     val phoneNumberAlreadyAssigned:Boolean
+
+
 )

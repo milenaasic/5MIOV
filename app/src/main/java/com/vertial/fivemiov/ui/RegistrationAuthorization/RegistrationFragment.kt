@@ -97,8 +97,9 @@ class RegistrationFragment : Fragment() {
          })
 
          activityViewModel.registrationNetSuccessIsNmbAssigned.observe(viewLifecycleOwner, Observer {isNumberAssigned->
+             Log.i(MY_TAG,"da li je number dodeljen $isNumberAssigned")
+             showToast("broj je dodeljen $isNumberAssigned")
              if(!isNumberAssigned){
-                 //showToast(it)
                  findNavController().navigate(RegistrationFragmentDirections.actionRegistrationFragmentToAuthorizationFragment())
              }else {
                  findNavController().navigate(RegistrationFragmentDirections.actionRegistrationFragmentToNumberExistsInDatabase())

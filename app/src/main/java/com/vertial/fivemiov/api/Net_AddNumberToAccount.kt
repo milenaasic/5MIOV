@@ -1,7 +1,9 @@
 package com.vertial.fivemiov.api
 
 import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
+@JsonClass(generateAdapter = true)
 data class NetRequest_AddNumberToAccount (
 
     @Json(name="number")
@@ -15,6 +17,7 @@ data class NetRequest_AddNumberToAccount (
 
 )
 
+@JsonClass(generateAdapter = true)
 data class NetResponse_AddNumberToAccount (
 
     @Json(name="message")

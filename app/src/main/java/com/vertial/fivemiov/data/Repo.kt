@@ -101,8 +101,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
             val assigned=result.phoneNumberAlreadyAssigned
             Log.i(MY_TAG,"uspesna registracija $result")
             _registrationSuccessIsNmbAssigned.value=result.phoneNumberAlreadyAssigned
-        }
-        catch (e:Throwable){
+        } catch (e:Throwable){
             val m=e.cause
             Log.i(MY_TAG,"sve sto ima u greski je ${e.message}, cause ${e.cause}, localized mesage  ${e.localizedMessage},stack ${e.stackTrace}, ${e.printStackTrace()}")
             val errorMessage:String?=e.message

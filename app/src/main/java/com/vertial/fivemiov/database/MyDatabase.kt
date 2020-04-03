@@ -11,10 +11,7 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.vertial.fivemiov.model.Prenumber
 import com.vertial.fivemiov.model.User
-import com.vertial.fivemiov.utils.EMPTY_EMAIL
-import com.vertial.fivemiov.utils.EMPTY_PHONE_NUMBER
-import com.vertial.fivemiov.utils.EMPTY_TOKEN
-import com.vertial.fivemiov.utils.EMPTY_USERNAME
+import com.vertial.fivemiov.utils.*
 
 
 private const val NAME="MY_Database"
@@ -48,6 +45,9 @@ abstract class MyDatabase:RoomDatabase(){
                                     put("user_phone", EMPTY_PHONE_NUMBER)
                                     put("token", EMPTY_TOKEN)
                                     put("email", EMPTY_EMAIL)
+                                    put("sipUsername", EMPTY_SIP_USERNAME)
+                                    put("sipPassword", EMPTY_SIP_PASSWORD)
+
                                 }
                                 val myValues2=ContentValues().apply {
                                     put("prenumber","+38111777111")

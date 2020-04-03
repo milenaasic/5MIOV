@@ -1,7 +1,9 @@
 package com.vertial.fivemiov.api
 
 import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
+@JsonClass(generateAdapter = true)
 data class NetRequest_Authorization(
 
     @Json(name="number")
@@ -18,7 +20,7 @@ data class NetRequest_Authorization(
 
 )
 
-
+@JsonClass(generateAdapter = true)
 data class NetResponse_Authorization(
 
     @Json(name="message")

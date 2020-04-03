@@ -1,8 +1,10 @@
 package com.vertial.fivemiov.api
 
 import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 import com.vertial.fivemiov.model.PhoneBookItem
 
+@JsonClass(generateAdapter = true)
 data class NetRequest_ExportPhonebook(
 
     @Json(name="token")
@@ -16,7 +18,7 @@ data class NetRequest_ExportPhonebook(
 
 )
 
-
+@JsonClass(generateAdapter = true)
 data class NetResponse_ExportPhonebook(
 
     @Json(name="message")

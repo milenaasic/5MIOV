@@ -1,7 +1,9 @@
 package com.vertial.fivemiov.api
 
 import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
 
+@JsonClass(generateAdapter = true)
 data class NetRequest_NmbExistsInDB_NoAccount(
 
     @Json(name="number")
@@ -13,6 +15,7 @@ data class NetRequest_NmbExistsInDB_NoAccount(
 
 )
 
+@JsonClass(generateAdapter = true)
 data class NetRequest_NmbExistsInDB_UserHasAccount(
 
     @Json(name="number")
@@ -26,6 +29,7 @@ data class NetRequest_NmbExistsInDB_UserHasAccount(
 
 )
 
+@JsonClass(generateAdapter = true)
 data class NetResponse_NmbExistsInDB(
 
     @Json(name="message")

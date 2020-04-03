@@ -3,9 +3,7 @@ package com.vertial.fivemiov.model
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.vertial.fivemiov.utils.EMPTY_PHONE_NUMBER
-import com.vertial.fivemiov.utils.EMPTY_TOKEN
-import com.vertial.fivemiov.utils.EMPTY_USERNAME
+import com.vertial.fivemiov.utils.*
 
 @Entity(tableName = "user_table")
 data class User (
@@ -20,7 +18,12 @@ data class User (
     val userToken: String = EMPTY_TOKEN,
 
     @ColumnInfo(name= "email")
-    val userEmail: String = EMPTY_TOKEN
+    val userEmail: String = EMPTY_EMAIL,
 
+    @ColumnInfo(name= "sipUsername")
+    val sipUsername: String = EMPTY_SIP_USERNAME,
+
+    @ColumnInfo(name= "sipPassword")
+    val sipPassword: String = EMPTY_SIP_PASSWORD
 
 )
