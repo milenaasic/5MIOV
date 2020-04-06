@@ -356,7 +356,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun showAlertDialog(){
         val alertDialog=AlertDialog.Builder(this)
-            .setMessage("please set account email or your credit will be lost after log out")
+            .setMessage(getString(R.string.log_out_warning))
             .setPositiveButton("LOG OUT ANYWAY",object:DialogInterface.OnClickListener {
                 override fun onClick(p0: DialogInterface?, p1: Int) {
                     logout()

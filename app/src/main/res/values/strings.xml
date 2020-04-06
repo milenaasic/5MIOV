@@ -1,6 +1,6 @@
 <resources>
 
-    <string name="app_name">5MIOV</string>
+    <string name="app_name">5MIOV ver 1.0</string>
     <string name="empty_string"> </string>
 
     <!-- Menu names -->
@@ -78,6 +78,7 @@
     If email and password are not set, you will not be able to recover credits if you reinstall the app, insert SIM card into another device, lose SIM card or phone.\n
     In the meantime feel free to buy credits and use the app with no limits.
     </string>
+    <string name="log_out_warning">Please set account email and password or your credit will be lost after log out</string>
     <string name="log_out">Log out</string>
 
 
@@ -90,6 +91,7 @@
     <string name="sip_busy">Busy.</string>
     <string name="sip_call_established">Call Established.</string>
     <string name="sip_call_ended">Call Ended.</string>
+
 
 
 </resources>

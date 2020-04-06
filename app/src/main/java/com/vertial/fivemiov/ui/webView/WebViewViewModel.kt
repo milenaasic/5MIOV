@@ -8,6 +8,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.vertial.fivemiov.api.MyAPI
 import com.vertial.fivemiov.model.PhoneBookItem
 import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.model.PhoneItem
@@ -37,7 +38,7 @@ class WebViewViewModel(val myRepository: RepoContacts, application: Application)
 
 
     fun getPhoneBook(){
-        Log.i(MY_TAG,"get phone boook webview")
+       // Log.i(MY_TAG,"get phone boook webview")
 
         viewModelScope.launch {
             val deferredList=viewModelScope.async(Dispatchers.IO){
@@ -46,12 +47,12 @@ class WebViewViewModel(val myRepository: RepoContacts, application: Application)
             try {
                 val phoneBookList= mutableListOf<PhoneBookItem>()
                 val resultList=deferredList.await()
-                Log.i(MY_TAG,"get phone book lista $resultList")
+               // Log.i(MY_TAG,"get phone book lista $resultList")
                 val defferedPhones=(resultList.indices).map {
                     viewModelScope.async(Dispatchers.IO) {
                         val list=myRepository.getPhoneNumbersForContact(resultList[it].lookUpKey)
                         val phoneArray=convertPhoneListToPhoneArray(list)
-                        Log.i(MY_TAG,"get phone book phonearray ${phoneArray.toList()}")
+                        //Log.i(MY_TAG,"get phone book phonearray ${phoneArray.toList()}")
                         phoneBookList.add(
                             PhoneBookItem(
                                 resultList[it].name,
@@ -62,8 +63,8 @@ class WebViewViewModel(val myRepository: RepoContacts, application: Application)
                 }
 
                 val resultP=defferedPhones.map { it.await() }
-                Log.i(MY_TAG,"get phone book resul svih deferred je ${resultP}")
-                Log.i(MY_TAG,"get phone book phone book je  ${phoneBookList}")
+                //Log.i(MY_TAG,"get phone book resul svih deferred je ${resultP}")
+                //Log.i(MY_TAG,"get phone book phone book je  ${phoneBookList}")
                 _phoneBook.value=phoneBookList
 
 
@@ -89,6 +90,20 @@ class WebViewViewModel(val myRepository: RepoContacts, application: Application)
         if(myUser!=null && myUser.userPhone!= EMPTY_PHONE_NUMBER){
             viewModelScope.launch {
                 myRepository.exportPhoneBook(myUser.userToken,myUser.userPhone,phoneBook)
+            }
+        }
+
+    }
+
+    fun loadloadDashboard(){
+        viewModelScope.launch {
+
+            val loadDashDef=MyAPI.retrofitService.loadDashboard()
+            try {
+                val result=loadDashDef.await()
+                Log.i(MY_TAG,"result je ${result}")
+            }catch (e:Throwable) {
+                Log.i(MY_TAG,"exceptione ${e.message}")
             }
         }
 

@@ -16,7 +16,7 @@ private const val NAME="MY_API"
 //val coded=java.util.Base64.getEncoder().encodeToString("5miov:tester".toByteArray())
 val coded="NW1pb3Y6dGVzdGVy"
 
-private const val BASE_URL ="https://test.find.in.rs/"
+const val BASE_URL ="https://5miov.vertial.net/"
 
 private val moshi= Moshi.Builder()
     .add(KotlinJsonAdapterFactory())
@@ -89,6 +89,12 @@ object MyAPI {
      fun exportPhoneBook(
          @Header("Authorization") authorization:String="Basic $coded",
          @Body request: NetRequest_ExportPhonebook): Deferred<NetResponse_ExportPhonebook>
+
+     @GET("dashboard")
+     fun loadDashboard(
+         @Header("wvtk") authorization:String="7893c5c1781811ea9614839453911717"): Deferred<String>
+
+
 
 }
 

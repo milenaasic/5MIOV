@@ -4,9 +4,8 @@
 
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">test.find.in.rs</domain>
-        <domain includeSubdomains="true">example.com</domain>
         <domain includeSubdomains="true">45.63.117.19</domain>
-        <domain includeSubdomains="true">iptel.org</domain>
+        <domain includeSubdomains="true">checkout.paystack.com</domain>
 
     </domain-config>
 
