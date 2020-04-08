@@ -88,7 +88,7 @@ class DetailContact : Fragment() {
                     if(isVOIPsupported(requireContext())){
                         if(checkForPermissions())findNavController().navigate(DetailContactDirections.actionDetailContactToSipFragment(args.displayName,it))
                     }
-                    else showSnackBar(resources.getString(R.string.VOIP_not_supported))
+                    else  showSnackBar(resources.getString(R.string.VOIP_not_supported))
                 },
                 PrenumberItemClickListener(requireActivity()) {activity, phone ->
                         if(checkForPermissions()) makePrenumberPhoneCall(activity,phone)

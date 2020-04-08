@@ -34,8 +34,8 @@ class RegAuthActivityViewModel(val myRepository: Repo, application: Application)
 
     val authorizationNetworkError=myRepository.authorizationNetworkError
     val authorizationNetworkSuccess=myRepository.authorizationSuccess
-
-
+    val smsResendNetworkError=myRepository.smsResendNetworkError
+    val smsResendNetworkSuccess=myRepository.smsResendNetworkError
 
 
     init {
@@ -90,6 +90,13 @@ class RegAuthActivityViewModel(val myRepository: Repo, application: Application)
 
         viewModelScope.launch {
             myRepository.authorizeThisUser(enteredPhoneNumber,smsToken,enteredEmail?:"",enteredPassword?:"")
+        }
+
+    }
+
+    fun resendSMS(phoneNumber:String){
+        viewModelScope.launch {
+            myRepository.resendSMS(phoneNumber)
         }
 
     }

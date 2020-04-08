@@ -22,9 +22,7 @@ import com.vertial.fivemiov.databinding.FragmentNumberExistsInDatabaseBinding
 import com.vertial.fivemiov.utils.isEmailValid
 import com.vertial.fivemiov.utils.isPasswordValid
 
-/**
- * A simple [Fragment] subclass.
- */
+
 class NumberExistsInDatabase : Fragment() {
 
     private lateinit var binding: FragmentNumberExistsInDatabaseBinding
@@ -162,7 +160,7 @@ class NumberExistsInDatabase : Fragment() {
     }
 
     private fun showSnackBar(message: String) {
-        Snackbar.make(binding.root,message, Snackbar.LENGTH_LONG).show()
+        Snackbar.make(binding.root,message, Snackbar.LENGTH_INDEFINITE).setAction("OK"){}.show()
     }
 
     private fun showToast(message: String) {

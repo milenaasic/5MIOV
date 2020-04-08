@@ -63,6 +63,15 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
     val authorizationSuccess: LiveData<String>
         get() = _authorizationSuccess
 
+    private val _smsResendNetworkError= MutableLiveData<String>()
+    val smsResendNetworkError: LiveData<String>
+        get() = _smsResendNetworkError
+
+    private val _smsResendSuccess= MutableLiveData<String>()
+    val smsResendSuccess: LiveData<String>
+        get() = _smsResendSuccess
+
+
 
     private val _setAccountEmailAndPassError= MutableLiveData<String>()
     val setAccountEmailAndPassError: LiveData<String>
@@ -75,26 +84,6 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
 
     suspend fun sendRegistationToServer(phone:String){
         Log.i(MY_TAG,"send registration $phone")
-
-        /*val call=myAPI.sendRegistrationToServer(request = NetRequest_Registration(phoneNumber = phone ))
-        call.enqueue(object :Callback<NetResponse_Registration>{
-            override fun onResponse(
-                call: Call<NetResponse_Registration>,
-                response: Response<NetResponse_Registration>
-            ) {
-                Log.i(MY_TAG,"send registration call je $call, response je $response")
-                Log.i(MY_TAG,"send registration call je $call, " +
-                        "   response is success ${response.isSuccessful}, body je ${response.body().toString()}, error body ${response.errorBody()?.string()}, message ${response.message()}, code je ${response.code()}")
-
-            }
-
-            override fun onFailure(call: Call<NetResponse_Registration>, t: Throwable) {
-                Log.i(MY_TAG,"send registration failure call je $call, a throwable je $t")
-            }
-
-        })*/
-
-        Log.i(MY_TAG,"send registration $phone")
         val defResponse=myAPI.sendRegistrationToServer(request = NetRequest_Registration(phoneNumber = phone ))
         try{
             val result=defResponse.await()
@@ -103,9 +92,21 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
             _registrationSuccessIsNmbAssigned.value=result.phoneNumberAlreadyAssigned
         } catch (e:Throwable){
             val m=e.cause
-            Log.i(MY_TAG,"sve sto ima u greski je ${e.message}, cause ${e.cause}, localized mesage  ${e.localizedMessage},stack ${e.stackTrace}, ${e.printStackTrace()}")
             val errorMessage:String?=e.message
             _registrationNetworkError.value=e.toString()
+            Log.i(MY_TAG,"greska $errorMessage, a cela gresak je $e")
+        }
+
+    }
+
+    suspend fun resendSMS(phone: String){
+        val defResponse=myAPI.sendRegistrationToServer(request = NetRequest_Registration(phoneNumber = phone ))
+        try{
+            val result=defResponse.await()
+            _smsResendSuccess.value=result.message
+        } catch (e:Throwable){
+            val errorMessage:String?=e.message
+            _smsResendNetworkError.value=e.message
             Log.i(MY_TAG,"greska $errorMessage, a cela gresak je $e")
         }
 

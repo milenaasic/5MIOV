@@ -15,7 +15,7 @@
 
         android:id="@+id/rec_view_item_constr_layout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="64dp"
         android:onClick="@{() -> clickListener.onClick(contactItem)}"
         android:orientation="vertical">
 
@@ -29,15 +29,15 @@
             android:layout_marginBottom="4dp"
             android:ellipsize="end"
             android:singleLine="true"
-            app:setNameWithColoredLetters="@{contactItem}"
-            app:textToColor="@{textToColor}"
-            app:mycolor="@{myColor}"
             android:textAlignment="textStart"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/imageView_contact"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/divider"
+            app:mycolor="@{myColor}"
+            app:setNameWithColoredLetters="@{contactItem}"
+            app:textToColor="@{textToColor}"
             tools:text="Name" />
 
         <ImageView

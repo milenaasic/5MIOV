@@ -10,38 +10,50 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.vertial.fivemiov.R
 import com.vertial.fivemiov.model.ContactItem
+import com.vertial.fivemiov.utils.EMPTY
 
 private val MYTAG="MY_MainFragBindAdapter"
 
 @BindingAdapter("setNameWithColoredLetters","textToColor","mycolor")
 fun setNameWithColoredLetters(view:TextView, item: ContactItem, textToColor:String?, color:String){
-    Log.i(MYTAG,"contact je $item, za bojenje je $textToColor")
-    if(textToColor==null)view.text=item.name
+    //Log.i(MYTAG,"contact je $item, za bojenje je $textToColor")
+    if(item?.name== EMPTY) view.text=""
     else {
-        view.text=item.name.collorLetters(textToColor,Color.parseColor(color))?:item.name
+        if (textToColor == null) view.text = item.name
+        else {
+            view.text = item.name.collorLetters(textToColor, Color.parseColor(color)) ?: item.name
+        }
     }
 }
 
 
 @BindingAdapter("setThumbPhoto")
 fun setThumbnailPhoto(view: ImageView, item: ContactItem?){
-
-    Glide.with(view)
-        .load(item?.photoThumbUri)
-        .apply(RequestOptions().error(R.drawable.thumbnail_background).fallback(R.drawable.thumbnail_background))
-        .apply(RequestOptions().circleCrop())
-        .into(view)
+    if(item?.name=== EMPTY){
+        Glide.with(view)
+            .load(android.R.color.background_light)
+            .apply(RequestOptions().error(android.R.color.background_light).fallback(android.R.color.background_light))
+            .apply(RequestOptions().circleCrop())
+            .into(view)
+    }else {Glide.with(view)
+            .load(item?.photoThumbUri)
+            .apply(RequestOptions().error(R.drawable.thumbnail_background).fallback(R.drawable.thumbnail_background))
+            .apply(RequestOptions().circleCrop())
+            .into(view)
+            }
 
 }
 
 @BindingAdapter("setFirstLetter")
 fun setFirstLetter(view: TextView, item: ContactItem?){
-    if(item?.photoThumbUri==null) view.text= item?.name?.first().toString()
-    else view.text= ""
+    if((item?.name=== EMPTY))view.text= ""
+    else   {if(item?.photoThumbUri==null ) view.text= item?.name?.first().toString()
+            else view.text= ""}
 }
 
 @BindingAdapter("setABCLetters")
 fun setABCLetters(view: TextView, item: ContactItem?){
+
     view.text= item?.name?.first().toString()
 
 }

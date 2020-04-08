@@ -20,6 +20,7 @@ import com.vertial.fivemiov.R
 import com.vertial.fivemiov.databinding.FragmentAuthorizationBinding
 import com.vertial.fivemiov.databinding.FragmentRegistrationBinding
 import com.vertial.fivemiov.utils.isOnline
+import com.vertial.fivemiov.utils.removePlus
 
 
 class AuthorizationFragment : Fragment() {
@@ -47,9 +48,9 @@ class AuthorizationFragment : Fragment() {
                 showSnackBar(resources.getString(R.string.no_internet))
                 return@setOnClickListener}
 
-            it.isEnabled=false
+            enableDisableButtons(false)
 
-            if(binding.tokenEditText.text.toString().isNullOrBlank()){
+            if(binding.tokenEditText.text.toString().isBlank()){
                         binding.tokenEditText.setError(resources.getString(R.string.enter_token))
                         it.isEnabled=true
             } else {
@@ -70,6 +71,15 @@ class AuthorizationFragment : Fragment() {
             }
         }
 
+        binding.resendSmsButton.setOnClickListener{
+            enableDisableButtons(false)
+            showProgressBar(true)
+            //resending sms via registration route
+            activityViewModel.resendSMS(activityViewModel.enteredPhoneNumber)
+
+        }
+
+
         return binding.root
     }
 
@@ -80,18 +90,32 @@ class AuthorizationFragment : Fragment() {
         activityViewModel.authorizationNetworkSuccess.observe(viewLifecycleOwner, Observer {
             showToast(it)
             showProgressBar(false)
-            binding.submitButton.isEnabled=true
+            enableDisableButtons(true)
         })
 
         activityViewModel.authorizationNetworkError.observe(viewLifecycleOwner, Observer {
             if(it!=null)showSnackBar(it)
             showProgressBar(false)
-            binding.submitButton.isEnabled=true
+            enableDisableButtons(true)
         })
+
+        activityViewModel.smsResendNetworkSuccess.observe(viewLifecycleOwner, Observer {
+            showToast(it)
+            showProgressBar(false)
+            enableDisableButtons(true)
+        })
+
+        activityViewModel.smsResendNetworkError.observe(viewLifecycleOwner, Observer {
+            if(it!=null)showSnackBar(it)
+            showProgressBar(false)
+            enableDisableButtons(true)
+        })
+
+
     }
 
     private fun showSnackBar(message: String) {
-        Snackbar.make(binding.root,message, Snackbar.LENGTH_LONG).show()
+        Snackbar.make(binding.root,message, Snackbar.LENGTH_INDEFINITE).setAction("OK"){}.show()
     }
 
     private fun showToast(message: String) {
@@ -112,6 +136,24 @@ class AuthorizationFragment : Fragment() {
             binding.authorizationRootLayout.alpha=1f
             binding.authProgressBar.visibility=View.GONE
         }
+
+    }
+
+    private fun enableDisableButtons(b:Boolean){
+        if(b){
+                 binding.apply {
+                     submitButton.isEnabled = true
+                     resendSmsButton.isEnabled = true
+                 }
+         }else{
+                binding.apply {
+                    submitButton.isEnabled = false
+                    resendSmsButton.isEnabled = false
+
+                 }
+
+
+         }
 
     }
 

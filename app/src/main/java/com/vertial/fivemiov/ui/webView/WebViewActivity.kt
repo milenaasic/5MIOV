@@ -18,10 +18,12 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.vertial.fivemiov.R
+import com.vertial.fivemiov.api.BASE_URL
 import com.vertial.fivemiov.api.MyAPI
 import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.ActivityWebViewBinding
+import com.vertial.fivemiov.model.User
 import com.vertial.fivemiov.ui.main_activity.MainActivity
 
 
@@ -33,7 +35,7 @@ class WebViewActivity : AppCompatActivity() {
 
     companion object{
          const val HEADER_AUTH_TOKEN_KEY="wvtk"
-         const val DASHBOARD_URL="https://5miov.vertial.net/dashboard"
+         const val DASHBOARD_URL= BASE_URL+"dashboard"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,7 +54,6 @@ class WebViewActivity : AppCompatActivity() {
 
         binding.myWebView.apply {
             webViewClient = MyWebWievClient()
-            loadUrl(DASHBOARD_URL, getCustomHeaders())
             settings.javaScriptEnabled = true
             settings.domStorageEnabled=true
 
@@ -60,6 +61,7 @@ class WebViewActivity : AppCompatActivity() {
 
         viewModel.user.observe(this, Observer {
             Log.i(MY_TAG, " user je $it")
+            binding.myWebView.loadUrl(DASHBOARD_URL, getCustomHeaders(it.userToken))
 
         })
 
@@ -86,17 +88,15 @@ class WebViewActivity : AppCompatActivity() {
                     sharedPreferences.edit().putBoolean(MainActivity.PHONEBOOK_IS_EXPORTED, true)
                         .commit()
                     Log.i(MY_TAG, "  phoneBookIsExported promenljiva posle promene $isExported")
-
                 }
             }
-
         })
 
-       viewModel.loadloadDashboard()
+      // viewModel.loadloadDashboard()
     }
 
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+    /*override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         Log.i(MY_TAG, "  on key down $keyCode, event je $event")
 
         if (event?.action == KeyEvent.ACTION_DOWN) {
@@ -112,11 +112,11 @@ class WebViewActivity : AppCompatActivity() {
             }
         }
         return super.onKeyDown(keyCode, event)
-    }
+    }*/
 
-    fun getCustomHeaders(): Map<String, String> {
+    fun getCustomHeaders(token:String): Map<String, String> {
         val map = mutableMapOf<String, String>()
-        map.put(HEADER_AUTH_TOKEN_KEY, "7893c5c1781811ea9614839453911717")
+        map.put(HEADER_AUTH_TOKEN_KEY, token)
         return map
     }
 
@@ -125,35 +125,12 @@ class WebViewActivity : AppCompatActivity() {
 
 class MyWebWievClient() : WebViewClient() {
 
-        @RequiresApi(Build.VERSION_CODES.N)
-        override fun shouldInterceptRequest(
-            view: WebView?,
-            request: WebResourceRequest?
-        ): WebResourceResponse? {
-            Log.i(MY_TAG, "shouldInterceptRequest, url je ${request?.url}")
-            Log.i(MY_TAG,"${request?.method},${request?.requestHeaders?.entries},${request?.requestHeaders?.keys}")
-            Log.i(MY_TAG, "${request?.isRedirect}")
-
-            val response = super.shouldInterceptRequest(view, request)
-            Log.i(MY_TAG, "shouldInterceptRequestresponse je ${response.toString()}")
-
-            return super.shouldInterceptRequest(view, request)
-        }
-
-
         override fun shouldOverrideUrlLoading(
             view: WebView?,
             request: WebResourceRequest?
         ): Boolean {
             Log.i(MY_TAG, "shouldOverrideUrlLoading, url je ${request?.url}, super je ${super.shouldOverrideUrlLoading(view, request)}")
-
             return super.shouldOverrideUrlLoading(view, request)
-           /* return if(request?.url!=null && request.url.toString().contains("checkout.paystack.com")) {
-                Log.i(MY_TAG, "shouldOverrideUrlLoading, USAO U URL CONTAINS checkout.paystack.com}")
-                Log.i(MY_TAG, "shouldOverrideUrlLoading, request url to string je ${request?.url} }")
-                //paymentView.loadUrl(request.url.toString())
-                return true
-            } else super.shouldOverrideUrlLoading(view, request)*/
 
         }
 

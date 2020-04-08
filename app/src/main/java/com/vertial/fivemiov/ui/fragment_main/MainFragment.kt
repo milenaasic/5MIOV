@@ -4,51 +4,62 @@ package com.vertial.fivemiov.ui.fragment_main
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.database.Cursor
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.ContactsContract
 import android.util.Log
 import android.view.*
 import android.widget.ImageView
 import android.widget.SearchView
+import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.loader.app.LoaderManager
+import androidx.loader.content.CursorLoader
+import androidx.loader.content.Loader
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.vertial.fivemiov.R
 import com.vertial.fivemiov.api.MyAPI
 import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentMainBinding
+import com.vertial.fivemiov.databinding.FragmentMainLinLayoutBinding
+import com.vertial.fivemiov.fakedata.createFakeContactList
+import com.vertial.fivemiov.model.ContactItem
 import com.vertial.fivemiov.ui.main_activity.MainActivity
 import com.vertial.fivemiov.ui.main_activity.MainActivity.Companion.MAIN_ACTIVITY_SHARED_PREF_NAME
 import com.vertial.fivemiov.ui.main_activity.MainActivity.Companion.PHONEBOOK_IS_EXPORTED
 import com.vertial.fivemiov.ui.main_activity.MainActivityViewModel
+import com.vertial.fivemiov.utils.EMPTY
 import com.vertial.fivemiov.utils.EMPTY_EMAIL
-
+import kotlinx.android.synthetic.main.fragment_main.view.*
 
 private val MYTAG="MY_MAIN_FRAGMENT"
 
 
 
-class MainFragment : Fragment() {
+class MainFragment : Fragment(){
 
-    private lateinit var binding: FragmentMainBinding
+    private lateinit var binding: FragmentMainLinLayoutBinding
     private lateinit var viewModel:MainFragmentViewModel
-    private lateinit var activityViewModel: MainActivityViewModel
     private lateinit var contactsAdapter:MainFragmentAdapter
     private lateinit var searchViewActionBar: SearchView
 
+
     companion object{
         val MY_PERMISSIONS_REQUEST_READ_CONTACTS=10
-
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-        //showSetAccountDialog()
+        showSetAccountDialog()
     }
 
     override fun onCreateView(
@@ -56,7 +67,7 @@ class MainFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
 
-        binding= DataBindingUtil.inflate(inflater,R.layout.fragment_main,container,false)
+        binding= DataBindingUtil.inflate(inflater,R.layout.fragment_main_lin_layout,container,false)
 
         val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
         val apiService= MyAPI.retrofitService
@@ -66,37 +77,31 @@ class MainFragment : Fragment() {
             .get(MainFragmentViewModel::class.java)
 
 
-
-
         if(checkForPermissions()) {
-                initalizeAdapter()
-                if(shouldExportPhoneBook()) (requireActivity() as MainActivity).exportPhoneBook()
+               initalizeAdapter()
+               if(shouldExportPhoneBook()) (requireActivity() as MainActivity).exportPhoneBook()
 
         }
 
         binding.setEmailAndPassButton.setOnClickListener{
-
             findNavController().navigate(MainFragmentDirections.actionMainFragmentToSetEmailAndPasswordFragment())
         }
 
-
-
         return binding.root
     }
+
 
     private fun shouldExportPhoneBook(): Boolean {
        val sharedPreferences= requireActivity().getSharedPreferences(MAIN_ACTIVITY_SHARED_PREF_NAME,Context.MODE_PRIVATE)
 
        if(sharedPreferences.contains(PHONEBOOK_IS_EXPORTED)){
             val isExported=sharedPreferences.getBoolean(PHONEBOOK_IS_EXPORTED,false)
-            //val isExported=false PROBA
            Log.i(MYTAG," usao u ima phoneBookIsExported promenljiva i vrednost je $isExported")
             if(!isExported) return true
             else return false
 
        }else{
-
-            sharedPreferences.edit().putBoolean(PHONEBOOK_IS_EXPORTED,false).commit()
+            sharedPreferences.edit().putBoolean(PHONEBOOK_IS_EXPORTED,false).apply()
            Log.i(MYTAG," nema phoneBookIsExported promenljive i sada je napravljena")
            return true
        }
@@ -106,12 +111,21 @@ class MainFragment : Fragment() {
     private fun initalizeAdapter(){
 
         contactsAdapter=MainFragmentAdapter(ContactItemClickListener {
-            val action=MainFragmentDirections.actionMainFragmentToDetailContact(it.lookUpKey,it.name)
-            findNavController().navigate(action)
+            if(it.name== EMPTY){
+            }else{
+                val action=MainFragmentDirections.actionMainFragmentToDetailContact(it.lookUpKey,it.name)
+                findNavController().navigate(action)}
         },getColorForHighlightLetters().toString())
-        binding.recViewMainFragment.adapter=contactsAdapter
-        val search:String?=null
-        viewModel.populateContactList(search)
+
+
+        binding.mainFregmRecViewLinLayout.setHasFixedSize(true)
+        binding.mainFregmRecViewLinLayout.adapter=contactsAdapter
+
+       // val list= createFakeContactList()
+        //contactsAdapter.dataList= list
+
+        //inicijalizacija liste
+        viewModel.populateContactList("")
     }
 
 
@@ -120,16 +134,18 @@ class MainFragment : Fragment() {
 
         viewModel.userData.observe(viewLifecycleOwner, Observer {user->
             Log.i(MYTAG," user je $user")
-            if(user.userEmail== EMPTY_EMAIL) binding.setEmailAndPassButton.visibility=View.VISIBLE
+            if(user.userEmail==EMPTY_EMAIL) binding.setEmailAndPassButton.visibility=View.VISIBLE
             else binding.setEmailAndPassButton.visibility=View.GONE
         })
 
         viewModel.contactList.observe(viewLifecycleOwner, Observer {list->
+
             contactsAdapter.dataList=list
+
          })
 
         viewModel.numberOfSelectedContacts.observe(viewLifecycleOwner, Observer {
-            binding.textViewNbContacts.text=String.format(resources.getString(R.string.nb_of_contacts_found,it))
+            binding.nbOfContactsTextView.text=String.format(resources.getString(R.string.nb_of_contacts_found,it-1))
 
          })
 
@@ -181,18 +197,19 @@ class MainFragment : Fragment() {
 
             override fun onQueryTextChange(p0: String?): Boolean {
                 Log.i(MYTAG,"on qerry text change $p0")
+                viewModel.cancelOngoingJob()
                 viewModel.populateContactList(p0)
                 return true
             }
 
         })
 
-        /*searchViewActionBar.setOnCloseListener{
+        searchViewActionBar.setOnCloseListener{
             itemMyAccount.isVisible=true
             itemDialPad.isVisible=true
             Log.i(MYTAG,"on search collapse listener")
             true
-        }*/
+        }
 
         val mSearchCloseButton = resources.getIdentifier("android:id/search_close_btn", null, null)
         searchViewActionBar.findViewById<ImageView>(mSearchCloseButton).setOnClickListener{
@@ -253,7 +270,7 @@ class MainFragment : Fragment() {
             MY_PERMISSIONS_REQUEST_READ_CONTACTS -> {
                 // If request is cancelled, the result arrays are empty.
                 if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                   initalizeAdapter()
+                  // initalizeAdapter()
                 } else {
                     showSnackBar(resources.getString(R.string.no_permission_read_contacts))
                 }
@@ -272,7 +289,7 @@ class MainFragment : Fragment() {
     }
 
 
-    /*private fun showSetAccountDialog(){
+    private fun showSetAccountDialog(){
 
         val builder: AlertDialog.Builder? = activity?.let {
             AlertDialog.Builder(it)
@@ -284,13 +301,14 @@ class MainFragment : Fragment() {
                 .setNeutralButton("I Understand", { dialog, id ->
                         dialog.dismiss()
                 })
-
                 .setCancelable(false)
 
          }
          builder?.create()?.show()
 
-    }*/
+    }
+
 
 
 }
+

@@ -35,6 +35,8 @@ import com.vertial.fivemiov.utils.EMPTY_EMAIL
 import com.vertial.fivemiov.utils.EMPTY_PHONE_NUMBER
 
 
+
+
 private const val MY_TAG="MY_MainActivity"
 class MainActivity : AppCompatActivity() {
 
@@ -44,7 +46,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var viewModel: MainActivityViewModel
     private var userHasEmailAndPass: Boolean = false
 
-    private lateinit var appUpdateManager: AppUpdateManager
+    //private lateinit var appUpdateManager: AppUpdateManager
     private val MY_UPDATE_REQUEST_CODE = 10
 
     companion object {
@@ -137,7 +139,7 @@ class MainActivity : AppCompatActivity() {
 
         }
 
-        showSetAccountDialog()
+        //showSetAccountDialog()
 
         viewModel.userData.observe(this, Observer { user ->
 
@@ -168,7 +170,7 @@ class MainActivity : AppCompatActivity() {
                         MY_TAG,
                         " usao u ima phoneBookIsExported promenljiva i vrednost je $isExported"
                     )
-                    sharedPreferences.edit().putBoolean(PHONEBOOK_IS_EXPORTED, true).commit()
+                    sharedPreferences.edit().putBoolean(PHONEBOOK_IS_EXPORTED, true).apply()
                     Log.i(MY_TAG, "  phoneBookIsExported promenljiva posle promene $isExported")
 
                 }
@@ -178,7 +180,7 @@ class MainActivity : AppCompatActivity() {
 
         //IN APP UPDATE
         // Creates instance of the manager.
-        appUpdateManager = AppUpdateManagerFactory.create(this)
+        /*appUpdateManager = AppUpdateManagerFactory.create(this)
         // Returns an intent object that you use to check for an update.
         val appUpdateInfoTask = appUpdateManager.appUpdateInfo
 
@@ -199,7 +201,8 @@ class MainActivity : AppCompatActivity() {
                     MY_UPDATE_REQUEST_CODE
                 )
             }
-        }
+        }*/
+
 
     }
 
@@ -209,7 +212,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        appUpdateManager
+        /*appUpdateManager
             .appUpdateInfo
             .addOnSuccessListener { appUpdateInfo ->
                 if (appUpdateInfo.updateAvailability()
@@ -223,7 +226,7 @@ class MainActivity : AppCompatActivity() {
                         MY_UPDATE_REQUEST_CODE
                     )
                 }
-            }
+            }*/
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

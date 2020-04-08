@@ -71,6 +71,7 @@ class AddNumberToAccount : Fragment() {
             }
         }
 
+
         return binding.root
     }
 
@@ -136,7 +137,7 @@ class AddNumberToAccount : Fragment() {
     }
 
     private fun showSnackBar(message: String) {
-        Snackbar.make(binding.root,message, Snackbar.LENGTH_LONG).show()
+        Snackbar.make(binding.root,message, Snackbar.LENGTH_INDEFINITE).setAction("OK"){}.show()
     }
 
     private fun showToast(message: String) {

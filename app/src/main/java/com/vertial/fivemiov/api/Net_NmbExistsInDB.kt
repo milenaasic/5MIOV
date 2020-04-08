@@ -9,8 +9,8 @@ data class NetRequest_NmbExistsInDB_NoAccount(
     @Json(name="number")
     val phoneNumber:String,
 
-    @Json(name="signin")
-    val signin:String="true"
+    @Json(name="signIn")
+    val signin:String="false"
 
 
 )
@@ -25,7 +25,10 @@ data class NetRequest_NmbExistsInDB_UserHasAccount(
     val email:String,
 
     @Json(name="password")
-    val password:String
+    val password:String,
+
+    @Json(name="signIn")
+    val signin:String="true"
 
 )
 

@@ -12,6 +12,7 @@ import com.vertial.fivemiov.database.MyDatabaseDao
 import com.vertial.fivemiov.model.PhoneBookItem
 import com.vertial.fivemiov.model.PhoneItem
 import com.vertial.fivemiov.model.ContactItem
+import com.vertial.fivemiov.utils.EMPTY_CONTACT_ITEM
 import com.vertial.fivemiov.utils.EMPTY_EMAIL
 import com.vertial.fivemiov.utils.EMPTY_PHONE_NUMBER
 import com.vertial.fivemiov.utils.EMPTY_TOKEN
@@ -39,7 +40,6 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
         }
 
     }
-
 
 
     fun getAllContacts(uri: Uri):List<ContactItem>{
@@ -91,7 +91,9 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
             }
 
         Log.i(MY_TAG, "convert cursor u listu $list")
-        return list
+        //prazan kontakt na kraj da se vidi iza button-a set email and pass
+        list.add(EMPTY_CONTACT_ITEM)
+            return list
         }
 
     }
@@ -145,6 +147,7 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
             cursor.close();
         }
         Log.i(MY_TAG,"convert cursor u listu $list")
+
         return list
 
     }

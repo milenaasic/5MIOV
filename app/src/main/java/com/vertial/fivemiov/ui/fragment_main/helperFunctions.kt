@@ -15,7 +15,6 @@ fun String.collorLetters(substringToColor:String,mycolor:Int):SpannableString?{
 
         val colorSpan = ForegroundColorSpan(mycolor)
         val startIndex: Int = this.toLowerCase().indexOf(substringToColor.toLowerCase())
-        Log.i(MY_TAG,"start indeks je $startIndex")
         if (startIndex != -1) {
             val lastIndex: Int = startIndex + substringToColor.length
             spannableString.setSpan(colorSpan, startIndex, lastIndex, 0)

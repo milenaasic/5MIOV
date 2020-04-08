@@ -98,7 +98,7 @@ class RegistrationFragment : Fragment() {
 
          activityViewModel.registrationNetSuccessIsNmbAssigned.observe(viewLifecycleOwner, Observer {isNumberAssigned->
              Log.i(MY_TAG,"da li je number dodeljen $isNumberAssigned")
-             showToast("broj je dodeljen $isNumberAssigned")
+             //showToast("broj je dodeljen $isNumberAssigned")
              if(!isNumberAssigned){
                  findNavController().navigate(RegistrationFragmentDirections.actionRegistrationFragmentToAuthorizationFragment())
              }else {
@@ -129,7 +129,7 @@ class RegistrationFragment : Fragment() {
     }
 
     private fun showSnackBar(message: String) {
-        Snackbar.make(binding.root,message,Snackbar.LENGTH_LONG).show()
+        Snackbar.make(binding.root,message,Snackbar.LENGTH_INDEFINITE).setAction("OK"){}.show()
     }
 
     private fun showToast(message: String) {
