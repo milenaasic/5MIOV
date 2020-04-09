@@ -27,6 +27,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.snackbar.Snackbar
@@ -64,7 +65,6 @@ class DetailContact : Fragment() {
         super.onCreate(savedInstanceState)
         args = DetailContactArgs.fromBundle(arguments!!)
         setHasOptionsMenu(true)
-
         getNetworkStatusChangedInfo()
     }
 
@@ -82,7 +82,6 @@ class DetailContact : Fragment() {
         viewModel=ViewModelProvider(this,DetailContactViewModelFactory(args.contactLookUpKey,repo,requireActivity().application)).get(DetailContactViewModel::class.java)
 
         phoneAdapter= DetailContactAdapter(
-                PhoneNumberClickListener (requireActivity(),resources.displayMetrics.density),
                 SipItemClickListener{
 
                     if(isVOIPsupported(requireContext())){
@@ -98,6 +97,8 @@ class DetailContact : Fragment() {
 
 
         binding.detailContactRecView.adapter=phoneAdapter
+        binding.detailContactRecView.addItemDecoration(DividerItemDecoration(requireContext(),DividerItemDecoration.VERTICAL))
+
 
         binding.displayNameTextView.text=args.displayName
 

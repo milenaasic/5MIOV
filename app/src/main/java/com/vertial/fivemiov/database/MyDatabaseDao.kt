@@ -12,6 +12,9 @@ interface MyDatabaseDao {
     @Query("SELECT * FROM user_table WHERE id=1")
     fun getUser():LiveData<User>
 
+    @Query("SELECT * FROM user_table WHERE id=1")
+    fun getUserNoLiveData():User
+
     @Query("UPDATE user_table SET user_phone=:phoneNb,token=:token WHERE ID=1")
     fun updateUsersPhoneAndToken(phoneNb:String,token:String)
 

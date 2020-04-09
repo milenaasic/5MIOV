@@ -12,11 +12,13 @@ import com.vertial.fivemiov.database.MyDatabaseDao
 import com.vertial.fivemiov.model.PhoneBookItem
 import com.vertial.fivemiov.model.PhoneItem
 import com.vertial.fivemiov.model.ContactItem
+import com.vertial.fivemiov.model.User
 import com.vertial.fivemiov.utils.EMPTY_CONTACT_ITEM
 import com.vertial.fivemiov.utils.EMPTY_EMAIL
 import com.vertial.fivemiov.utils.EMPTY_PHONE_NUMBER
 import com.vertial.fivemiov.utils.EMPTY_TOKEN
 import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers.IO
 
 private const val MY_TAG="MY_ContactsRepository"
 class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDatabaseDao, val myAPIService: MyAPIService) {
@@ -38,6 +40,11 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
         withContext(Dispatchers.IO){
             myDatabaseDao.logout(EMPTY_PHONE_NUMBER, EMPTY_TOKEN, EMPTY_EMAIL)
         }
+
+    }
+
+    suspend fun getUser()=withContext(Dispatchers.IO){
+            myDatabaseDao.getUserNoLiveData()
 
     }
 

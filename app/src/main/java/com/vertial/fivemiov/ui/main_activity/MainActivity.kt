@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var viewModel: MainActivityViewModel
     private var userHasEmailAndPass: Boolean = false
 
-    //private lateinit var appUpdateManager: AppUpdateManager
+    private lateinit var appUpdateManager: AppUpdateManager
     private val MY_UPDATE_REQUEST_CODE = 10
 
     companion object {
@@ -139,18 +139,15 @@ class MainActivity : AppCompatActivity() {
 
         }
 
-        //showSetAccountDialog()
+
 
         viewModel.userData.observe(this, Observer { user ->
-
             if (user.userPhone.equals(EMPTY_PHONE_NUMBER)) {
                 startActivity(Intent(this, RegistrationAuthorizationActivity::class.java))
                 finish()
             }else{
                 userHasEmailAndPass = !user.userEmail.equals(EMPTY_EMAIL)
-
             }
-
         })
 
         viewModel.phoneBook.observe(this, Observer {
@@ -178,9 +175,20 @@ class MainActivity : AppCompatActivity() {
 
         })
 
+        viewModel.shouldShowSetAccountDisclaimer.observe(this, Observer {
+            Log.i(MY_TAG,"observera za setAccount Disclaimer je $it")
+            if(it) {
+                    showSetAccountDialog()
+                    viewModel.setAccountDialogDiscalimerShown()
+
+            }
+         })
+
+        viewModel.showSetAccountDisclaimer()
+
         //IN APP UPDATE
         // Creates instance of the manager.
-        /*appUpdateManager = AppUpdateManagerFactory.create(this)
+        appUpdateManager = AppUpdateManagerFactory.create(this)
         // Returns an intent object that you use to check for an update.
         val appUpdateInfoTask = appUpdateManager.appUpdateInfo
 
@@ -201,7 +209,7 @@ class MainActivity : AppCompatActivity() {
                     MY_UPDATE_REQUEST_CODE
                 )
             }
-        }*/
+        }
 
 
     }
@@ -212,7 +220,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        /*appUpdateManager
+        appUpdateManager
             .appUpdateInfo
             .addOnSuccessListener { appUpdateInfo ->
                 if (appUpdateInfo.updateAvailability()
@@ -226,7 +234,7 @@ class MainActivity : AppCompatActivity() {
                         MY_UPDATE_REQUEST_CODE
                     )
                 }
-            }*/
+            }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -414,5 +422,9 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+    override fun onDestroy() {
+        super.onDestroy()
 
+
+    }
 }

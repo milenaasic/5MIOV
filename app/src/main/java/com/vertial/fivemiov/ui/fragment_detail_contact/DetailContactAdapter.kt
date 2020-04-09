@@ -17,7 +17,7 @@ import com.vertial.fivemiov.utils.isVOIPsupported
 
 private val MYTAG="MY_DetailContactAdapter"
 
-class DetailContactAdapter(val clickListenerNumber:PhoneNumberClickListener,
+class DetailContactAdapter(
                             val clickListenerSIP: SipItemClickListener,
                             val clickListenerPrenumber:PrenumberItemClickListener,
                             val app: Application
@@ -45,7 +45,7 @@ class DetailContactAdapter(val clickListenerNumber:PhoneNumberClickListener,
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
 
-        holder.bind(clickListenerNumber,clickListenerSIP,clickListenerPrenumber,dataList[position],
+        holder.bind(clickListenerSIP,clickListenerPrenumber,dataList[position],
             isVOIPSupported&&isOnline(app))
     }
 
@@ -54,8 +54,7 @@ class DetailContactAdapter(val clickListenerNumber:PhoneNumberClickListener,
     class MyViewHolder private constructor(val binding: DetailContactRecViewPhoneBinding):
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(clickListenerNumber: PhoneNumberClickListener,
-                 clickListenerSip: SipItemClickListener,
+        fun bind( clickListenerSip: SipItemClickListener,
                  clickListenerPrenumber:PrenumberItemClickListener,
                  item: PhoneItem,
                  isOnline:Boolean){
@@ -64,7 +63,7 @@ class DetailContactAdapter(val clickListenerNumber:PhoneNumberClickListener,
             if(!isOnline) binding.sipCallButton.isEnabled=false
             else binding.sipCallButton.isEnabled=true
             binding.phoneItem=item
-            binding.phoneClick=clickListenerNumber
+           // binding.phoneClick=clickListenerNumber
             binding.sipClick=clickListenerSip
             binding.prenumberClick=clickListenerPrenumber
 
@@ -91,7 +90,7 @@ class PrenumberItemClickListener(val activity: Activity,val clickListener:(activ
     fun onClick(phone:String)=clickListener(activity,phone)
 }
 
-class PhoneNumberClickListener(val activity: Activity,val density: Float){
+/*class PhoneNumberClickListener(val activity: Activity,val density: Float){
     fun onClick(view:View){
 
         if(shouldViewExpand(view)) {
@@ -182,4 +181,4 @@ class PhoneNumberClickListener(val activity: Activity,val density: Float){
     }
 
 
-}
+}*/

@@ -189,7 +189,7 @@ class SipFragment : Fragment() {
         //val peer=SipProfile.Builder("ankeanke","iptel.org")
         //val username=args.contactNumber.
 
-        val peer=SipProfile.Builder("0038163352717","45.63.117.19")
+        val peer=SipProfile.Builder("00381646408513","45.63.117.19")
         peersipProfile=peer.build()
         Log.i(MYTAG,"peer je ${peersipProfile?.uriString}")
     }

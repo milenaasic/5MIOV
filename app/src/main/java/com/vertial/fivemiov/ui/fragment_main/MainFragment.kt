@@ -59,7 +59,7 @@ class MainFragment : Fragment(){
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-        showSetAccountDialog()
+
     }
 
     override fun onCreateView(
@@ -287,28 +287,6 @@ class MainFragment : Fragment(){
     private fun showSnackBar(s:String) {
         Snackbar.make(binding.root,s,Snackbar.LENGTH_LONG).show()
     }
-
-
-    private fun showSetAccountDialog(){
-
-        val builder: AlertDialog.Builder? = activity?.let {
-            AlertDialog.Builder(it)
-        }
-
-        builder?.apply {
-                setMessage(R.string.set_account_dialog)
-                .setTitle("Important")
-                .setNeutralButton("I Understand", { dialog, id ->
-                        dialog.dismiss()
-                })
-                .setCancelable(false)
-
-         }
-         builder?.create()?.show()
-
-    }
-
-
 
 }
 

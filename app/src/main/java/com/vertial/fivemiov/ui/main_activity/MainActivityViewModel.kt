@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import com.vertial.fivemiov.model.PhoneBookItem
 import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.model.PhoneItem
+import com.vertial.fivemiov.utils.EMPTY_EMAIL
 import com.vertial.fivemiov.utils.EMPTY_PHONE_NUMBER
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
@@ -24,6 +25,13 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
 
     //live data from database
     val userData=myRepository.getUserData()
+
+
+    //setAccountDisclaimer
+    private val _shouldShowSetAccountDisclaimer = MutableLiveData<Boolean>()
+    val shouldShowSetAccountDisclaimer: LiveData<Boolean>
+        get() = _shouldShowSetAccountDisclaimer
+
 
     //phonebook
     private val _phoneBook = MutableLiveData<List<PhoneBookItem>>()
@@ -41,6 +49,22 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
         viewModelScope.launch {
             myRepository.logout()
         }
+    }
+
+    fun showSetAccountDisclaimer(){
+        viewModelScope.launch {
+            Log.i(MY_TAG," usao u user za show acccount dialog")
+            val user=myRepository.getUser()
+            Log.i(MY_TAG,"user za show acccount dialog je $user")
+            if(user.userEmail.equals(EMPTY_EMAIL)){
+                Log.i(MY_TAG,"user ima empty email")
+                _shouldShowSetAccountDisclaimer.value=true}
+        }
+
+    }
+
+    fun setAccountDialogDiscalimerShown(){
+        _shouldShowSetAccountDisclaimer.value=false
     }
 
 
