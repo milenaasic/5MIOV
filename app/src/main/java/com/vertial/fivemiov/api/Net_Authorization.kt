@@ -23,10 +23,25 @@ data class NetRequest_Authorization(
 @JsonClass(generateAdapter = true)
 data class NetResponse_Authorization(
 
+    @Json(name="userMsg")
+    val userMessage:String,
+
+    @Json(name="version")
+    val appVersion:String,
+
     @Json(name="message")
     val message:String,
 
+    @Json(name="email")
+    val email:String,
+
     @Json(name="authToken")
-    val authToken:String
+    val authToken:String,
+
+    @Json(name="e1phone")
+    val e1phone:String,
+
+    @Json(name="sipCallerId")
+    val sipCallerId:String
 
 )

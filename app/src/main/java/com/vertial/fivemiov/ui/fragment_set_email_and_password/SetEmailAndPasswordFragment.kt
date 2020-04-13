@@ -21,6 +21,7 @@ import com.vertial.fivemiov.api.MyAPI
 import com.vertial.fivemiov.data.Repo
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentSetEmailAndPasswordBinding
+import com.vertial.fivemiov.ui.my_application.MyApplication
 import com.vertial.fivemiov.utils.isEmailValid
 
 import com.vertial.fivemiov.utils.isOnline
@@ -44,11 +45,14 @@ class SetEmailAndPasswordFragment : Fragment() {
 
         binding= DataBindingUtil.inflate(inflater,R.layout.fragment_set_email_and_password,container,false)
 
-        val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
+        /*val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
         val apiService= MyAPI.retrofitService
-        val repo= Repo(database,apiService)
+        val repo= Repo(database,apiService)*/
 
-        viewModel = ViewModelProvider(this, SetEmailPassViewModelFactory(repo,requireActivity().application))
+        val myApp=requireActivity().application as MyApplication
+        val myAppContanier=myApp.myAppContainer
+
+        viewModel = ViewModelProvider(this, SetEmailPassViewModelFactory(myAppContanier.repo,requireActivity().application))
             .get(SetEmailPassFragmentViewModel::class.java)
 
 

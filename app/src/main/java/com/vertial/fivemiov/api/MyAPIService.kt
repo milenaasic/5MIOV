@@ -5,6 +5,8 @@ import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterF
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.Deferred
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
@@ -28,7 +30,17 @@ private val moshi= Moshi.Builder()
     .writeTimeout(10, TimeUnit.SECONDS)
     .build()*/
 
+val logging=HttpLoggingInterceptor().apply {
+    level=HttpLoggingInterceptor.Level.BODY
+
+ }
+val okHttpClient = OkHttpClient.Builder()
+    .addInterceptor(logging)
+    .build()
+
+
 private val retrofit= Retrofit.Builder()
+    .client(okHttpClient)
     .addConverterFactory(MoshiConverterFactory.create(moshi))
     .addCallAdapterFactory(CoroutineCallAdapterFactory())
     .baseUrl(BASE_URL)
@@ -43,6 +55,7 @@ object MyAPI {
  interface MyAPIService {
 
     //Registrationa and Authorization Process
+
     @POST("api/user/signup")
     fun sendRegistrationToServer(
         @Header("Authorization") authorization:String="Basic $coded",
@@ -58,7 +71,6 @@ object MyAPI {
          @Header("Authorization") authorization:String="Basic $coded",
          @Body request: NetRequest_AddNumberToAccount): Deferred<NetResponse_AddNumberToAccount>
 
-
      @POST("api/user/signup")
      fun numberExistsInDBVerifyAccount(
          @Header("Authorization") authorization:String="Basic $coded",
@@ -69,9 +81,6 @@ object MyAPI {
          @Header("Authorization") authorization:String="Basic $coded",
          @Body request: NetRequest_NmbExistsInDB_NoAccount): Deferred<NetResponse_NmbExistsInDB>
 
-
-
-
      @POST("api/user/create")
      fun authorizeUser(
          @Header("Authorization") authorization:String="Basic $coded",
@@ -79,7 +88,8 @@ object MyAPI {
 
 
 
-     //Registered User
+
+     //registrovan korisnik , net pozivi u okviru glavnog deo app-a
      @POST("api/user/setCredentials")
      fun setAccountEmailAndPasswordForUser(
          @Header("Authorization") authorization:String="Basic $coded",
@@ -93,6 +103,44 @@ object MyAPI {
      @GET("dashboard")
      fun loadDashboard(
          @Header("wvtk") authorization:String="7893c5c1781811ea9614839453911717"): Deferred<String>
+
+
+    //E1 prenumber rute
+    @POST("/api/sip/getE1")
+    fun getE1(
+        @Header("Authorization") authorization:String="Basic $coded",
+        @Body request: NetRequest_GetE1): Deferred<NetResponse_GetE1>
+
+     @POST("/api/sip/setNewE1")
+     fun setNewE1(
+         @Header("Authorization") authorization:String="Basic $coded",
+         @Body request: NetRequest_SetE1Prenumber): Deferred<NetResponse_SetE1Prenumber>
+
+
+
+     //Sip rute
+
+     @POST("api/sip/getSipCallerIds")
+     fun getSipCallerIds(
+         @Header("Authorization") authorization:String="Basic $coded",
+         @Body request: NetRequest_GetSipCallerIds): Deferred<NetResponse_GetSipCallerIds>
+
+
+     @POST("api/sip/setSipCallerId")
+     fun setSipCallerId(
+         @Header("Authorization") authorization:String="Basic $coded",
+         @Body request: NetRequest_SetSipCallerId): Deferred<NetResponse_SetSipCallerId>
+
+
+     @POST("api/sip/resetSipAccess")
+     fun resetSipAccess(
+         @Header("Authorization") authorization:String="Basic $coded",
+         @Body request: NetRequest_ResetSipAccess): Deferred<NetResponse_ResetSipAccess>
+
+     @POST("api/sip/getSipAccess")
+     fun getSipAccess(
+         @Header("Authorization") authorization:String="Basic $coded",
+         @Body request: NetRequest_GetSipAccessCredentials): Deferred<NetResponse_GetSipAccessCredentials>
 
 
 

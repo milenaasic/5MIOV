@@ -20,10 +20,7 @@ data class User (
     @ColumnInfo(name= "email")
     val userEmail: String = EMPTY_EMAIL,
 
-    @ColumnInfo(name= "sipUsername")
-    val sipUsername: String = EMPTY_SIP_USERNAME,
-
-    @ColumnInfo(name= "sipPassword")
-    val sipPassword: String = EMPTY_SIP_PASSWORD
+    @ColumnInfo(name= "password")
+    val userPassword: String = EMPTY_PASSWORD
 
 )

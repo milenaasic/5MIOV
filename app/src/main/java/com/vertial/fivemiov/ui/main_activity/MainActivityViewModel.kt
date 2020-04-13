@@ -1,6 +1,7 @@
 package com.vertial.fivemiov.ui.main_activity
 
 import android.app.Application
+import android.content.Context
 import android.provider.ContactsContract
 import android.telephony.PhoneNumberUtils
 import android.util.Log
@@ -53,11 +54,11 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
 
     fun showSetAccountDisclaimer(){
         viewModelScope.launch {
-            Log.i(MY_TAG," usao u user za show acccount dialog")
+
             val user=myRepository.getUser()
             Log.i(MY_TAG,"user za show acccount dialog je $user")
-            if(user.userEmail.equals(EMPTY_EMAIL)){
-                Log.i(MY_TAG,"user ima empty email")
+            if(user.userEmail.equals(EMPTY_EMAIL) && !checkForSharedPrefDisclamerShownValue()){
+                Log.i(MY_TAG,"user ima empty email i nije pokazan disclaimer")
                 _shouldShowSetAccountDisclaimer.value=true}
         }
 
@@ -123,6 +124,21 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
             }
         }
 
+    }
+
+    private fun checkForSharedPrefDisclamerShownValue():Boolean{
+
+        val sharedPreferences = getApplication<Application>().getSharedPreferences(MainActivity.MAIN_ACTIVITY_SHARED_PREF_NAME, Context.MODE_PRIVATE)
+        var wasShown=false
+
+        if(sharedPreferences.contains(MainActivity.DISCLAIMER_WAS_SHOWN)){
+            wasShown=sharedPreferences.getBoolean(MainActivity.DISCLAIMER_WAS_SHOWN,false)
+            Log.i(MY_TAG," usao u ima disclaimer promenljiva i vrednost je $wasShown")
+        }else{
+            sharedPreferences.edit().putBoolean(MainActivity.DISCLAIMER_WAS_SHOWN,false).apply()
+        }
+
+        return wasShown
     }
 
 }

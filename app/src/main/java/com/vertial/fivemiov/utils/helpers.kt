@@ -12,6 +12,8 @@ import android.util.Patterns
 
 private val MYTAG="MY_helpers"
 
+
+
 fun isOnline(application: Application):Boolean{
 
     var online=false
@@ -43,6 +45,16 @@ fun String.isPhoneNumberValid():Boolean{
     return PhoneNumberUtils.isGlobalPhoneNumber(this)
 }
 
+fun String.removeDoubleZeroAtBegining():String{
+    if(!this.trim().startsWith(DOUBLE_ZERO)) return this
+    return this.trim().removePrefix(DOUBLE_ZERO)
+}
+
+fun String.removeFirstZeroAddPrefix(prefix:String):String{
+
+    if(!this.trim().startsWith(ONE_ZERO)) return this
+    return this.trim().removePrefix(ONE_ZERO).plus(NIGERIAN_PREFIX)
+}
 
 fun CharSequence?.isEmailValid() = !isNullOrEmpty() && Patterns.EMAIL_ADDRESS.matcher(this).matches()
 
@@ -65,7 +77,10 @@ fun isVOIPsupported(context:Context):Boolean{
     Log.i(MYTAG," is sip api supoported ${SipManager.isApiSupported(context)}")
     return (SipManager.isVoipSupported(context)&& SipManager.isApiSupported(context))
 
-
 }
 
+fun did24HoursPass(currentTime:Long, databaseE1Timestamp:Long):Boolean{
+    if(currentTime.minus(databaseE1Timestamp)> HOURS_24_IN_MILLIS)  return true
+    else return false
 
+}

@@ -62,6 +62,7 @@
         android:backgroundTint="@color/design_default_color_error"
         android:text="set account e-mail and password"
         android:textColor="@android:color/white"
+        android:visibility="gone"
         app:elevation="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

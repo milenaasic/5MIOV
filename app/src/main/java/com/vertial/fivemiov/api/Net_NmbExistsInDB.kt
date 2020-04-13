@@ -36,6 +36,9 @@ data class NetRequest_NmbExistsInDB_UserHasAccount(
 data class NetResponse_NmbExistsInDB(
 
     @Json(name="message")
-    val message:String
+    val message:String,
+
+    @Json(name="version")
+    val appVersion:String
 
 )

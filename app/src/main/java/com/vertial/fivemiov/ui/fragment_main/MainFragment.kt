@@ -36,6 +36,7 @@ import com.vertial.fivemiov.ui.main_activity.MainActivity
 import com.vertial.fivemiov.ui.main_activity.MainActivity.Companion.MAIN_ACTIVITY_SHARED_PREF_NAME
 import com.vertial.fivemiov.ui.main_activity.MainActivity.Companion.PHONEBOOK_IS_EXPORTED
 import com.vertial.fivemiov.ui.main_activity.MainActivityViewModel
+import com.vertial.fivemiov.ui.my_application.MyApplication
 import com.vertial.fivemiov.utils.EMPTY
 import com.vertial.fivemiov.utils.EMPTY_EMAIL
 import kotlinx.android.synthetic.main.fragment_main.view.*
@@ -69,11 +70,14 @@ class MainFragment : Fragment(){
 
         binding= DataBindingUtil.inflate(inflater,R.layout.fragment_main_lin_layout,container,false)
 
-        val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
+        /*val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
         val apiService= MyAPI.retrofitService
-        val repo=RepoContacts(requireActivity().contentResolver,database,apiService)
+        val repo=RepoContacts(requireActivity().contentResolver,database,apiService)*/
 
-        viewModel = ViewModelProvider(this, MainFragmentViewModelFactory(repo,requireActivity().application))
+        val myApp=requireActivity().application as MyApplication
+        val myAppContanier=myApp.myAppContainer
+
+        viewModel = ViewModelProvider(this, MainFragmentViewModelFactory(myAppContanier.contactsRepo,requireActivity().application))
             .get(MainFragmentViewModel::class.java)
 
 
@@ -270,7 +274,7 @@ class MainFragment : Fragment(){
             MY_PERMISSIONS_REQUEST_READ_CONTACTS -> {
                 // If request is cancelled, the result arrays are empty.
                 if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                  // initalizeAdapter()
+                   initalizeAdapter()
                 } else {
                     showSnackBar(resources.getString(R.string.no_permission_read_contacts))
                 }

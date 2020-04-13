@@ -20,6 +20,7 @@ import com.vertial.fivemiov.R
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentSipBinding
 import com.vertial.fivemiov.model.User
+import com.vertial.fivemiov.ui.my_application.MyApplication
 import com.vertial.fivemiov.utils.removePlus
 
 
@@ -62,9 +63,10 @@ class SipFragment : Fragment() {
             speakerFAB.isEnabled=false
         }
 
-        val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
-
-        viewModel = ViewModelProvider(this, SipViewModelFactory(database,requireActivity().application))
+        //val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
+        val myApp=requireActivity().application as MyApplication
+        val myAppContanier=myApp.myAppContainer
+        viewModel = ViewModelProvider(this, SipViewModelFactory(myAppContanier.myDBDao,requireActivity().application))
             .get(SipViewModel::class.java)
 
         binding.sipendbutton.setOnClickListener{

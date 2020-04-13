@@ -72,10 +72,10 @@ class AuthorizationFragment : Fragment() {
         }
 
         binding.resendSmsButton.setOnClickListener{
-            enableDisableButtons(false)
-            showProgressBar(true)
+            //enableDisableButtons(false)
+            //showProgressBar(true)
             //resending sms via registration route
-            activityViewModel.resendSMS(activityViewModel.enteredPhoneNumber)
+           // activityViewModel.resendSMS(activityViewModel.enteredPhoneNumber)
 
         }
 

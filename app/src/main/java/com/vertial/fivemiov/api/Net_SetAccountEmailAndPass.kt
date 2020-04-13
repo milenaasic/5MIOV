@@ -25,5 +25,20 @@ data class NetRequest_SetAccountEmailAndPass(
 data class NetResponse_SetAccountEmailAndPass(
 
     @Json(name="message")
-    val message:String
+    val message:String,
+
+    @Json(name="userMsg")
+    val userMsg:String,
+
+    @Json(name="email")
+    val email:String,
+
+    @Json(name="version")
+    val appVersion:String,
+
+    @Json(name="e1phone")
+    val e1phone:String
+
 )
+
+

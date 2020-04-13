@@ -5,15 +5,17 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.vertial.fivemiov.data.Repo
+import com.vertial.fivemiov.data.RepoSIPE1
 import kotlinx.coroutines.launch
 
 private const val MY_TAG="MY_RegAuthActivVieModel"
 
-class RegAuthActivityViewModel(val myRepository: Repo, application: Application) : AndroidViewModel(application) {
+class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1,application: Application) : AndroidViewModel(application) {
 
     lateinit var enteredPhoneNumber:String
     var enteredEmail:String?=null
     var enteredPassword:String?=null
+    var signIn:Boolean?=null
 
     val userData=myRepository.getUserData()
 

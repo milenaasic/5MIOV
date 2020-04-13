@@ -30,6 +30,7 @@ import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.ActivityMainBinding
 import com.vertial.fivemiov.ui.RegistrationAuthorization.RegistrationAuthorizationActivity
+import com.vertial.fivemiov.ui.my_application.MyApplication
 import com.vertial.fivemiov.ui.webView.WebViewActivity
 import com.vertial.fivemiov.utils.EMPTY_EMAIL
 import com.vertial.fivemiov.utils.EMPTY_PHONE_NUMBER
@@ -59,6 +60,7 @@ class MainActivity : AppCompatActivity() {
 
         const val MAIN_ACTIVITY_SHARED_PREF_NAME = "MainActivitySharedPref"
         const val PHONEBOOK_IS_EXPORTED = "phone_book_is_exported"
+        const val DISCLAIMER_WAS_SHOWN="disclaimer_was_shown"
 
     }
 
@@ -69,14 +71,16 @@ class MainActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         setSupportActionBar(binding.toolbarMain)
 
-        val myDatabaseDao = MyDatabase.getInstance(this).myDatabaseDao
+        /*val myDatabaseDao = MyDatabase.getInstance(this).myDatabaseDao
         val myApi = MyAPI.retrofitService
 
-        val myRepository = RepoContacts(contentResolver, myDatabaseDao, myApi)
+        val myRepository = RepoContacts(contentResolver, myDatabaseDao, myApi)*/
+        val myApp=application as MyApplication
+        val myAppContanier=myApp.myAppContainer
 
         viewModel = ViewModelProvider(this,
             MainActivityViewModelFactory(
-                myRepository,
+                myAppContanier.contactsRepo,
                 application
             )
         )
@@ -213,7 +217,6 @@ class MainActivity : AppCompatActivity() {
 
 
     }
-
 
 
 
@@ -411,6 +414,7 @@ class MainActivity : AppCompatActivity() {
             setMessage(R.string.set_account_dialog)
                 .setTitle("Important")
                 .setNeutralButton("I Understand", { dialog, id ->
+                    setSharedPrefDisclaimerShownValueToTrue()
                     dialog.dismiss()
                 })
 
@@ -419,6 +423,29 @@ class MainActivity : AppCompatActivity() {
         }
         builder?.create()?.show()
 
+    }
+
+    private fun setSharedPrefDisclaimerShownValueToTrue() {
+        val sharedPreferences =
+            getSharedPreferences(MAIN_ACTIVITY_SHARED_PREF_NAME, Context.MODE_PRIVATE)
+
+        if (sharedPreferences.contains(DISCLAIMER_WAS_SHOWN)) {
+            Log.i(
+                MY_TAG,
+                " usao u ima disclaimer promenljivu i vrednost je ${sharedPreferences.getBoolean(
+                    DISCLAIMER_WAS_SHOWN,
+                    false
+                )}"
+            )
+            sharedPreferences.edit().putBoolean(DISCLAIMER_WAS_SHOWN, true).apply()
+            Log.i(
+                MY_TAG,
+                "  phoneBookIsExported promenljiva posle promene ${sharedPreferences.getBoolean(
+                    DISCLAIMER_WAS_SHOWN,
+                    false
+                )}"
+            )
+        }
     }
 
 

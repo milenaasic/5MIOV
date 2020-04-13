@@ -25,6 +25,7 @@ import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.ActivityWebViewBinding
 import com.vertial.fivemiov.model.User
 import com.vertial.fivemiov.ui.main_activity.MainActivity
+import com.vertial.fivemiov.ui.my_application.MyApplication
 
 
 private const val MY_TAG="MY_WebVIewActivity"
@@ -43,12 +44,13 @@ class WebViewActivity : AppCompatActivity() {
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_web_view)
 
-        val myDatabaseDao = MyDatabase.getInstance(this).myDatabaseDao
+        /*val myDatabaseDao = MyDatabase.getInstance(this).myDatabaseDao
         val myApi = MyAPI.retrofitService
 
-        val myRepository = RepoContacts(contentResolver, myDatabaseDao, myApi)
-
-        viewModel = ViewModelProvider(this, WebViewViewModelFactory(myRepository, application))
+        val myRepository = RepoContacts(contentResolver, myDatabaseDao, myApi)*/
+        val myApp=application as MyApplication
+        val myAppContanier=myApp.myAppContainer
+        viewModel = ViewModelProvider(this, WebViewViewModelFactory(myAppContanier.contactsRepo, application))
             .get(WebViewViewModel::class.java)
 
 

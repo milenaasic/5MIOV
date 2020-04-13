@@ -17,7 +17,7 @@ private val MYTAG="MY_MainFragBindAdapter"
 @BindingAdapter("setNameWithColoredLetters","textToColor","mycolor")
 fun setNameWithColoredLetters(view:TextView, item: ContactItem, textToColor:String?, color:String){
     //Log.i(MYTAG,"contact je $item, za bojenje je $textToColor")
-    if(item?.name== EMPTY) view.text=""
+    if(item.name== EMPTY) view.text=""
     else {
         if (textToColor == null) view.text = item.name
         else {
@@ -32,7 +32,7 @@ fun setThumbnailPhoto(view: ImageView, item: ContactItem?){
     if(item?.name=== EMPTY){
         Glide.with(view)
             .load(android.R.color.background_light)
-            .apply(RequestOptions().error(android.R.color.background_light).fallback(android.R.color.background_light))
+            .apply(RequestOptions().error(android.R.color.white).fallback(android.R.color.background_light))
             .apply(RequestOptions().circleCrop())
             .into(view)
     }else {Glide.with(view)
