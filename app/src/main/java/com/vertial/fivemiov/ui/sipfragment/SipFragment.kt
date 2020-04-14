@@ -20,7 +20,6 @@ import com.vertial.fivemiov.R
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentSipBinding
 import com.vertial.fivemiov.model.User
-import com.vertial.fivemiov.ui.my_application.MyApplication
 import com.vertial.fivemiov.utils.removePlus
 
 
@@ -63,10 +62,12 @@ class SipFragment : Fragment() {
             speakerFAB.isEnabled=false
         }
 
-        //val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
-        val myApp=requireActivity().application as MyApplication
-        val myAppContanier=myApp.myAppContainer
-        viewModel = ViewModelProvider(this, SipViewModelFactory(myAppContanier.myDBDao,requireActivity().application))
+        val database= MyDatabase.getInstance(requireActivity().application).myDatabaseDao
+
+        /*val myApp=requireActivity().application as MyApplication
+        val myAppContanier=myApp.myAppContainer*/
+
+        viewModel = ViewModelProvider(this, SipViewModelFactory(database,requireActivity().application))
             .get(SipViewModel::class.java)
 
         binding.sipendbutton.setOnClickListener{
@@ -206,8 +207,8 @@ class SipFragment : Fragment() {
         /*val user: User?=viewModel.getSipAccountInfo()
         Log.i(MYTAG,"user je $user")*/
 
-
         Log.i(MYTAG,"sipManager je $sipManager")
+
         val mysipProfileBuilder = SipProfile.Builder("7936502090", "45.63.117.19").setPassword("rasa123321")
         //val mysipProfileBuilder = SipProfile.Builder("milena", "iptel.org").setPassword("Milena77")
         me=mysipProfileBuilder.build()
@@ -267,7 +268,8 @@ class SipFragment : Fragment() {
             })
         }catch (e:SipException){
             Log.i(MYTAG,"Registration SIP Exception, ${e.message}")
-           showToast(getString(R.string.sip_failure_message))
+           //showToast(getString(R.string.sip_failure_message))
+            showToast("${e.message}")
             closeLocalProfile()
             viewModel.navigateBack()
         }
@@ -314,10 +316,11 @@ class SipFragment : Fragment() {
 
            override fun onCallEnded(call: SipAudioCall?) {
                super.onCallEnded(call)
-               call?.endCall()
+               //call?.endCall()
                val h=Handler(Looper.getMainLooper())
                h.post(Runnable {
                    updateCallStatus(getString(R.string.sip_call_ended))
+                   Log.i(MYTAG,"call je ended")
                    viewModel.navigateBack()
                })
 
@@ -328,7 +331,7 @@ class SipFragment : Fragment() {
                 call?.close()
                 val h=Handler(Looper.getMainLooper())
                 h.post(Runnable {
-                    updateCallStatus("error, ${call.toString()}, code $errorCode, message $errorMessage")
+                    //updateCallStatus("error, ${call.toString()}, code $errorCode, message $errorMessage")
                     closeLocalProfile()
                     viewModel.navigateBack()
                     showToast(getString(R.string.sip_failure_message))

@@ -16,7 +16,6 @@
     <uses-feature android:name="android.hardware.sip.voip" />
 
     <application
-        android:name="com.vertial.fivemiov.ui.my_application.MyApplication"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"

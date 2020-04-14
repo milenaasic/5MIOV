@@ -30,13 +30,13 @@ data class NetResponse_GetSipAccessCredentials(
     val sipCallerId:String,
 
     @Json(name="e1phone")
-    val e1prenumber:String,
+    val e1prenumber:String?,
 
     @Json(name="message")
     val message:String,
 
     @Json(name="version")
-    val appVersion:String
+    val appVersion:String?
 
 )
 

@@ -7,6 +7,7 @@ import com.vertial.fivemiov.api.*
 import com.vertial.fivemiov.database.MyDatabaseDao
 import kotlinx.coroutines.*
 
+
 private const val MY_TAG="MY_Repository"
 class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
 
@@ -84,18 +85,19 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
 
 
     // Registration fragment
-    suspend fun sendRegistationToServer(phone:String){
+    suspend fun sendRegistationToServer(phone:String,smsResend:Boolean){
         Log.i(MY_TAG,"send registration $phone")
         val defResponse=myAPI.sendRegistrationToServer(request = NetRequest_Registration(phoneNumber = phone ))
         try{
             val result=defResponse.await()
-            val assigned=result.phoneNumberAlreadyAssigned
             Log.i(MY_TAG,"uspesna registracija $result")
-            _registrationSuccessIsNmbAssigned.value=result.phoneNumberAlreadyAssigned
+            if(smsResend) _smsResendSuccess.value=result.message
+            else _registrationSuccessIsNmbAssigned.value=result.phoneNumberAlreadyAssigned
         } catch (e:Throwable){
             val m=e.cause
             val errorMessage:String?=e.message
-            _registrationNetworkError.value=e.toString()
+            if(smsResend) _smsResendNetworkError.value=e.message
+            else _registrationNetworkError.value=e.toString()
             Log.i(MY_TAG,"greska $errorMessage, a cela gresak je $e")
         }
 
@@ -104,7 +106,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
 
 
 
-    suspend fun assignPhoneNumberToAccount(phone:String, email:String,password:String){
+    suspend fun assignPhoneNumberToAccount(phone:String, email:String,password:String,smsResend: Boolean=false){
 
         Log.i(MY_TAG,"add number to account $phone,$email,$password")
 
@@ -112,13 +114,20 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
         try{
             val result=defResponse.await()
             Log.i(MY_TAG,"uspesno dodavanje telefona $result")
-            _addNumberToAccountNetworkSuccess.value=result.message
+
+            if(smsResend) _smsResendSuccess.value=result.usermessage
+            else{
+                    if(result.success==true) _addNumberToAccountNetworkSuccess.value=result.usermessage
+                    else  _addNumberToAccountNetworkError.value=result.message
+            }
+
         }
-        catch (e:Exception){
+        catch (e:Throwable){
             val errorMessage:String?=e.message
-            _addNumberToAccountNetworkError.value=errorMessage
+            if(smsResend)_smsResendNetworkError.value=errorMessage
+            else _addNumberToAccountNetworkError.value=errorMessage
             Log.i(MY_TAG,"greska $errorMessage")
-            Log.i(MY_TAG,"greska ${e.localizedMessage}")
+            Log.i(MY_TAG,"cela greska ${e}")
         }
 
     }
@@ -142,10 +151,10 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
             _authorizationSuccess.value=result.message
 
         }
-        catch (e:Exception){
+        catch (e:Throwable){
             val errorMessage:String?=e.message
             _authorizationNetworkError.value=errorMessage
-            Log.i(MY_TAG,"greska $errorMessage")
+            Log.i(MY_TAG,"greska je $e")
         }
 
     }
@@ -157,7 +166,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
 
                 resetSipAccess(result.authToken)
                 Log.i(MY_TAG,"posle sip poziva")
-                if(result.e1phone.isEmpty()) callSetNewE1(result.authToken)
+                if(result.e1phone.isNullOrEmpty()) callSetNewE1(result.authToken)
                 else myDatabaseDao.updatePrenumber(result.e1phone,System.currentTimeMillis())
 
                 //TODO URADI FUNKCIJU callSetSipCallerID()
@@ -197,7 +206,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
         val defResult=myAPI.setNewE1(request = NetRequest_SetE1Prenumber(token))
                 try {
                         val result=defResult.await()
-                        if(result.e1prenumber.isNotEmpty()){
+                        if(!result.e1prenumber.isNullOrEmpty()){
                             withContext(Dispatchers.IO){
                                 myDatabaseDao.updatePrenumber(result.e1prenumber,System.currentTimeMillis())
                             }
@@ -227,35 +236,49 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
 
 
     //Number exists in DB
-    suspend fun numberExistsInDBVerifyAccount(enteredPhoneNumber:String, email:String, password:String){
+    suspend fun numberExistsInDBVerifyAccount(enteredPhoneNumber:String, email:String, password:String,smsResend: Boolean=false){
 
         val defResult=myAPI.numberExistsInDBVerifyAccount(request = NetRequest_NmbExistsInDB_UserHasAccount(enteredPhoneNumber,email, password))
         try{
             val result=defResult.await()
             Log.i(MY_TAG,"nmb exists in DB user has account $result")
-            _nmbExistsInDBUserHasAccountSuccess.value=result.message
+
+            if(smsResend) _smsResendSuccess.value=result.message
+            else{
+
+                if(result.success==true) _nmbExistsInDBUserHasAccountSuccess.value=result.message
+                else _nmbExistsInDBUserHasAccountError.value=result.message
+
+            }
 
         }
-        catch (e:Exception){
+        catch (e:Throwable){
             val errorMessage:String?=e.message
-            _nmbExistsInDBUserHasAccountError.value=errorMessage
-            Log.i(MY_TAG,"greska nmb exists in DB user has account$errorMessage")
+
+            if(smsResend) _smsResendNetworkError.value=e.message
+            else _nmbExistsInDBUserHasAccountError.value=errorMessage
+            Log.i(MY_TAG,"greska nmb exists in DB user has account$e")
         }
     }
 
-    suspend fun numberExistsInDB_NOAccount(enteredPhoneNumber:String){
+    suspend fun numberExistsInDB_NOAccount(enteredPhoneNumber:String,smsResend: Boolean=false){
 
         val defResult=myAPI.numberExistsInDB_NOAccount(request = NetRequest_NmbExistsInDB_NoAccount(phoneNumber = enteredPhoneNumber))
         try{
             val result=defResult.await()
             Log.i(MY_TAG,"nmb exists in DB no account $result")
-            _nmbExistsInDB_NoAccountSuccess.value=result.message
+
+            if(smsResend) _smsResendSuccess.value=result.message
+            else{
+                if(result.success==true)_nmbExistsInDB_NoAccountSuccess.value=result.message
+                else  _nmbExistsInDB_NoAccountError.value=result.message
+            }
 
         }
-        catch (e:Exception){
+        catch (e:Throwable){
             val errorMessage:String?=e.message
             _nmbExistsInDB_NoAccountError.value=errorMessage
-            Log.i(MY_TAG,"greska nmb exists in DB no account$errorMessage")
+            Log.i(MY_TAG,"greska nmb exists in DB no account $e")
         }
     }
 
@@ -288,7 +311,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
                  }
                 Log.i(MY_TAG,"token za usera je ${user.userToken}")
 
-                if(result.e1phone.isNotEmpty()) {
+                if(result.e1phone.isNullOrEmpty()) {
                         Log.i(MY_TAG,"usao u e1 phone is not empty")
                         callSetNewE1(user.userToken)
                 } else myDatabaseDao.updatePrenumber(result.e1phone,System.currentTimeMillis())

@@ -13,7 +13,6 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.vertial.fivemiov.model.E1Prenumber
 import com.vertial.fivemiov.model.SipAccount
 import com.vertial.fivemiov.model.User
-import com.vertial.fivemiov.ui.my_application.MyApplication
 import com.vertial.fivemiov.utils.*
 
 
@@ -36,7 +35,7 @@ abstract class MyDatabase:RoomDatabase(){
                 if (instance == null) {
 
                     instance = Room.databaseBuilder(
-                        context,
+                        context.applicationContext,
                         MyDatabase::class.java,
                         NAME
                     ).fallbackToDestructiveMigration()

@@ -17,7 +17,6 @@ import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.ActivityRegistrationAuthorizationBinding
 import com.vertial.fivemiov.ui.main_activity.MainActivity
 import com.vertial.fivemiov.ui.emty_logo_fragment.EmptyLogoFragmentDirections
-import com.vertial.fivemiov.ui.my_application.MyApplication
 import com.vertial.fivemiov.utils.EMPTY_TOKEN
 import com.vertial.fivemiov.utils.isOnline
 
@@ -35,18 +34,18 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
         binding=DataBindingUtil.setContentView(this,R.layout.activity_registration_authorization)
 
 
-        /*val myDatabaseDao= MyDatabase.getInstance(this).myDatabaseDao
+        val myDatabaseDao= MyDatabase.getInstance(this).myDatabaseDao
         val myApi= MyAPI.retrofitService
 
         val myRepository= Repo(myDatabaseDao,myApi)
-        val mySIPE1Repo=RepoSIPE1(myDatabaseDao,myApi)*/
+        val mySIPE1Repo=RepoSIPE1(myDatabaseDao,myApi)
 
         if(!isOnline(application)) showSnackbar(resources.getString(R.string.no_internet))
 
-        val myApp=application as MyApplication
-        val myAppContanier=myApp.myAppContainer
+        /*val myApp=application as MyApplication
+        val myAppContanier=myApp.myAppContainer*/
 
-        viewModel = ViewModelProvider(this, RegAuthViewModelFactory(myAppContanier.repo,myAppContanier.sipRepo,application))
+        viewModel = ViewModelProvider(this, RegAuthViewModelFactory(myRepository,mySIPE1Repo,application))
             .get(RegAuthActivityViewModel::class.java)
 
         viewModel.userData.observe(this, Observer {user->

@@ -20,10 +20,16 @@ data class NetRequest_AddNumberToAccount (
 @JsonClass(generateAdapter = true)
 data class NetResponse_AddNumberToAccount (
 
+    @Json(name="success")
+    val success:Boolean,
+
     @Json(name="message")
     val message:String,
 
+    @Json(name="userMsg")
+    val usermessage:String,
+
     @Json(name="version")
-    val appVersion:String
+    val appVersion:String?
 )
 

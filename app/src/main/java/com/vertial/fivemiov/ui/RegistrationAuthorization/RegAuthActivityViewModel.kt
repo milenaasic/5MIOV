@@ -36,8 +36,9 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
 
     val authorizationNetworkError=myRepository.authorizationNetworkError
     val authorizationNetworkSuccess=myRepository.authorizationSuccess
+
     val smsResendNetworkError=myRepository.smsResendNetworkError
-    val smsResendNetworkSuccess=myRepository.smsResendNetworkError
+    val smsResendNetworkSuccess=myRepository.smsResendSuccess
 
 
     init {
@@ -45,41 +46,41 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
     }
 
     //registration fragment
-    fun registerButtonClicked(phoneNumber:String){
+    fun registerButtonClicked(phoneNumber:String, smsResend:Boolean){
         enteredPhoneNumber=phoneNumber
-        Log.i(MY_TAG,("registration button clicked"))
+        Log.i(MY_TAG,("registration button clicked sa smsresend $smsResend"))
         //send registrtion phone number to server and go to authorization fragment
         viewModelScope.launch {
-            myRepository.sendRegistationToServer(phoneNumber)
+            myRepository.sendRegistationToServer(phoneNumber,smsResend)
          }
 
     }
 
     //add number to existing account fragment
-    fun addNumberToAccountButtonClicked(phoneNumber:String,email:String,password:String){
+    fun addNumberToAccountButtonClicked(phoneNumber:String,email:String,password:String,smsResend: Boolean=false){
         enteredPhoneNumber=phoneNumber
         enteredEmail=email
         enteredPassword=password
-        Log.i(MY_TAG,("add number button clicked"))
+        Log.i(MY_TAG,("add number button clicked resend je $smsResend"))
         //send add phone, email and pass to server and go to authorization fragment
         viewModelScope.launch {
-            myRepository.assignPhoneNumberToAccount(phoneNumber,email,password)
+            myRepository.assignPhoneNumberToAccount(phoneNumber,email,password,smsResend)
         }
     }
 
 
     //number exists in DB fragment
-    fun numberExistsInDBVerifyAccount(email: String,password: String){
+    fun numberExistsInDBVerifyAccount(email: String,password: String,smsResend: Boolean=false){
         enteredEmail=email
         enteredPassword=password
         viewModelScope.launch {
-            myRepository.numberExistsInDBVerifyAccount(enteredPhoneNumber,email,password)
+            myRepository.numberExistsInDBVerifyAccount(enteredPhoneNumber,email,password,smsResend)
         }
     }
 
-    fun numberExistsInDb_NoAccount(){
+    fun numberExistsInDb_NoAccount(smsResend: Boolean=false){
         viewModelScope.launch {
-            myRepository.numberExistsInDB_NOAccount(enteredPhoneNumber)
+            myRepository.numberExistsInDB_NOAccount(enteredPhoneNumber,smsResend)
         }
     }
 

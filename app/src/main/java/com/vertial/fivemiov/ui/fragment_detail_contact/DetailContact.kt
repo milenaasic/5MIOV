@@ -40,7 +40,6 @@ import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentDetailContactBinding
 import com.vertial.fivemiov.ui.fragment_dial_pad.DialPadFragment
 import com.vertial.fivemiov.ui.fragment_main.MainFragment
-import com.vertial.fivemiov.ui.my_application.MyApplication
 import com.vertial.fivemiov.utils.isVOIPsupported
 import com.vertial.fivemiov.utils.isValidPhoneNumber
 
@@ -75,13 +74,13 @@ class DetailContact : Fragment() {
     ): View? {
 
         binding=DataBindingUtil.inflate(inflater,R.layout.fragment_detail_contact,container,false)
-        val myApp=requireActivity().application as MyApplication
-        val myAppContanier=myApp.myAppContainer
-        //val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
-        //val apiService= MyAPI.retrofitService
-        //val repo= RepoContacts(requireActivity().contentResolver,database,apiService)
+       // val myApp=requireActivity().application as MyApplication
+        //val myAppContanier=myApp.myAppContainer
+        val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
+        val apiService= MyAPI.retrofitService
+        val repo= RepoContacts(requireActivity().contentResolver,database,apiService)
 
-        viewModel=ViewModelProvider(this,DetailContactViewModelFactory(args.contactLookUpKey,myAppContanier.contactsRepo,requireActivity().application)).get(DetailContactViewModel::class.java)
+        viewModel=ViewModelProvider(this,DetailContactViewModelFactory(args.contactLookUpKey,repo,requireActivity().application)).get(DetailContactViewModel::class.java)
 
         phoneAdapter= DetailContactAdapter(
                 SipItemClickListener{

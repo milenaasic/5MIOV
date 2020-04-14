@@ -56,7 +56,7 @@ class RegistrationFragment : Fragment() {
             if(enteredPhoneNumber.isPhoneNumberValid()){
                     it.isEnabled=false
                     showProgressBar(true)
-                    activityViewModel.registerButtonClicked(enteredPhoneNumber.removePlus())
+                    activityViewModel.registerButtonClicked(enteredPhoneNumber.removePlus(),smsResend = false)
 
                 }else {
                     it.isEnabled=true
@@ -112,7 +112,6 @@ class RegistrationFragment : Fragment() {
 
 
     private fun hidekeyboard(){
-
         val inputMethodManager = requireActivity().getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(binding.rootRegContLayout.windowToken, 0)
     }

@@ -70,7 +70,7 @@ class SipViewModel(val mydatabaseDao: MyDatabaseDao, application: Application) :
 
     fun startRegTimeout(){
         viewModelScope.launch {
-            delay(1000)
+            delay(5000)
             _timeoutReg.value=true
         }
     }

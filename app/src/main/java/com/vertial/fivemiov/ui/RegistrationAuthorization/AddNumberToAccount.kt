@@ -81,7 +81,7 @@ class AddNumberToAccount : Fragment() {
 
         activityViewModel.addNumberToAccuntNetworkError.observe(viewLifecycleOwner,Observer{
             if(it!=null){
-                showSnackBar(it)
+                showSnackBar(resources.getString(R.string.something_went_wrong))
             }
             binding.addphoneButton.isEnabled=true
             showProgressBar(false)
@@ -91,7 +91,7 @@ class AddNumberToAccount : Fragment() {
 
         activityViewModel.addNumberToAccuntNetworkSuccess.observe(viewLifecycleOwner,Observer{
             if(it!=null){
-                showToast(it)
+                //showToast(it)
                 findNavController().navigate(AddNumberToAccountDirections.actionAddNumberToAccountToAuthorizationFragment())
             }
             binding.addphoneButton.isEnabled=true

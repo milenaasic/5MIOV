@@ -48,6 +48,7 @@ class NumberExistsInDatabase : Fragment() {
             hidekeyboard()
             if(allEnteredFieldsAreValid()){
                 showProgressBar(true)
+                activityViewModel.signIn=true
                 activityViewModel.numberExistsInDBVerifyAccount(
                     binding.nmbExistsEmailEditText.text.toString(),
                     binding.nmbExistsPassEditText.text.toString()
@@ -74,6 +75,7 @@ class NumberExistsInDatabase : Fragment() {
             it.isEnabled=false
             binding.nmbExistsSubmitButton.isEnabled=false
             showProgressBar(true)
+            activityViewModel.signIn=false
             activityViewModel.numberExistsInDb_NoAccount()
 
          }
@@ -88,7 +90,7 @@ class NumberExistsInDatabase : Fragment() {
 
         activityViewModel.nmbExistsInDBUserHasAccountSuccess.observe(viewLifecycleOwner, Observer {
             if(it!=null){
-                showSnackBar(it)
+                //showSnackBar(it)
             }
             binding.nmbExistsSubmitButton.isEnabled=true
             binding.dontHaveAccountButton.isEnabled=true
@@ -98,7 +100,7 @@ class NumberExistsInDatabase : Fragment() {
 
         activityViewModel.nmbExistsInDBUserHasAccountError.observe(viewLifecycleOwner, Observer {
             if(it!=null){
-                showSnackBar(it)
+                showSnackBar(resources.getString(R.string.something_went_wrong))
             }
             binding.nmbExistsSubmitButton.isEnabled=true
             binding.dontHaveAccountButton.isEnabled=true
@@ -107,7 +109,7 @@ class NumberExistsInDatabase : Fragment() {
 
         activityViewModel.nmbExistsInDB_NoAccountSuccess.observe(viewLifecycleOwner, Observer {
             if(it!=null){
-                showSnackBar(it)
+                //showSnackBar(it)
             }
             binding.nmbExistsSubmitButton.isEnabled=true
             binding.dontHaveAccountButton.isEnabled=true
@@ -117,7 +119,7 @@ class NumberExistsInDatabase : Fragment() {
 
         activityViewModel.nmbExistsInDB_NoAccountError.observe(viewLifecycleOwner, Observer {
             if(it!=null){
-                showSnackBar(it)
+                showSnackBar(resources.getString(R.string.something_went_wrong))
             }
             binding.nmbExistsSubmitButton.isEnabled=true
             binding.dontHaveAccountButton.isEnabled=true

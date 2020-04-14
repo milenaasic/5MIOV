@@ -30,7 +30,6 @@ import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.ActivityMainBinding
 import com.vertial.fivemiov.ui.RegistrationAuthorization.RegistrationAuthorizationActivity
-import com.vertial.fivemiov.ui.my_application.MyApplication
 import com.vertial.fivemiov.ui.webView.WebViewActivity
 import com.vertial.fivemiov.utils.EMPTY_EMAIL
 import com.vertial.fivemiov.utils.EMPTY_PHONE_NUMBER
@@ -71,16 +70,16 @@ class MainActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         setSupportActionBar(binding.toolbarMain)
 
-        /*val myDatabaseDao = MyDatabase.getInstance(this).myDatabaseDao
+        val myDatabaseDao = MyDatabase.getInstance(this).myDatabaseDao
         val myApi = MyAPI.retrofitService
+        val myRepository = RepoContacts(contentResolver, myDatabaseDao, myApi)
 
-        val myRepository = RepoContacts(contentResolver, myDatabaseDao, myApi)*/
-        val myApp=application as MyApplication
-        val myAppContanier=myApp.myAppContainer
+        /*val myApp=application as MyApplication
+        val myAppContanier=myApp.myAppContainer*/
 
         viewModel = ViewModelProvider(this,
             MainActivityViewModelFactory(
-                myAppContanier.contactsRepo,
+                myRepository,
                 application
             )
         )

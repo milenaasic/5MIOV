@@ -18,13 +18,13 @@ data class NetResponse_GetE1(
     val success:Boolean,
 
     @Json(name="e1phone")
-    val e1prenumber:String,
+    val e1prenumber:String?,
 
     @Json(name="message")
-    val message:String,
+    val message:String?,
 
     @Json(name="version")
-    val appVersion:String
+    val appVersion:String?
 
 )
 

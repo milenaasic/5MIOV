@@ -28,7 +28,6 @@ import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentDialPadBinding
 import com.vertial.fivemiov.ui.fragment_main.MainFragment
-import com.vertial.fivemiov.ui.my_application.MyApplication
 import com.vertial.fivemiov.utils.isValidPhoneNumber
 
 
@@ -57,15 +56,15 @@ class DialPadFragment : Fragment() {
 
         binding= DataBindingUtil.inflate(inflater, R.layout.fragment_dial_pad,container,false)
 
-        /*val database=MyDatabase.getInstance(requireContext()).myDatabaseDao
+        val database=MyDatabase.getInstance(requireContext()).myDatabaseDao
         val apiService=MyAPI.retrofitService
-        val repo=RepoContacts(requireActivity().contentResolver,database,apiService)*/
+        val repo=RepoContacts(requireActivity().contentResolver,database,apiService)
 
-        val myApp=requireActivity().application as MyApplication
-        val myAppContanier=myApp.myAppContainer
+        /*val myApp=requireActivity().application as MyApplication
+        val myAppContanier=myApp.myAppContainer*/
 
 
-        viewModel = ViewModelProvider(this, DialpadFragmentViewModelFactory(myAppContanier.contactsRepo,requireActivity().application))
+        viewModel = ViewModelProvider(this, DialpadFragmentViewModelFactory(repo,requireActivity().application))
             .get(DialpadFragmViewModel::class.java)
 
         binding.apply {

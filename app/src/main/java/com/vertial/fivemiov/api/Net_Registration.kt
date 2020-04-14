@@ -14,6 +14,9 @@ data class NetRequest_Registration(
 @JsonClass(generateAdapter = true)
 data class NetResponse_Registration(
 
+    @Json(name="success")
+    val success:Boolean,
+
     @Json(name="message")
     val message:String,
 
@@ -21,7 +24,7 @@ data class NetResponse_Registration(
     val phoneNumberAlreadyAssigned:Boolean,
 
     @Json(name="version")
-    val appVersion:String
+    val appVersion:String?
 
 
 )

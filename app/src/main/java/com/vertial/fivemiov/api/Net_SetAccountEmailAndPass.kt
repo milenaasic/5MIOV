@@ -34,10 +34,10 @@ data class NetResponse_SetAccountEmailAndPass(
     val email:String,
 
     @Json(name="version")
-    val appVersion:String,
+    val appVersion:String?,
 
     @Json(name="e1phone")
-    val e1phone:String
+    val e1phone:String?
 
 )
 

@@ -28,13 +28,13 @@ data class NetResponse_SetSipCallerId(
     val success:Boolean,
 
     @Json(name="sipCallerId")
-    val sipCallerIds:String,
+    val sipCallerIds:String?,
 
     @Json(name="message")
     val message:String,
 
     @Json(name="version")
-    val appVersion:String
+    val appVersion:String?
 
 )
 
