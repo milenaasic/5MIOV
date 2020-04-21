@@ -81,6 +81,9 @@ class DetailContact : Fragment() {
         val repo= RepoContacts(requireActivity().contentResolver,database,apiService)
 
         viewModel=ViewModelProvider(this,DetailContactViewModelFactory(args.contactLookUpKey,repo,requireActivity().application)).get(DetailContactViewModel::class.java)
+        val sipManager=SipManager.newInstance(requireContext())
+        if(!isVOIPsupported(requireContext()))showSnackBar(resources.getString(R.string.VOIP_not_supported)+", SipManager je $sipManager")
+
 
         phoneAdapter= DetailContactAdapter(
                 SipItemClickListener{
@@ -169,7 +172,7 @@ class DetailContact : Fragment() {
     }
 
     private fun showSnackBar(s:String) {
-        Snackbar.make(binding.root,s, Snackbar.LENGTH_LONG).show()
+        Snackbar.make(binding.detailFragmnLinearLayout,s, Snackbar.LENGTH_INDEFINITE).setAction("OK"){}.show()
     }
 
 

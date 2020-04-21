@@ -22,5 +22,7 @@ const val EMPTY="empty"
 const val DOUBLE_ZERO="00"
 const val ONE_ZERO="0"
 const val NIGERIAN_PREFIX="234"
+const val PLUS_NIGERIAN_PREFIX="+"+ NIGERIAN_PREFIX
+const val PHONE_NUMBER_MIN_LENGHT=10
 
 

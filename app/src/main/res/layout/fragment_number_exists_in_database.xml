@@ -63,6 +63,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:hint="@string/e_mail_hint"
+            app:errorEnabled="true"
             app:layout_constraintEnd_toEndOf="@+id/number_exists_text"
             app:layout_constraintStart_toStartOf="@+id/number_exists_text"
             app:layout_constraintTop_toBottomOf="@+id/number_exists_text">
@@ -77,15 +78,17 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/enter_pass_textInputLayout"
+            android:id="@+id/nmb_exists_enter_pass_textInputLayout"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:hint="@string/password_hint"
+            app:errorEnabled="true"
             app:layout_constraintEnd_toEndOf="@+id/nmb_exists_email_textInputLayout"
             app:layout_constraintStart_toStartOf="@+id/nmb_exists_email_textInputLayout"
-            app:layout_constraintTop_toBottomOf="@+id/nmb_exists_email_textInputLayout">
+            app:layout_constraintTop_toBottomOf="@+id/nmb_exists_email_textInputLayout"
+            app:passwordToggleEnabled="true">
 
 
             <com.google.android.material.textfield.TextInputEditText
@@ -107,9 +110,9 @@
             android:text="@string/submit"
 
             android:textColor="@android:color/black"
-            app:layout_constraintEnd_toEndOf="@+id/enter_pass_textInputLayout"
-            app:layout_constraintStart_toStartOf="@+id/enter_pass_textInputLayout"
-            app:layout_constraintTop_toBottomOf="@+id/enter_pass_textInputLayout" />
+            app:layout_constraintEnd_toEndOf="@+id/nmb_exists_enter_pass_textInputLayout"
+            app:layout_constraintStart_toStartOf="@+id/nmb_exists_enter_pass_textInputLayout"
+            app:layout_constraintTop_toBottomOf="@+id/nmb_exists_enter_pass_textInputLayout" />
 
         <TextView
             android:id="@+id/logo_auth_textView"
@@ -167,9 +170,9 @@
             android:text="Create new account"
             android:textColor="@android:color/black"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="@+id/enter_pass_textInputLayout"
+            app:layout_constraintEnd_toEndOf="@+id/nmb_exists_enter_pass_textInputLayout"
             app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="@+id/enter_pass_textInputLayout"
+            app:layout_constraintStart_toStartOf="@+id/nmb_exists_enter_pass_textInputLayout"
             app:layout_constraintTop_toBottomOf="@+id/or_textView2"
             app:layout_constraintVertical_bias="0.2"
             app:strokeColor="@color/colorPrimary" />

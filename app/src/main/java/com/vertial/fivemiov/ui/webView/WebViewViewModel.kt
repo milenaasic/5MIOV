@@ -63,8 +63,7 @@ class WebViewViewModel(val myRepository: RepoContacts, application: Application)
                 }
 
                 val resultP=defferedPhones.map { it.await() }
-                //Log.i(MY_TAG,"get phone book resul svih deferred je ${resultP}")
-                //Log.i(MY_TAG,"get phone book phone book je  ${phoneBookList}")
+
                 _phoneBook.value=phoneBookList
 
 

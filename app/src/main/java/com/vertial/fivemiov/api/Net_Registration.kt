@@ -20,6 +20,12 @@ data class NetResponse_Registration(
     @Json(name="message")
     val message:String,
 
+    @Json(name="userMsg")
+    val userMessage:String,
+
+    @Json(name="code")
+    val code:Int,
+
     @Json(name="phoneNumberAlreadyAssigned")
     val phoneNumberAlreadyAssigned:Boolean,
 

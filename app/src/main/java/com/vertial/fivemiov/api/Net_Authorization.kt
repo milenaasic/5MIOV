@@ -27,13 +27,13 @@ data class NetResponse_Authorization(
     val success:Boolean,
 
     @Json(name="userMsg")
-    val userMessage:String?,
+    val userMessage:String,
 
     @Json(name="version")
     val appVersion:String?,
 
     @Json(name="message")
-    val message:String?,
+    val message:String,
 
     @Json(name="email")
     val email:String,

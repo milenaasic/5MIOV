@@ -19,10 +19,11 @@ import com.google.android.material.snackbar.Snackbar
 
 import com.vertial.fivemiov.R
 import com.vertial.fivemiov.databinding.FragmentNumberExistsInDatabaseBinding
+import com.vertial.fivemiov.utils.afterTextChanged
 import com.vertial.fivemiov.utils.isEmailValid
 import com.vertial.fivemiov.utils.isPasswordValid
 
-
+private val MY_TAG="MY_NumberExistsInDB"
 class NumberExistsInDatabase : Fragment() {
 
     private lateinit var binding: FragmentNumberExistsInDatabaseBinding
@@ -40,15 +41,16 @@ class NumberExistsInDatabase : Fragment() {
             ViewModelProvider(this)[RegAuthActivityViewModel::class.java]
         }
 
-        binding.numExistsPhoneTextView.text=activityViewModel.enteredPhoneNumber
+        binding.numExistsPhoneTextView.text=String.format(resources.getString(R.string.add_plus_before_phone,activityViewModel.enteredPhoneNumber))
 
         binding.nmbExistsSubmitButton.setOnClickListener {
+            binding.nmbExistsRoot.requestFocus()
             it.isEnabled=false
             binding.dontHaveAccountButton.isEnabled=false
             hidekeyboard()
             if(allEnteredFieldsAreValid()){
                 showProgressBar(true)
-                activityViewModel.signIn=true
+                activityViewModel.signInParameter=true
                 activityViewModel.numberExistsInDBVerifyAccount(
                     binding.nmbExistsEmailEditText.text.toString(),
                     binding.nmbExistsPassEditText.text.toString()
@@ -72,14 +74,30 @@ class NumberExistsInDatabase : Fragment() {
         }
 
         binding.dontHaveAccountButton.setOnClickListener {
+            binding.nmbExistsRoot.requestFocus()
             it.isEnabled=false
             binding.nmbExistsSubmitButton.isEnabled=false
             showProgressBar(true)
-            activityViewModel.signIn=false
+            activityViewModel.signInParameter=false
             activityViewModel.numberExistsInDb_NoAccount()
 
          }
 
+        //Kada EditText polja imaju fokus treba da se iskljuci greska
+        binding.apply {
+
+            nmbExistsEmailEditText.setOnFocusChangeListener { view, hasFocus ->
+                if(hasFocus) binding.nmbExistsEmailTextInputLayout.error=null
+            }
+            nmbExistsEmailEditText.afterTextChanged {binding.nmbExistsEmailTextInputLayout.error=null  }
+
+            nmbExistsPassEditText.setOnFocusChangeListener { view, hasFocus ->
+                if(hasFocus) binding.nmbExistsEnterPassTextInputLayout.error=null
+            }
+            nmbExistsPassEditText.afterTextChanged { binding.nmbExistsEnterPassTextInputLayout.error=null }
+
+
+        }
 
         return binding.root
     }
@@ -88,44 +106,69 @@ class NumberExistsInDatabase : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        activityViewModel.nmbExistsInDBUserHasAccountSuccess.observe(viewLifecycleOwner, Observer {
-            if(it!=null){
-                //showSnackBar(it)
+        activityViewModel.nmbExistsInDBUserHasAccountSuccess.observe(viewLifecycleOwner, Observer {response->
+            if(response!=null) {
+                when{
+                    response.success==true->{
+                            showToast(response.userMessage)
+                            activityViewModel.resetNmbExistsInDB_VerifyAccount_NetSuccess()
+                            findNavController().navigate(NumberExistsInDatabaseDirections.actionNumberExistsInDatabaseToAuthorizationFragment())
+                    }
+                    response.success==false->{
+                        showSnackBar(response.userMessage)
+                        activityViewModel.resetNmbExistsInDB_VerifyAccount_NetSuccess()
+
+                    }
+                }
+                binding.nmbExistsSubmitButton.isEnabled = true
+                binding.dontHaveAccountButton.isEnabled = true
+                showProgressBar(false)
             }
-            binding.nmbExistsSubmitButton.isEnabled=true
-            binding.dontHaveAccountButton.isEnabled=true
-            showProgressBar(false)
-            findNavController().navigate(NumberExistsInDatabaseDirections.actionNumberExistsInDatabaseToAuthorizationFragment())
          })
 
         activityViewModel.nmbExistsInDBUserHasAccountError.observe(viewLifecycleOwner, Observer {
-            if(it!=null){
+            if(it!=null) {
                 showSnackBar(resources.getString(R.string.something_went_wrong))
+                binding.nmbExistsSubmitButton.isEnabled = true
+                binding.dontHaveAccountButton.isEnabled = true
+                activityViewModel.resetNmbExistsInDB_VerifyAccount_NetError()
+                showProgressBar(false)
             }
-            binding.nmbExistsSubmitButton.isEnabled=true
-            binding.dontHaveAccountButton.isEnabled=true
-            showProgressBar(false)
         })
 
-        activityViewModel.nmbExistsInDB_NoAccountSuccess.observe(viewLifecycleOwner, Observer {
-            if(it!=null){
-                //showSnackBar(it)
+        activityViewModel.nmbExistsInDB_NoAccountSuccess.observe(viewLifecycleOwner, Observer {response->
+            if(response!=null) {
+                binding.nmbExistsSubmitButton.isEnabled = true
+                binding.dontHaveAccountButton.isEnabled = true
+                activityViewModel.resetNmbExistsInDB_NOAccount_NetSuccess()
+                showProgressBar(false)
+                findNavController().navigate(NumberExistsInDatabaseDirections.actionNumberExistsInDatabaseToAuthorizationFragment())
             }
-            binding.nmbExistsSubmitButton.isEnabled=true
-            binding.dontHaveAccountButton.isEnabled=true
-            showProgressBar(false)
-            findNavController().navigate(NumberExistsInDatabaseDirections.actionNumberExistsInDatabaseToAuthorizationFragment())
         })
 
         activityViewModel.nmbExistsInDB_NoAccountError.observe(viewLifecycleOwner, Observer {
-            if(it!=null){
+            if(it!=null) {
                 showSnackBar(resources.getString(R.string.something_went_wrong))
+                binding.nmbExistsSubmitButton.isEnabled = true
+                binding.dontHaveAccountButton.isEnabled = true
+                activityViewModel.resetNmbExistsInDB_NOAccount_NetError()
+                showProgressBar(false)
             }
-            binding.nmbExistsSubmitButton.isEnabled=true
-            binding.dontHaveAccountButton.isEnabled=true
-            showProgressBar(false)
         })
     }
+
+    override fun onDestroy() {
+        Log.i(MY_TAG,"onDestroy()")
+        if(activityViewModel!=null) activityViewModel.resetSignUpParameters()
+        super.onDestroy()
+
+    }
+
+    override fun onDestroyView() {
+        Log.i(MY_TAG,"onDestroyView()")
+        super.onDestroyView()
+    }
+
 
     private fun allEnteredFieldsAreValid(): Boolean {
 
@@ -133,11 +176,11 @@ class NumberExistsInDatabase : Fragment() {
 
         if(!(binding.nmbExistsEmailEditText.text.toString()).isEmailValid()) {
             b=false
-            binding.nmbExistsEmailEditText.setError(resources.getString(R.string.not_valid_email))
+            binding.nmbExistsEmailTextInputLayout.setError(resources.getString(R.string.not_valid_email))
         }
         if(!(binding.nmbExistsPassEditText.text.toString()).isPasswordValid()) {
             b=false
-            binding.nmbExistsPassEditText.setError(resources.getString(R.string.not_valid_password))
+            binding.nmbExistsEnterPassTextInputLayout.setError(resources.getString(R.string.not_valid_password))
         }
         return b
     }

@@ -33,8 +33,7 @@ import com.vertial.fivemiov.ui.RegistrationAuthorization.RegistrationAuthorizati
 import com.vertial.fivemiov.ui.webView.WebViewActivity
 import com.vertial.fivemiov.utils.EMPTY_EMAIL
 import com.vertial.fivemiov.utils.EMPTY_PHONE_NUMBER
-
-
+import com.vertial.fivemiov.utils.EMPTY_TOKEN
 
 
 private const val MY_TAG="MY_MainActivity"
@@ -54,7 +53,7 @@ class MainActivity : AppCompatActivity() {
         const val MAIN_FRAGMENT = 0
         const val DIAL_PAD_FRAGMENT = 1
         const val DETAIL_FRAGMENT = 2
-        const val SET_ACCOUNT_EMAIL_PASS_FRAGMENT0 = 3
+        const val SET_ACCOUNT_EMAIL_PASS_FRAGMENT = 3
         const val SIP_FRAGMENT = 4
 
         const val MAIN_ACTIVITY_SHARED_PREF_NAME = "MainActivitySharedPref"
@@ -131,7 +130,7 @@ class MainActivity : AppCompatActivity() {
                 DETAIL_FRAGMENT -> {
                     setDetailContactFragmentUI()
                 }
-                SET_ACCOUNT_EMAIL_PASS_FRAGMENT0 -> {
+                SET_ACCOUNT_EMAIL_PASS_FRAGMENT -> {
                     setEmailAndAccountFragmentUI()
                 }
 
@@ -145,7 +144,7 @@ class MainActivity : AppCompatActivity() {
 
 
         viewModel.userData.observe(this, Observer { user ->
-            if (user.userPhone.equals(EMPTY_PHONE_NUMBER)) {
+            if (user.userPhone==EMPTY_PHONE_NUMBER || user.userPhone.isNullOrEmpty() || user.userToken== EMPTY_TOKEN || user.userToken.isNullOrEmpty()) {
                 startActivity(Intent(this, RegistrationAuthorizationActivity::class.java))
                 finish()
             }else{
@@ -386,18 +385,19 @@ class MainActivity : AppCompatActivity() {
 
 
     override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
+
         var currentFragment=
             MAIN_FRAGMENT
         when (navController.currentDestination?.id) {
             R.id.mainFragment->{}
-            R.id.dialPadFragment->currentFragment=
-                DIAL_PAD_FRAGMENT
-            R.id.detailContact->currentFragment=
-                DETAIL_FRAGMENT
+            R.id.dialPadFragment->currentFragment= DIAL_PAD_FRAGMENT
+            R.id.detailContact->currentFragment= DETAIL_FRAGMENT
+            R.id.setEmailAndPasswordFragment->currentFragment= SET_ACCOUNT_EMAIL_PASS_FRAGMENT
+            R.id.sipFragment->currentFragment= SIP_FRAGMENT
         }
 
         outState.putInt(CURRENT_FRAGMENT,currentFragment)
+        super.onSaveInstanceState(outState)
     }
 
 

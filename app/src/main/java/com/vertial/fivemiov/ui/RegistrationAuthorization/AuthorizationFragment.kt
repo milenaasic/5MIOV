@@ -20,6 +20,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.vertial.fivemiov.R
 import com.vertial.fivemiov.databinding.FragmentAuthorizationBinding
 import com.vertial.fivemiov.databinding.FragmentRegistrationBinding
+import com.vertial.fivemiov.utils.afterTextChanged
 import com.vertial.fivemiov.utils.isOnline
 import com.vertial.fivemiov.utils.removePlus
 
@@ -39,12 +40,12 @@ class AuthorizationFragment : Fragment() {
             ViewModelProvider(this)[RegAuthActivityViewModel::class.java]
         }
 
-        binding.authPhoneTextView.text=activityViewModel.enteredPhoneNumber
+        binding.authPhoneTextView.text=String.format(resources.getString(R.string.add_plus_before_phone,activityViewModel.enteredPhoneNumber))
 
         binding.submitButton.setOnClickListener {
 
             hidekeyboard()
-
+            binding.authorizationRootLayout.requestFocus()
             if(!isOnline(requireActivity().application)) {
                 showSnackBar(resources.getString(R.string.no_internet))
                 return@setOnClickListener}
@@ -73,26 +74,28 @@ class AuthorizationFragment : Fragment() {
         }
 
         binding.resendSmsButton.setOnClickListener{
+            hidekeyboard()
+            binding.authorizationRootLayout.requestFocus()
             enableDisableButtons(false)
             showProgressBar(true)
             //resending sms via registration route
-            Log.i(MYTAG,"resend dugme ${activityViewModel.enteredPhoneNumber}, ${activityViewModel.enteredEmail}, ${activityViewModel.enteredPassword}, ${activityViewModel.signIn}")
+            Log.i(MYTAG,"resend dugme ${activityViewModel.enteredPhoneNumber}, ${activityViewModel.enteredEmail}, ${activityViewModel.enteredPassword}, ${activityViewModel.signInParameter}")
             when{
                 //dosao iz fragmenta Registration
-                activityViewModel.enteredEmail==null && activityViewModel.signIn==null->activityViewModel.registerButtonClicked(activityViewModel.enteredPhoneNumber.removePlus(),smsResend = true)
+                activityViewModel.enteredEmail==null && activityViewModel.signInParameter==null->activityViewModel.registerButtonClicked(activityViewModel.enteredPhoneNumber?.removePlus()?:"",smsResend = true)
 
                 //dosao preko fragmenta AddNumberToAccount
-                activityViewModel.enteredEmail!=null && activityViewModel.signIn==null->activityViewModel.addNumberToAccountButtonClicked(
-                                                                                                    activityViewModel.enteredPhoneNumber.removePlus(),
+                activityViewModel.enteredEmail!=null && activityViewModel.signInParameter==null->activityViewModel.addNumberToAccountButtonClicked(
+                                                                                                    activityViewModel.enteredPhoneNumber?.removePlus()?:"",
                                                                                                     activityViewModel.enteredEmail?:"",
                                                                                                     activityViewModel.enteredPassword?:"",
                                                                                                         smsResend = true)
 
                 //dosao preko NumberExistsInDatabase, create new account
-                activityViewModel.enteredEmail==null && activityViewModel.signIn==false->activityViewModel.numberExistsInDb_NoAccount(smsResend = true)
+                activityViewModel.enteredEmail==null && activityViewModel.signInParameter==false->activityViewModel.numberExistsInDb_NoAccount(smsResend = true)
 
                 //dosao preko NumberExistsInDatabase, create new accounte
-                activityViewModel.enteredEmail!=null && activityViewModel.signIn==true->activityViewModel.numberExistsInDBVerifyAccount(
+                activityViewModel.enteredEmail!=null && activityViewModel.signInParameter==true->activityViewModel.numberExistsInDBVerifyAccount(
                                                                                             activityViewModel.enteredEmail?:"",
                                                                                             activityViewModel.enteredPassword?:"",
                                                                                             smsResend = true)
@@ -110,22 +113,31 @@ class AuthorizationFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        activityViewModel.authorizationNetworkSuccess.observe(viewLifecycleOwner, Observer {
-            //showToast(it)
+        activityViewModel.authorizationNetworkSuccess.observe(viewLifecycleOwner, Observer {response->
+            if(response!=null){
+            activityViewModel.resetAuthorization_NetSuccess()
             showProgressBar(false)
             enableDisableButtons(true)
+            response.userMessage.let { showToast(it) }
+
+            }
         })
 
         activityViewModel.authorizationNetworkError.observe(viewLifecycleOwner, Observer {
-            if(it!=null)showSnackBar(resources.getString(R.string.something_went_wrong))
-            showProgressBar(false)
-            enableDisableButtons(true)
+            if(it!=null){
+                activityViewModel.resetAuthorization_NetError()
+                showProgressBar(false)
+                enableDisableButtons(true)
+                showSnackBar(resources.getString(R.string.something_went_wrong))
+            }
         })
 
         activityViewModel.smsResendNetworkSuccess.observe(viewLifecycleOwner, Observer {
-            showToast("Token resent")
-            showProgressBar(false)
-            enableDisableButtons(true)
+            if(it!=null){
+                showToast(it)
+                showProgressBar(false)
+                enableDisableButtons(true)
+            }
         })
 
         activityViewModel.smsResendNetworkError.observe(viewLifecycleOwner, Observer {
@@ -133,53 +145,6 @@ class AuthorizationFragment : Fragment() {
             showProgressBar(false)
             enableDisableButtons(true)
         })
-
-
-
-
-        // registration ruta je ponovljena zbog ponovnog slanja SMS-a
-       /* activityViewModel.registrationNetworkError.observe(viewLifecycleOwner, Observer {
-            showSnackBar("Something went wrong"+"AUTH")
-            networkResenSMSSuccessOrError()
-        })
-
-        activityViewModel.registrationNetSuccessIsNmbAssigned.observe(viewLifecycleOwner, Observer {it->
-            networkResenSMSSuccessOrError()
-            //showSnackBar("Token was sent")
-        })
-
-
-        //Number exists in DB ponovljen ruta zbog ponobnog slanja SMS-a
-        activityViewModel.nmbExistsInDBUserHasAccountSuccess.observe(viewLifecycleOwner, Observer {
-            networkResenSMSSuccessOrError()
-            //showSnackBar("Token was sent")
-        })
-
-        activityViewModel.nmbExistsInDBUserHasAccountError.observe(viewLifecycleOwner, Observer {
-            networkResenSMSSuccessOrError()
-            showSnackBar("Something went wrong"+"AUTH")
-        })
-
-        activityViewModel.nmbExistsInDB_NoAccountSuccess.observe(viewLifecycleOwner, Observer {
-            networkResenSMSSuccessOrError()
-            //showSnackBar("Token was sent")
-        })
-
-        activityViewModel.nmbExistsInDB_NoAccountError.observe(viewLifecycleOwner, Observer {
-            networkResenSMSSuccessOrError()
-            showSnackBar("Something went wrong"+"AUTH")
-        })
-
-        //Add new number to account ruta je ponovljena zbog ponovnog slanja SMS-a
-        activityViewModel.addNumberToAccuntNetworkError.observe(viewLifecycleOwner,Observer{
-            networkResenSMSSuccessOrError()
-            showSnackBar("Something went wrong" +"AUTH")
-        })
-
-        activityViewModel.addNumberToAccuntNetworkSuccess.observe(viewLifecycleOwner,Observer{
-           networkResenSMSSuccessOrError()
-            //showSnackBar("Token was sent")
-        })*/
 
 
     }
@@ -232,6 +197,12 @@ class AuthorizationFragment : Fragment() {
     private fun networkResenSMSSuccessOrError(){
         showProgressBar(false)
         enableDisableButtons(true)
+
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.i(MYTAG,"On Destroy")
 
     }
 

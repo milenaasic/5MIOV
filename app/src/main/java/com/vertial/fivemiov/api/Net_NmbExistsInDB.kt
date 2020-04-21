@@ -41,6 +41,12 @@ data class NetResponse_NmbExistsInDB(
     @Json(name="message")
     val message:String,
 
+    @Json(name="userMsg")
+    val userMessage:String,
+
+    @Json(name="code")
+    val code:Int,
+
     @Json(name="version")
     val appVersion:String?
 

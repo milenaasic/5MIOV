@@ -1,6 +1,6 @@
 <resources>
 
-    <string name="app_name">5MIOV ver 1.5</string>
+    <string name="app_name">5MIOV ver 1.6</string>
     <string name="empty_string"> </string>
 
     <!-- Menu names -->
@@ -53,11 +53,11 @@
     <string name="nb_of_contacts_found">%1$d found</string>
     <string name="prenumber_call">tel:%1$s,%2$s#</string>
     <string name="phone_number_format">Number %1$s</string>
-
+    <string name="add_plus_before_phone">+%1$s</string>
 
     <!-- layout items messages errors-->
-    <string name="not_valid_phone_number">Not a valid phone number </string>
-    <string name="not_valid_email">Not a valid email </string>
+    <string name="not_valid_phone_number">Invalid phone number </string>
+    <string name="not_valid_email">Invalid email </string>
     <string name="not_valid_password">Password must be at least 8 chars long, must have at least one uppercase, one lowercase and one special character</string>
     <string name="enter_token">Enter token</string>
     <string name="confirm_password_error">Confirm password</string>
@@ -70,7 +70,7 @@
     <string name="clipboard_invalid_data_type">Clipboard contains an invalid data type</string>
     <string name="account_email_is_set">Your account is set</string>
     <string name="something_went_wrong">Something went wrong</string>
-    <string name="VOIP_not_supported">SIP not supported on this device !</string>
+    <string name="VOIP_not_supported">VoIP not supported on this device!</string>
     <string name="no_SIP_permission">No permission to make VOIP call!</string>
 
 

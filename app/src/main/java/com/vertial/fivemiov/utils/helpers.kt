@@ -7,8 +7,11 @@ import android.net.ConnectivityManager
 import android.net.sip.SipManager
 import android.os.Build
 import android.telephony.PhoneNumberUtils
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.util.Patterns
+import android.widget.EditText
 
 private val MYTAG="MY_helpers"
 
@@ -42,8 +45,19 @@ fun String.isValidPhoneNumber():Boolean{
 private val MY_TAG="functions"
 
 fun String.isPhoneNumberValid():Boolean{
-    return PhoneNumberUtils.isGlobalPhoneNumber(this)
+
+    //return (PhoneNumberUtils.isGlobalPhoneNumber(this) && this.length> PHONE_NUMBER_MIN_LENGHT)
+    return true
 }
+
+fun String.isPasswordValid():Boolean{
+    val passwordPattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&+-=])(?=\\S+$).{8,32}$"
+    val passwordMatcher = Regex(passwordPattern)
+    return passwordMatcher.find(this) !=null
+
+}
+
+fun CharSequence?.isEmailValid() = !isNullOrEmpty() && Patterns.EMAIL_ADDRESS.matcher(this).matches()
 
 fun String.removeDoubleZeroAtBegining():String{
     if(!this.trim().startsWith(DOUBLE_ZERO)) return this
@@ -56,14 +70,9 @@ fun String.removeFirstZeroAddPrefix(prefix:String):String{
     return this.trim().removePrefix(ONE_ZERO).plus(NIGERIAN_PREFIX)
 }
 
-fun CharSequence?.isEmailValid() = !isNullOrEmpty() && Patterns.EMAIL_ADDRESS.matcher(this).matches()
 
-fun String.isPasswordValid():Boolean{
-    val passwordPattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&+-=])(?=\\S+$).{8,32}$"
-    val passwordMatcher = Regex(passwordPattern)
-    return passwordMatcher.find(this) !=null
 
-}
+
 
 fun String.removePlus():String{
     if(this.trim().startsWith("+",false)){
@@ -83,4 +92,19 @@ fun did24HoursPass(currentTime:Long, databaseE1Timestamp:Long):Boolean{
     if(currentTime.minus(databaseE1Timestamp)> HOURS_24_IN_MILLIS)  return true
     else return false
 
+}
+
+
+fun EditText.afterTextChanged(afterTextChanged: (String) -> Unit) {
+    this.addTextChangedListener(object : TextWatcher {
+        override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+        }
+
+        override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+        }
+
+        override fun afterTextChanged(editable: Editable?) {
+            afterTextChanged.invoke(editable.toString())
+        }
+    })
 }

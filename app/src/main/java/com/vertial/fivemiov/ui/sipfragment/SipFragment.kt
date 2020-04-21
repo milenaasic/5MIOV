@@ -182,10 +182,12 @@ class SipFragment : Fragment() {
     }
 
     private fun initializeManager() {
-        sipManager=SipManager.newInstance(requireContext())
-        initalizePeerProfile()
-        initializeLocalProfile()
 
+        sipManager=SipManager.newInstance(requireContext())
+        if(sipManager!=null) {
+            initalizePeerProfile()
+            initializeLocalProfile()
+        }else showToast("Sip Manager je $sipManager")
     }
 
     private fun initalizePeerProfile() {

@@ -24,6 +24,9 @@ data class NetRequest_SetAccountEmailAndPass(
 @JsonClass(generateAdapter = true)
 data class NetResponse_SetAccountEmailAndPass(
 
+    @Json(name="success")
+    val success:Boolean,
+
     @Json(name="message")
     val message:String,
 

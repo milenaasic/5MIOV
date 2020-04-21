@@ -4,12 +4,14 @@ package com.vertial.fivemiov.ui.RegistrationAuthorization
 import android.app.Activity
 import android.os.Bundle
 import android.util.Log
+import android.view.KeyEvent
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
+import android.widget.TextView
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
@@ -19,10 +21,7 @@ import com.google.android.material.snackbar.Snackbar
 
 import com.vertial.fivemiov.R
 import com.vertial.fivemiov.databinding.FragmentAddNumberToAccountBinding
-import com.vertial.fivemiov.utils.isEmailValid
-import com.vertial.fivemiov.utils.isPasswordValid
-import com.vertial.fivemiov.utils.isPhoneNumberValid
-import com.vertial.fivemiov.utils.removePlus
+import com.vertial.fivemiov.utils.*
 
 private const val MY_TAG="MY_AddNumberToAccount"
 class AddNumberToAccount : Fragment() {
@@ -41,10 +40,11 @@ class AddNumberToAccount : Fragment() {
             ViewModelProvider(this)[RegAuthActivityViewModel::class.java]
         }
 
-
+        binding.addNmbPhoneEditText.setText(PLUS_NIGERIAN_PREFIX)
 
         binding.addphoneButton.setOnClickListener {
-            binding.rootAddNumberConstrLayout.isEnabled=false
+            //binding.rootAddNumberConstrLayout.isEnabled=false
+            binding.rootAddNumberConstrLayout.requestFocus()
             it.isEnabled=false
             hidekeyboard()
             if(allEnteredFieldsAreValid()){
@@ -60,17 +60,47 @@ class AddNumberToAccount : Fragment() {
 
         }
 
+
         binding.addNmbPassEditText.setOnEditorActionListener { view, action, keyEvent ->
             when (action){
                 EditorInfo.IME_ACTION_DONE,EditorInfo.IME_ACTION_UNSPECIFIED-> {
                     hidekeyboard()
                     view.clearFocus()
+                    Log.i(MY_TAG," usao u oneditor action listener iz nmbPhoneedittext TRUE")
                     true
                 }
-                else->false
+                else->{
+                    Log.i(MY_TAG," usao u oneditor action listener iz nmbPhoneedittext")
+                    false
+                }
+
             }
+
         }
 
+        //Kada EditTextlayouts imaju fokus treba da se iskljuci greska
+        binding.apply {
+
+            addNmbPhoneEditText.setOnFocusChangeListener { view, hasFocus ->
+                if(hasFocus) binding.addPhoneTextInputLayout.error=null
+                Log.i(MY_TAG,"text input layout ima fokus")
+            }
+            addNmbPhoneEditText.afterTextChanged {binding.addPhoneTextInputLayout.error=null }
+
+            addNmbEmailEditText.setOnFocusChangeListener { view, hasFocus ->
+                if(hasFocus) binding.enterEmailTextInputLayout.error=null
+                Log.i(MY_TAG,"text input layout ima fokus")
+            }
+
+            addNmbEmailEditText.afterTextChanged { binding.enterEmailTextInputLayout.error=null }
+
+            addNmbPassEditText.setOnFocusChangeListener { view, hasFocus ->
+                if(hasFocus) binding.addNmbEnterPassTextInputLayout.error=null
+                Log.i(MY_TAG,"text input layout ima fokus")
+             }
+             addNmbPassEditText.afterTextChanged { binding.addNmbEnterPassTextInputLayout.error=null }
+
+         }
 
         return binding.root
     }
@@ -80,40 +110,64 @@ class AddNumberToAccount : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         activityViewModel.addNumberToAccuntNetworkError.observe(viewLifecycleOwner,Observer{
-            if(it!=null){
+            if(it!=null) {
                 showSnackBar(resources.getString(R.string.something_went_wrong))
+                activityViewModel.resetAddNumberToAccountNetError()
+                binding.addphoneButton.isEnabled = true
+                showProgressBar(false)
             }
-            binding.addphoneButton.isEnabled=true
-            showProgressBar(false)
-
         })
 
 
-        activityViewModel.addNumberToAccuntNetworkSuccess.observe(viewLifecycleOwner,Observer{
-            if(it!=null){
-                //showToast(it)
-                findNavController().navigate(AddNumberToAccountDirections.actionAddNumberToAccountToAuthorizationFragment())
+        activityViewModel.addNumberToAccuntNetworkSuccess.observe(viewLifecycleOwner,Observer{response->
+            Log.i(MY_TAG,"net response je ${response.toString()}")
+            if(response!=null) {
+                when {
+                    response.success == true -> {
+                        showToast(response.usermessage)
+                        activityViewModel.resetAddNumberToAccountNetSuccess()
+                        findNavController().navigate(AddNumberToAccountDirections.actionAddNumberToAccountToAuthorizationFragment())
+                    }
+
+                    response.success == false -> {
+                        showSnackBar(response.usermessage)
+                        activityViewModel.resetAddNumberToAccountNetSuccess()
+                    }
+                }
+
+                binding.addphoneButton.isEnabled = true
+                showProgressBar(false)
             }
-            binding.addphoneButton.isEnabled=true
-            showProgressBar(false)
 
         })
 
+    }
+
+    override fun onDestroy() {
+        Log.i(MY_TAG,"onDestroy()")
+        if(activityViewModel!=null) activityViewModel.resetSignUpParameters()
+        super.onDestroy()
+
+    }
+
+    override fun onDestroyView() {
+        Log.i(MY_TAG,"onDestroyView()")
+        super.onDestroyView()
     }
 
     private fun allEnteredFieldsAreValid(): Boolean {
         var b:Boolean=true
         if(!(binding.addNmbPhoneEditText.text.toString()).isPhoneNumberValid()) {
             b=false
-            binding.addNmbPhoneEditText.setError(resources.getString(R.string.not_valid_phone_number))
+            binding.addPhoneTextInputLayout.setError(resources.getString(R.string.not_valid_phone_number))
         }
         if(!(binding.addNmbEmailEditText.text.toString()).isEmailValid()) {
             b=false
-            binding.addNmbEmailEditText.setError(resources.getString(R.string.not_valid_email))
+            binding.enterEmailTextInputLayout.setError(resources.getString(R.string.not_valid_email))
         }
         if(!(binding.addNmbPassEditText.text.toString()).isPasswordValid()) {
             b=false
-            binding.addNmbPassEditText.setError(resources.getString(R.string.not_valid_password))
+            binding.addNmbEnterPassTextInputLayout.setError(resources.getString(R.string.not_valid_password))
         }
         return b
     }

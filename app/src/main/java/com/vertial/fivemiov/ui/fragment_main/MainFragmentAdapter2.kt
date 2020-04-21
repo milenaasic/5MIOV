@@ -43,8 +43,8 @@ class MainFragmentAdapter2(var filterCursor: Cursor?)  : RecyclerView.Adapter<Ma
         filter: String?
     ) {
         if (c != null) {
-            if (c!!.moveToPosition(1)) {
-                Log.i(MYTAG,"cursor poz 1, ${c!!.getString(CURSOR_NAME)}")
+            if (c.moveToPosition(1)) {
+                Log.i(MYTAG,"cursor poz 1, ${c.getString(CURSOR_NAME)}")
             }
             filterCursor = c
 

@@ -14,17 +14,16 @@
             android:id="@+id/action_registrationFragment_to_authorizationFragment"
             app:destination="@id/authorizationFragment"
             app:popUpTo="@+id/registrationFragment"
-            app:popUpToInclusive="true" />
+            app:popUpToInclusive="false" />
         <action
             android:id="@+id/action_registrationFragment_to_addNumberToAccount"
             app:destination="@id/addNumberToAccount"
-            app:popUpTo="@+id/registrationFragment"
-            app:popUpToInclusive="true" />
+            app:popUpToInclusive="false" />
         <action
             android:id="@+id/action_registrationFragment_to_numberExistsInDatabase"
             app:destination="@id/numberExistsInDatabase"
             app:popUpTo="@+id/registrationFragment"
-            app:popUpToInclusive="true" />
+            app:popUpToInclusive="false" />
     </fragment>
     <fragment
         android:id="@+id/authorizationFragment"
@@ -51,7 +50,7 @@
             android:id="@+id/action_addNumberToAccount_to_authorizationFragment"
             app:destination="@id/authorizationFragment"
             app:popUpTo="@+id/addNumberToAccount"
-            app:popUpToInclusive="true" />
+            app:popUpToInclusive="false" />
     </fragment>
     <fragment
         android:id="@+id/numberExistsInDatabase"
@@ -62,6 +61,6 @@
             android:id="@+id/action_numberExistsInDatabase_to_authorizationFragment"
             app:destination="@id/authorizationFragment"
             app:popUpTo="@+id/numberExistsInDatabase"
-            app:popUpToInclusive="true" />
+            app:popUpToInclusive="false" />
     </fragment>
 </navigation>

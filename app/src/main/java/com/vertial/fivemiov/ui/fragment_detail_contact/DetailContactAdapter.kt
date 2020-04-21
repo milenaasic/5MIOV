@@ -46,7 +46,7 @@ class DetailContactAdapter(
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
 
         holder.bind(clickListenerSIP,clickListenerPrenumber,dataList[position],
-            isVOIPSupported&&isOnline(app))
+            isOnline(app))
     }
 
 

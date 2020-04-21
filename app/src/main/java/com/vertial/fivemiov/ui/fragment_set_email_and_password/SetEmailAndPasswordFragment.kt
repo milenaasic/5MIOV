@@ -21,12 +21,13 @@ import com.vertial.fivemiov.api.MyAPI
 import com.vertial.fivemiov.data.Repo
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentSetEmailAndPasswordBinding
+import com.vertial.fivemiov.utils.afterTextChanged
 import com.vertial.fivemiov.utils.isEmailValid
 
 import com.vertial.fivemiov.utils.isOnline
 import com.vertial.fivemiov.utils.isPasswordValid
 
-
+private const val MYTAG="SetEmailAndPasswordFrag"
 class SetEmailAndPasswordFragment : Fragment() {
 
     private lateinit var binding: FragmentSetEmailAndPasswordBinding
@@ -56,6 +57,7 @@ class SetEmailAndPasswordFragment : Fragment() {
 
 
         binding.setAccountSubmitButton.setOnClickListener {
+            binding.rootSetEmailPass.requestFocus()
             hidekeyboard()
 
             if(!isOnline(requireActivity().application)) {
@@ -65,6 +67,7 @@ class SetEmailAndPasswordFragment : Fragment() {
             if(allEnteredFieldsAreValid()) {
                 it.isEnabled=false
                 showProgressBar(true)
+                Log.i(MYTAG,"setCredentials je kliknut")
                     viewModel.setAccountAndEmailForUser(
                                 binding.setAccountEmailEditText.text.toString(),
                                 binding.setAccountPassEditText.text.toString()
@@ -85,22 +88,52 @@ class SetEmailAndPasswordFragment : Fragment() {
             }
         }
 
+        binding.apply {
+            setAccountEmailEditText.apply {
+                    afterTextChanged { binding.setAccountEmailTextInputLayout.error=null }
+                    setOnFocusChangeListener { view, hasFocus ->
+                        if(hasFocus)  binding.setAccountEmailTextInputLayout.error=null
+                     }
+             }
+
+             setAccountPassEditText.apply {
+                    afterTextChanged { binding.setAccountPassTextInputLayout.error=null }
+                    setOnFocusChangeListener { view, hasFocus ->
+                     if(hasFocus)  binding.setAccountPassTextInputLayout.error=null
+                    }
+              }
+
+              setAccountConfirmpassEditText.apply {
+                afterTextChanged { binding.setAccountConfirmpassTextInputLayout.error=null }
+                  setOnFocusChangeListener { view, hasFocus ->
+                      if(hasFocus)  binding.setAccountConfirmpassTextInputLayout.error=null
+                  }
+               }
+
+        }
+
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.setAccountEmailAndPassSuccess.observe(viewLifecycleOwner, Observer {
-            showToast(getString(R.string.account_email_is_set))
-            showProgressBar(false)
-            findNavController().navigate(SetEmailAndPasswordFragmentDirections.actionSetEmailAndPasswordFragmentToMainFragment())
+        viewModel.setAccountEmailAndPassSuccess.observe(viewLifecycleOwner, Observer {message->
+            if(message!=null){
+                viewModel.resetSetEmailAndPassNetSuccess()
+                showToast(message)
+                showProgressBar(false)
+                findNavController().navigate(SetEmailAndPasswordFragmentDirections.actionSetEmailAndPasswordFragmentToMainFragment())
+            }
          })
 
          viewModel.setAccountEmailAndPassError.observe(viewLifecycleOwner, Observer {
-             showSnackBar(getString(R.string.something_went_wrong))
-             showProgressBar(false)
-             binding.setAccountSubmitButton.isEnabled=true
+             if(it!=null){
+                viewModel.resetSetEmailAndPasstNetErrorr()
+                 showSnackBar(getString(R.string.something_went_wrong))
+                 showProgressBar(false)
+                 binding.setAccountSubmitButton.isEnabled=true
+             }
           })
 
     }
@@ -113,21 +146,27 @@ class SetEmailAndPasswordFragment : Fragment() {
     }
 
 
+    override fun onStop() {
+        super.onStop()
+        hidekeyboard()
+    }
+
+
     private fun allEnteredFieldsAreValid(): Boolean {
         var b:Boolean=true
 
         if(!(binding.setAccountEmailEditText.text.toString()).isEmailValid()) {
             b=false
-            binding.setAccountEmailEditText.setError(resources.getString(R.string.not_valid_email))
+            binding.setAccountEmailTextInputLayout.setError(resources.getString(R.string.not_valid_email))
         }
         if(!(binding.setAccountPassEditText.text.toString()).isPasswordValid()) {
             b=false
-            binding.setAccountPassEditText.setError(resources.getString(R.string.not_valid_password))
+            binding.setAccountPassTextInputLayout.setError(resources.getString(R.string.not_valid_password))
         }
 
         if(!binding.setAccountConfirmpassEditText.text.toString().equals(binding.setAccountPassEditText.text.toString())){
             b=false
-            binding.setAccountConfirmpassEditText.setError(getString(R.string.confirm_password_error))
+            binding.setAccountConfirmpassTextInputLayout.setError(getString(R.string.confirm_password_error))
         }
         return b
     }

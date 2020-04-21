@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.vertial.fivemiov.data.Repo
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.lang.Exception
 
@@ -20,9 +21,10 @@ class SetEmailPassFragmentViewModel(val myrepository: Repo, application: Applica
     fun setAccountAndEmailForUser(email:String,password:String){
         var authtoken:String=""
         var phoneNumber:String=""
-        //pokupi bojr i token iz baze u repo-u
+        //pokupi broj i token iz baze
             viewModelScope.launch {
                 val deferredPhone = viewModelScope.async(IO) {
+                    //delay(3000)
                     myrepository.getPhoneNumberFromDB()
                 }
                 try {
@@ -33,6 +35,7 @@ class SetEmailPassFragmentViewModel(val myrepository: Repo, application: Applica
                 }
 
                 val deferredToken = viewModelScope.async(IO) {
+                    //delay(3000)
                     myrepository.getTokenFromDB()
                 }
                 try {
@@ -41,10 +44,18 @@ class SetEmailPassFragmentViewModel(val myrepository: Repo, application: Applica
                 } catch (e: Exception) {
                     Log.i(MYTAG,"db greska ${e.message}")
                 }
-
-                myrepository.setAccountEmailAndPasswordForUser(phoneNumber,authtoken,email, password)
+                Log.i(MYTAG, "setEmialView MOdel $phoneNumber,$authtoken,$email,$password")
+                if(phoneNumber.isNotEmpty() && authtoken.isNotEmpty()) myrepository.setAccountEmailAndPasswordForUser(phoneNumber,authtoken,email, password)
             }
 
+    }
+
+    fun resetSetEmailAndPassNetSuccess(){
+        myrepository.resetSetAccountEmailAndPassNetSuccess()
+    }
+
+    fun resetSetEmailAndPasstNetErrorr(){
+        myrepository.resetSetAccountEmailAndPassNetError()
     }
 
 }

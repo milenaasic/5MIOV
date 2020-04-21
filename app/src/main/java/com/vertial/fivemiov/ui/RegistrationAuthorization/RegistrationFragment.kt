@@ -3,6 +3,8 @@ package com.vertial.fivemiov.ui.RegistrationAuthorization
 import android.app.Activity
 import android.os.Bundle
 import android.telephony.PhoneNumberUtils
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -18,10 +20,9 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 
 import com.vertial.fivemiov.R
+import com.vertial.fivemiov.api.NetResponse_Registration
 import com.vertial.fivemiov.databinding.FragmentRegistrationBinding
-import com.vertial.fivemiov.utils.isOnline
-import com.vertial.fivemiov.utils.isPhoneNumberValid
-import com.vertial.fivemiov.utils.removePlus
+import com.vertial.fivemiov.utils.*
 
 private const val MY_TAG="MY_RegistrationFragment"
 class RegistrationFragment : Fragment() {
@@ -39,11 +40,12 @@ class RegistrationFragment : Fragment() {
             ViewModelProvider(this)[RegAuthActivityViewModel::class.java]
         }
 
+        binding.phoneNumberEditText.setText(PLUS_NIGERIAN_PREFIX)
 
         binding.registerButton.setOnClickListener {
 
             hidekeyboard()
-
+            binding.rootRegContLayout.requestFocus()
             if(!isOnline(requireActivity().application)) {
                 showSnackBar(resources.getString(R.string.no_internet))
                 return@setOnClickListener}
@@ -60,7 +62,7 @@ class RegistrationFragment : Fragment() {
 
                 }else {
                     it.isEnabled=true
-                     binding.phoneNumberEditText.setError(resources.getString(R.string.not_valid_phone_number))
+                     binding.enterPhoneTextInputLayout.setError(resources.getString(R.string.not_valid_phone_number))
                 }
         }
 
@@ -81,6 +83,14 @@ class RegistrationFragment : Fragment() {
             }
          }
 
+         binding.phoneNumberEditText.apply {
+             afterTextChanged { binding.enterPhoneTextInputLayout.error=null }
+             setOnFocusChangeListener { view, hasFocus ->
+                 if(hasFocus) binding.enterPhoneTextInputLayout.error=null
+
+             }
+          }
+        
         return binding.root
     }
 
@@ -88,24 +98,43 @@ class RegistrationFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         activityViewModel.registrationNetworkError.observe(viewLifecycleOwner, Observer {
+            Log.i(MY_TAG,"net reg greska je ${it}")
+
             if(it!=null){
                 showSnackBar(resources.getString(R.string.something_went_wrong))
+                activityViewModel.resetRegistrationNetErrorr()
+                binding.registerButton.isEnabled=true
+                showProgressBar(false)
             }
-            binding.registerButton.isEnabled=true
-            showProgressBar(false)
-
          })
 
-         activityViewModel.registrationNetSuccessIsNmbAssigned.observe(viewLifecycleOwner, Observer {isNumberAssigned->
-             Log.i(MY_TAG,"da li je number dodeljen $isNumberAssigned")
-             //showToast("broj je dodeljen $isNumberAssigned")
-             if(!isNumberAssigned){
-                 findNavController().navigate(RegistrationFragmentDirections.actionRegistrationFragmentToAuthorizationFragment())
-             }else {
-                 findNavController().navigate(RegistrationFragmentDirections.actionRegistrationFragmentToNumberExistsInDatabase())
+         activityViewModel.registrationNetSuccess.observe(viewLifecycleOwner, Observer {response->
+             Log.i(MY_TAG,"net reg response j e ${response.toString()}")
+
+             if(response!=null) {
+                 when {
+                     response.success == true && response.phoneNumberAlreadyAssigned == false -> {
+                         showToast(response.userMessage)
+                         activityViewModel.resetRegistrationNetSuccess()
+                         findNavController().navigate(RegistrationFragmentDirections.actionRegistrationFragmentToAuthorizationFragment())
+                     }
+
+                     response.success == true && response.phoneNumberAlreadyAssigned == true -> {
+                         showToast(response.userMessage)
+                         activityViewModel.resetRegistrationNetSuccess()
+                         findNavController().navigate(RegistrationFragmentDirections.actionRegistrationFragmentToNumberExistsInDatabase())
+                     }
+
+                     response.success == false -> {
+                         showSnackBar(response.userMessage)
+                         activityViewModel.resetRegistrationNetSuccess()
+                     }
+
+                 }
+
+                 binding.registerButton.isEnabled = true
+                 showProgressBar(false)
              }
-             binding.registerButton.isEnabled=true
-             showProgressBar(false)
           })
     }
 
@@ -133,6 +162,12 @@ class RegistrationFragment : Fragment() {
 
     private fun showToast(message: String) {
         Toast.makeText(requireActivity(),message,Toast.LENGTH_LONG).show()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.i(MY_TAG,"On Destroy")
+
     }
 
 

@@ -6,6 +6,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase.CONFLICT_IGNORE
 import android.util.Log
+import android.widget.Toast
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -42,7 +43,6 @@ abstract class MyDatabase:RoomDatabase(){
                         .addCallback (object:Callback(){
                             override fun onCreate(db: SupportSQLiteDatabase) {
                                 super.onCreate(db)
-
                                 val myvalues=ContentValues().apply {
                                     put("user_phone", EMPTY_PHONE_NUMBER)
                                     put("token", EMPTY_TOKEN)
