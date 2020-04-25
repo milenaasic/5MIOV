@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.vertial.fivemiov.databinding.FragmentMainRecViewItemType1Binding
 import com.vertial.fivemiov.model.ContactItem
-import com.vertial.fivemiov.utils.EMPTY
+import com.vertial.fivemiov.utils.EMPTY_NAME
 
 
 private val MYTAG="MY_MainFragmentAdapter"
@@ -36,7 +36,7 @@ class MainFragmentAdapter(val clickListener: ContactItemClickListener,val myColo
         var viewType= MyViewHolderType(DEFAULT_LOOK)
 
         when{
-            dataList[position].name.equals(EMPTY)->viewType= MyViewHolderType(DEFAULT_LOOK)
+            dataList[position].name.equals(EMPTY_NAME)->viewType= MyViewHolderType(DEFAULT_LOOK)
             position==0->viewType= MyViewHolderType(POSITION_0_IN_LIST)
             position!=0->{
                 if(!dataList[position-1].name.first().equals(dataList[position].name.first(),true))

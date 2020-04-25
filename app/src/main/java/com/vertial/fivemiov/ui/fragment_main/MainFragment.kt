@@ -36,8 +36,8 @@ import com.vertial.fivemiov.ui.main_activity.MainActivity
 import com.vertial.fivemiov.ui.main_activity.MainActivity.Companion.MAIN_ACTIVITY_SHARED_PREF_NAME
 import com.vertial.fivemiov.ui.main_activity.MainActivity.Companion.PHONEBOOK_IS_EXPORTED
 import com.vertial.fivemiov.ui.main_activity.MainActivityViewModel
-import com.vertial.fivemiov.utils.EMPTY
 import com.vertial.fivemiov.utils.EMPTY_EMAIL
+import com.vertial.fivemiov.utils.EMPTY_NAME
 import kotlinx.android.synthetic.main.fragment_main.view.*
 
 private val MYTAG="MY_MAIN_FRAGMENT"
@@ -114,7 +114,7 @@ class MainFragment : Fragment(){
     private fun initalizeAdapter(){
 
         contactsAdapter=MainFragmentAdapter(ContactItemClickListener {
-            if(it.name== EMPTY){
+            if(it.name== EMPTY_NAME){
             }else{
                 val action=MainFragmentDirections.actionMainFragmentToDetailContact(it.lookUpKey,it.name)
                 findNavController().navigate(action)}
@@ -165,6 +165,7 @@ class MainFragment : Fragment(){
         val itemMyAccount= menu.findItem(R.id.menu_item_myaccount)
         val itemDialPad=menu.findItem(R.id.dialPadFragment)
         val itemLogout=menu.findItem(R.id.menu_item_logout)
+        val itemAboutFragment=menu.findItem(R.id.aboutFragment)
         searchViewActionBar=menu.findItem(R.id.menu_item_search).actionView as SearchView
         searchViewActionBar.setQueryHint(getString(R.string.search_hint))
 
@@ -175,6 +176,7 @@ class MainFragment : Fragment(){
                 itemMyAccount.isVisible=false
                 itemDialPad.isVisible=false
                 itemLogout.isVisible=false
+                itemAboutFragment.isVisible=false
                 searchViewActionBar.isIconified=false
                 return true
             }
@@ -184,6 +186,7 @@ class MainFragment : Fragment(){
                 itemMyAccount.isVisible=true
                 itemDialPad.isVisible=true
                 itemLogout.isVisible=true
+                itemAboutFragment.isVisible=true
                 searchViewActionBar.clearFocus()
                 return true
             }
@@ -274,6 +277,7 @@ class MainFragment : Fragment(){
                 // If request is cancelled, the result arrays are empty.
                 if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                    initalizeAdapter()
+                    if(shouldExportPhoneBook()) (requireActivity() as MainActivity).exportPhoneBook()
                 } else {
                     showSnackBar(resources.getString(R.string.no_permission_read_contacts))
                 }

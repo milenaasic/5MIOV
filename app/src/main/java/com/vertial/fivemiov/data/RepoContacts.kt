@@ -30,11 +30,15 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
     fun getPremunber() = myDatabaseDao.getPrenumber()
 
 
-    //export phonebook network response
-    private val _exportPhoneBookNetworkSuccess = MutableLiveData<Boolean>()
-    val exportPhoneBookNetworkSuccess: LiveData<Boolean>
-        get() = _exportPhoneBookNetworkSuccess
+    //initial export phonebook network response
+    private val _initialexportPhoneBookNetworkSuccess = MutableLiveData<Boolean>()
+    val initialexportPhoneBookNetworkSuccess: LiveData<Boolean>
+        get() = _initialexportPhoneBookNetworkSuccess
 
+    //initial export phonebook network response
+    private val _exportPhoneBookWebViewNetworkSuccess = MutableLiveData<Boolean>()
+    val exportPhoneBookWebViewNetworkSuccess: LiveData<Boolean>
+        get() = _exportPhoneBookWebViewNetworkSuccess
 
     suspend fun logout(){
         withContext(Dispatchers.IO){
@@ -159,7 +163,7 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
 
     }
 
-    suspend fun exportPhoneBook(token:String, phoneNumber:String,phoneBook:List<PhoneBookItem>){
+    suspend fun exportPhoneBook(token:String, phoneNumber:String,phoneBook:List<PhoneBookItem>,initialExport:Boolean=false){
         Log.i(MY_TAG, "EXPORTING PHONEBOOK")
 
             val deferredRes = myAPIService.exportPhoneBook(
@@ -171,14 +175,24 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
             )
             try {
                 val result = deferredRes.await()
-                _exportPhoneBookNetworkSuccess.value = true
+                if(initialExport) _initialexportPhoneBookNetworkSuccess.value=true
+                else _exportPhoneBookWebViewNetworkSuccess.value = true
                 Log.i(MY_TAG, "EXPORTING PHONEBOOK SUCCESS")
 
             } catch (e: Exception) {
                 Log.i(MY_TAG, "EXPORTING PHONEBOOK FAILURE")
                 Log.i(MY_TAG, "network greska je ${e.message}")
             }
-        }
+    }
+
+    fun initialPhoneBookExportFinished(){
+        _initialexportPhoneBookNetworkSuccess.value=false
+
+    }
+
+    fun phoneBookExportFinishedFromWebView(){
+        _exportPhoneBookWebViewNetworkSuccess.value=false
+    }
 
 
 

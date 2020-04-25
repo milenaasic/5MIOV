@@ -10,6 +10,9 @@
     <string name="search_hint">Search</string>
     <string name="paste">PASTE</string>
     <string name="sync_contacts">Sync Contacts</string>
+    <string name="about">About</string>
+
+
 
     <!-- content descriptions -->
     <string name="contact_picture">contact picture</string>
@@ -41,7 +44,7 @@
 
 
     <string name="to_protect_your_account_enter_e_mail_and_password">To protect your account set e-mail and password</string>
-    <string name="choose_password_hint">choose password*</string>
+    <string name="choose_password_hint">choose password</string>
     <string name="confirm_password">confirm password</string>
     <string name="password_instructions">*Password must be at least 8 chars long, must have at least one uppercase, one lowercase and one special character </string>
 
@@ -70,7 +73,7 @@
     <string name="clipboard_invalid_data_type">Clipboard contains an invalid data type</string>
     <string name="account_email_is_set">Your account is set</string>
     <string name="something_went_wrong">Something went wrong</string>
-    <string name="VOIP_not_supported">VoIP not supported on this device!</string>
+    <string name="VOIP_not_supported">Your OS does not support native SIP library</string>
     <string name="no_SIP_permission">No permission to make VOIP call!</string>
 
 
@@ -92,6 +95,12 @@
     <string name="sip_busy">Busy.</string>
     <string name="sip_call_established">Call Established.</string>
     <string name="sip_call_ended">Call Ended.</string>
+
+
+    <!-- ABOUT FRAGMENT-->
+    <string name="about_how_to_use_app">HOW TO MAKE A CALL \nIf you have good internet connection use VOI button, otherwise use regular CALL button</string>
+    <string name="web_api_version">WebApi version  %1$s</string>
+    <string name="mobile_app_version">Mobile App version  %1$s</string>
 
 
 

@@ -14,6 +14,7 @@ import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.model.PhoneItem
 import com.vertial.fivemiov.utils.EMPTY_EMAIL
 import com.vertial.fivemiov.utils.EMPTY_PHONE_NUMBER
+import com.vertial.fivemiov.utils.removeEmptyContactItem
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import java.lang.Exception
@@ -39,7 +40,7 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
     val phoneBook: LiveData<List<PhoneBookItem>>
         get() = _phoneBook
 
-    val phoneBookExported=myRepository.exportPhoneBookNetworkSuccess
+    val phoneBookExported=myRepository.initialexportPhoneBookNetworkSuccess
 
     init {
         Log.i(MY_TAG,("init"))
@@ -78,8 +79,10 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
             }
             try {
                 val phoneBookList= mutableListOf<PhoneBookItem>()
-                val resultList=deferredList.await()
-                Log.i(MY_TAG,"get phone book lista $resultList")
+                val resultListWithEmptyContact=deferredList.await()
+                Log.i(MY_TAG,"get phone book lista $resultListWithEmptyContact")
+                val resultList= removeEmptyContactItem(resultListWithEmptyContact)
+
                 val defferedPhones=(resultList.indices).map {
                     viewModelScope.async(IO) {
                         val list=myRepository.getPhoneNumbersForContact(resultList[it].lookUpKey)
@@ -96,6 +99,7 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
 
                 val resultP=defferedPhones.map { it.await() }
                 Log.i(MY_TAG,"get phone book resul svih deferred je ${resultP}")
+
                 _phoneBook.value=phoneBookList
 
 
@@ -118,11 +122,16 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
     fun exportPhoneBook(phoneBook:List<PhoneBookItem>){
 
         val myUser=userData.value
-        if(myUser!=null && myUser.userPhone!= EMPTY_PHONE_NUMBER){
+        if(myUser!=null && myUser.userPhone!= EMPTY_PHONE_NUMBER && myUser.userPhone.isNotEmpty()){
             viewModelScope.launch {
-                myRepository.exportPhoneBook(myUser.userToken,myUser.userPhone,phoneBook)
+                myRepository.exportPhoneBook(myUser.userToken,myUser.userPhone,phoneBook,initialExport = true)
             }
         }
+
+    }
+
+    fun phoneBookExportFinished(){
+        myRepository.initialPhoneBookExportFinished()
 
     }
 

@@ -69,6 +69,7 @@ class WebViewActivity : AppCompatActivity() {
 
         viewModel.phoneBook.observe(this, Observer {
             if (it != null) {
+                Log.i(MY_TAG,"phone book je $it")
                 viewModel.exportPhoneBook(it)
             }
         })
@@ -76,6 +77,9 @@ class WebViewActivity : AppCompatActivity() {
 
         viewModel.phoneBookExported.observe(this, Observer {
             if (it) {
+
+                viewModel.phoneBookExportFinished()
+
                 val sharedPreferences = getSharedPreferences(
                     MainActivity.MAIN_ACTIVITY_SHARED_PREF_NAME,
                     Context.MODE_PRIVATE

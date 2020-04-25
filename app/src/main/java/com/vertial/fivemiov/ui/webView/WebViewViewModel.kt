@@ -11,8 +11,11 @@ import androidx.lifecycle.viewModelScope
 import com.vertial.fivemiov.api.MyAPI
 import com.vertial.fivemiov.model.PhoneBookItem
 import com.vertial.fivemiov.data.RepoContacts
+import com.vertial.fivemiov.model.ContactItem
 import com.vertial.fivemiov.model.PhoneItem
+import com.vertial.fivemiov.utils.EMPTY_NAME
 import com.vertial.fivemiov.utils.EMPTY_PHONE_NUMBER
+import com.vertial.fivemiov.utils.removeEmptyContactItem
 import com.vertial.fivemiov.utils.removePlus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -30,7 +33,7 @@ class WebViewViewModel(val myRepository: RepoContacts, application: Application)
     val phoneBook: LiveData<List<PhoneBookItem>>
         get() = _phoneBook
 
-    val phoneBookExported=myRepository.exportPhoneBookNetworkSuccess
+    val phoneBookExported=myRepository.exportPhoneBookWebViewNetworkSuccess
 
     init {
         getPhoneBook()
@@ -46,7 +49,8 @@ class WebViewViewModel(val myRepository: RepoContacts, application: Application)
             }
             try {
                 val phoneBookList= mutableListOf<PhoneBookItem>()
-                val resultList=deferredList.await()
+                val resultListWithEmptyContact=deferredList.await()
+                val resultList=removeEmptyContactItem(resultListWithEmptyContact)
                // Log.i(MY_TAG,"get phone book lista $resultList")
                 val defferedPhones=(resultList.indices).map {
                     viewModelScope.async(Dispatchers.IO) {
@@ -92,6 +96,10 @@ class WebViewViewModel(val myRepository: RepoContacts, application: Application)
             }
         }
 
+    }
+
+    fun phoneBookExportFinished(){
+        myRepository.phoneBookExportFinishedFromWebView()
     }
 
     fun loadloadDashboard(){

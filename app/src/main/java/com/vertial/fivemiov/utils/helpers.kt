@@ -12,6 +12,7 @@ import android.text.TextWatcher
 import android.util.Log
 import android.util.Patterns
 import android.widget.EditText
+import com.vertial.fivemiov.model.ContactItem
 
 private val MYTAG="MY_helpers"
 
@@ -46,8 +47,8 @@ private val MY_TAG="functions"
 
 fun String.isPhoneNumberValid():Boolean{
 
-    //return (PhoneNumberUtils.isGlobalPhoneNumber(this) && this.length> PHONE_NUMBER_MIN_LENGHT)
-    return true
+    return (PhoneNumberUtils.isGlobalPhoneNumber(this) && this.length> PHONE_NUMBER_MIN_LENGHT)
+    //return true
 }
 
 fun String.isPasswordValid():Boolean{
@@ -107,4 +108,14 @@ fun EditText.afterTextChanged(afterTextChanged: (String) -> Unit) {
             afterTextChanged.invoke(editable.toString())
         }
     })
+}
+
+//obrada kontakt liste
+
+fun removeEmptyContactItem(inputlist:List<ContactItem>):List<ContactItem>{
+    val list= inputlist.toMutableList()
+    Log.i(MYTAG,"poslednji element je ${list.last()}")
+    if(list.last().name== EMPTY_NAME) list.removeAt(list.size-1)
+    Log.i(MYTAG,"poslednji element posle izbacivanja poslednje je ${list.last()}")
+    return list
 }

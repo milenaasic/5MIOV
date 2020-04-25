@@ -17,6 +17,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.onNavDestinationSelected
 import com.google.android.play.core.appupdate.AppUpdateManager
@@ -45,6 +46,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var viewModel: MainActivityViewModel
     private var userHasEmailAndPass: Boolean = false
 
+    private var mySavedInstanceState:Bundle?=null
+
     private lateinit var appUpdateManager: AppUpdateManager
     private val MY_UPDATE_REQUEST_CODE = 10
 
@@ -55,6 +58,7 @@ class MainActivity : AppCompatActivity() {
         const val DETAIL_FRAGMENT = 2
         const val SET_ACCOUNT_EMAIL_PASS_FRAGMENT = 3
         const val SIP_FRAGMENT = 4
+        const val ABOUT_FRAGMENT=5
 
         const val MAIN_ACTIVITY_SHARED_PREF_NAME = "MainActivitySharedPref"
         const val PHONEBOOK_IS_EXPORTED = "phone_book_is_exported"
@@ -114,11 +118,16 @@ class MainActivity : AppCompatActivity() {
                     setSipFragmentUI()
                 }
 
+                R.id.aboutFragment->{
+                    setAboutFragmentUI()
+                }
+
             }
 
         }
 
         if (savedInstanceState != null) {
+            mySavedInstanceState=savedInstanceState
             Log.i(MY_TAG, "usao u onSaveInstance nije null")
 
             when (savedInstanceState.get(CURRENT_FRAGMENT)) {
@@ -135,7 +144,13 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 SIP_FRAGMENT -> {
-                    setSipFragmentUI()
+                   navController.navigateUp()
+                   // setSipFragmentUI()
+                }
+
+                ABOUT_FRAGMENT ->{
+
+                    setAboutFragmentUI()
                 }
             }
 
@@ -161,6 +176,7 @@ class MainActivity : AppCompatActivity() {
 
         viewModel.phoneBookExported.observe(this, Observer {
             if (it) {
+                viewModel.phoneBookExportFinished()
                 val sharedPreferences =
                     getSharedPreferences(MAIN_ACTIVITY_SHARED_PREF_NAME, Context.MODE_PRIVATE)
                 if (sharedPreferences.contains(PHONEBOOK_IS_EXPORTED)) {
@@ -216,7 +232,16 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    override fun onRestart() {
 
+        Log.i(MY_TAG, " ON RESTART")
+       Log.i(MY_TAG, " saved state je ${mySavedInstanceState?.get(CURRENT_FRAGMENT)}")
+       if(navController.currentDestination?.id==R.id.sipFragment) {
+           Log.i(MY_TAG, " current destinatio je sipfragment")
+           navController.navigateUp()
+       }
+        super.onRestart()
+    }
 
     override fun onResume() {
         super.onResume()
@@ -330,6 +355,11 @@ class MainActivity : AppCompatActivity() {
                 window.statusBarColor = Color.TRANSPARENT
             }
         }
+    }
+
+
+    private fun setAboutFragmentUI(){
+        //TODO napravi layout
     }
 
 

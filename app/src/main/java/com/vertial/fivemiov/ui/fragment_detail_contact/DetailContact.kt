@@ -82,7 +82,7 @@ class DetailContact : Fragment() {
 
         viewModel=ViewModelProvider(this,DetailContactViewModelFactory(args.contactLookUpKey,repo,requireActivity().application)).get(DetailContactViewModel::class.java)
         val sipManager=SipManager.newInstance(requireContext())
-        if(!isVOIPsupported(requireContext()))showSnackBar(resources.getString(R.string.VOIP_not_supported)+", SipManager je $sipManager")
+        if(!isVOIPsupported(requireContext()))showSnackBar(resources.getString(R.string.VOIP_not_supported)+", SipManager is $sipManager")
 
 
         phoneAdapter= DetailContactAdapter(
@@ -169,6 +169,7 @@ class DetailContact : Fragment() {
         menu.findItem(R.id.dialPadFragment).isVisible=false
         menu.findItem(R.id.menu_item_myaccount).isVisible=false
         menu.findItem(R.id.menu_item_logout).isVisible=false
+        menu.findItem(R.id.aboutFragment).isVisible=false
     }
 
     private fun showSnackBar(s:String) {

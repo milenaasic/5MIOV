@@ -6,17 +6,18 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.vertial.fivemiov.data.Repo
+import com.vertial.fivemiov.data.RepoSIPE1
+import com.vertial.fivemiov.data.UncancelableJobSip
 import com.vertial.fivemiov.database.MyDatabaseDao
 import com.vertial.fivemiov.model.User
+import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import java.lang.Exception
 
 private val MYTAG="MY_SIPVIewMOdel"
 
-class SipViewModel(val mydatabaseDao: MyDatabaseDao, application: Application) : AndroidViewModel(application) {
+class SipViewModel(val mySipRepo: RepoSIPE1, val myRepository: Repo, application: Application) : AndroidViewModel(application) {
 
     private val _timeout= MutableLiveData<Boolean>()
     val timeout:LiveData<Boolean>
@@ -26,35 +27,50 @@ class SipViewModel(val mydatabaseDao: MyDatabaseDao, application: Application) :
     val timeoutReg:LiveData<Boolean>
         get() = _timeoutReg
 
-    /*private val _timeoutCallEnded= MutableLiveData<Boolean>()
-    val timeoutCallEnded:LiveData<Boolean>
-        get() = _timeoutCallEnded*/
 
     private val _navigateUp= MutableLiveData<Boolean>()
     val navigateUp:LiveData<Boolean>
         get() = _navigateUp
 
-    fun getSipAccountInfo():User?{
-        var myUser:User?=null
-        viewModelScope.launch {
-            val userDeferred = async(IO) {
-                    mydatabaseDao.getUser()
 
+    val getSipCredentialsNetSuccess=mySipRepo.getSipAccessCredentialsNetSuccess
+    val getSipAccessCredentialsNetError=mySipRepo.getSipAccessCredentialsNetError
+
+    // trazi nove sip credentials
+    fun getSipAccountCredentials(){
+
+        var authtoken:String=""
+        viewModelScope.launch{
+            var authtoken=""
+            val deferredToken = viewModelScope.async(IO) {
+                //delay(3000)
+                myRepository.getTokenFromDB()
             }
-
             try {
-                val user=userDeferred.await()
-                myUser=user.value
-            }catch (e: Throwable) {
-                Log.i(MYTAG, e.message ?: "no message")
+                authtoken = deferredToken.await()
 
-
+            } catch (e: Exception) {
+                Log.i(MYTAG,"db greska iz getSipAccountCredentials ${e.message}")
             }
-
-        }
-        return myUser
-
+           Log.i(MYTAG," token iz baze je $authtoken")
+            if(authtoken.isNotEmpty()) mySipRepo.getSipAccessCredentials(authtoken)
+            }
     }
+
+    //funkcije za resetovanje getCredentials
+    fun resetgetSipAccountCredentialsNetSuccess(){
+        mySipRepo.resetGetSipAccessCredentialsNetSuccess()
+    }
+    fun resetgetSipAccountCredentialsNetError(){
+        mySipRepo.resetGetSipAccessCredentialsNetError()
+    }
+
+
+    //resetuj sip credentials
+    fun resetSipCredentials(){
+       mySipRepo.resetSipAccessInBackGround()
+    }
+
 
     fun startTimeout(){
         viewModelScope.launch {
@@ -70,7 +86,7 @@ class SipViewModel(val mydatabaseDao: MyDatabaseDao, application: Application) :
 
     fun startRegTimeout(){
         viewModelScope.launch {
-            delay(5000)
+            delay(1000)
             _timeoutReg.value=true
         }
     }
@@ -79,20 +95,9 @@ class SipViewModel(val mydatabaseDao: MyDatabaseDao, application: Application) :
         _timeoutReg.value=false
     }
 
-    /*fun callEndedTimeout(){
-        viewModelScope.launch {
-            delay(1000)
-            _timeoutReg.value=true
-        }
-    }
-
-    fun callEndedTimeoutFinished(){
-        _timeoutCallEnded.value=false
-    }*/
-
     fun navigateBack(){
         viewModelScope.launch {
-            delay(1000)
+            //delay(1000)
             _navigateUp.value=true
         }
     }

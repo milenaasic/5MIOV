@@ -10,14 +10,14 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.vertial.fivemiov.R
 import com.vertial.fivemiov.model.ContactItem
-import com.vertial.fivemiov.utils.EMPTY
+import com.vertial.fivemiov.utils.EMPTY_NAME
 
 private val MYTAG="MY_MainFragBindAdapter"
 
 @BindingAdapter("setNameWithColoredLetters","textToColor","mycolor")
 fun setNameWithColoredLetters(view:TextView, item: ContactItem, textToColor:String?, color:String){
     //Log.i(MYTAG,"contact je $item, za bojenje je $textToColor")
-    if(item.name== EMPTY) view.text=""
+    if(item.name== EMPTY_NAME) view.text=""
     else {
         if (textToColor == null) view.text = item.name
         else {
@@ -29,7 +29,7 @@ fun setNameWithColoredLetters(view:TextView, item: ContactItem, textToColor:Stri
 
 @BindingAdapter("setThumbPhoto")
 fun setThumbnailPhoto(view: ImageView, item: ContactItem?){
-    if(item?.name=== EMPTY){
+    if(item?.name=== EMPTY_NAME){
         Glide.with(view)
             .load(android.R.color.background_light)
             .apply(RequestOptions().error(android.R.color.white).fallback(android.R.color.background_light))
@@ -46,7 +46,7 @@ fun setThumbnailPhoto(view: ImageView, item: ContactItem?){
 
 @BindingAdapter("setFirstLetter")
 fun setFirstLetter(view: TextView, item: ContactItem?){
-    if((item?.name=== EMPTY))view.text= ""
+    if((item?.name=== EMPTY_NAME))view.text= ""
     else   {if(item?.photoThumbUri==null ) view.text= item?.name?.first().toString()
             else view.text= ""}
 }

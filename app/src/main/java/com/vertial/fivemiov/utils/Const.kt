@@ -16,8 +16,8 @@ const val EMPTY_SIP_SERVER="empty_sip_server"
 const val EMPTY_E1_PRENUMBER="empty_e1_prenumber"
 const val HOURS_24_IN_MILLIS=24*60*60*60L
 
-const val EMPTY="empty"
- val EMPTY_CONTACT_ITEM=ContactItem(lookUpKey ="",name= EMPTY)
+const val EMPTY_NAME="empty_name"
+ val EMPTY_CONTACT_ITEM=ContactItem(lookUpKey ="",name= EMPTY_NAME)
 
 const val DOUBLE_ZERO="00"
 const val ONE_ZERO="0"

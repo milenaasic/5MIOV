@@ -59,4 +59,9 @@
             android:name="contactNumber"
             app:argType="string" />
     </fragment>
+    <fragment
+        android:id="@+id/aboutFragment"
+        android:name="com.vertial.fivemiov.ui.fragment_about.AboutFragment"
+        android:label="About"
+        tools:layout="@layout/fragment_about" />
 </navigation>
