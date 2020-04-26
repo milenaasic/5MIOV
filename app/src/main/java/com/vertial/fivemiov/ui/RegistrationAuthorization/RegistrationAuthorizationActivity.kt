@@ -1,14 +1,22 @@
 package com.vertial.fivemiov.ui.RegistrationAuthorization
 
+import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Intent
+import android.content.IntentFilter
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.FragmentContainerView
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.NavController
+import androidx.navigation.Navigation
 import androidx.navigation.findNavController
+import com.google.android.gms.auth.api.phone.SmsRetriever
+import com.google.android.gms.tasks.Task
 import com.google.android.material.snackbar.Snackbar
 import com.vertial.fivemiov.R
 import com.vertial.fivemiov.api.MyAPI
@@ -29,7 +37,8 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityRegistrationAuthorizationBinding
     private lateinit var viewModel: RegAuthActivityViewModel
-    //private lateinit var navController: NavController
+    private lateinit var smsBroadcastReceiver: SMSAuthorizationBroadcastReceiver
+    private lateinit var navController: NavController
 
     companion object{
         const val ENTERED_PHONE_NUMBER = "entered_phone_number"
@@ -80,8 +89,13 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
         }
 
+        navController= Navigation.findNavController(this,R.id.registration_navhost_fragment)
+        // napravi broadcast receiver
+        initializeSMSBroadcastReceiver()
 
-            viewModel.userData.observe(this, Observer {user->
+
+
+        viewModel.userData.observe(this, Observer {user->
 
             Log.i(MYTAG,("user u bazi je $user"))
             if(user!=null) {
@@ -102,6 +116,26 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
          })
 
+
+         viewModel.startSMSRetreiver.observe(this, Observer {
+            if(true){
+                startSMSRetreiver()
+                viewModel.smsRetreiverStarted()
+            }
+
+         })
+
+         smsBroadcastReceiver.receivedSMSMessage.observe(this, Observer {
+
+                if(it!=null){
+                    smsBroadcastReceiver.resetReceivedSMSMessage()
+                    if(navController.currentDestination?.id==R.id.authorizationFragment) {
+                       viewModel.setSMSVerificationTokenForAuthFragment(it)
+
+                    }
+                }
+          })
+
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -114,7 +148,36 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
         super.onSaveInstanceState(outState)
     }
 
+    fun initializeSMSBroadcastReceiver(){
+        smsBroadcastReceiver = SMSAuthorizationBroadcastReceiver()
+        val filter = IntentFilter().apply {
+            addAction(SmsRetriever.SMS_RETRIEVED_ACTION)
+        }
+        registerReceiver(smsBroadcastReceiver, filter)
+
+    }
+
+    private fun startSMSRetreiver(){
+
+        val client = SmsRetriever.getClient(this)
+        val task: Task<Void> = client.startSmsRetriever()
+
+        task.addOnSuccessListener {
+            Log.i(MYTAG,"  Successfully started retriever, expect broadcast intent")
+            // Successfully started retriever, expect broadcast intent
+        }
+
+        task.addOnFailureListener {
+            Log.i(MYTAG,"  SMS  retriever failure, ${it.message}")
+            // Failed to start retriever, inspect Exception for more details
+        }
+
+
+    }
+
+
     override fun onDestroy() {
+        unregisterReceiver(smsBroadcastReceiver)
         super.onDestroy()
         Log.i(MYTAG,"On Destroy")
 

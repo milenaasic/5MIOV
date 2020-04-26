@@ -53,7 +53,12 @@ interface MyDatabaseDao {
     fun updateSipCallerId(sipCallerId:String)
 
 
+    //WebAPI version TABLE
+    @Query("UPDATE webapi_version_table SET webApiVersion=:webApiVer WHERE id=1")
+    fun updateWebApiVersion(webApiVer:String)
 
+    @Query("SELECT webApiVersion FROM webapi_version_table WHERE id=1")
+    fun getWebApiVersion():String
 
 
 }

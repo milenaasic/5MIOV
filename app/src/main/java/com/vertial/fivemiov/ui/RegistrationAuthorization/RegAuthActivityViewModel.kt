@@ -3,6 +3,8 @@ package com.vertial.fivemiov.ui.RegistrationAuthorization
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.vertial.fivemiov.api.NetResponse_Registration
 import com.vertial.fivemiov.data.Repo
@@ -40,6 +42,18 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
 
     val smsResendNetworkError=myRepository.smsResendNetworkError
     val smsResendNetworkSuccess=myRepository.smsResendSuccess
+
+    //SMS Retreiver for Activity to observe
+    private val _startSMSRetreiver= MutableLiveData<Boolean>()
+    val startSMSRetreiver: LiveData<Boolean>
+        get() = _startSMSRetreiver
+
+    //SMS Retreiver for Authorization fragment to observe
+    private val _verificationTokenForAuthFragment= MutableLiveData<String?>()
+    val verificationTokenForAuthFragment: LiveData<String?>
+        get() = _verificationTokenForAuthFragment
+
+
 
 
     init {
@@ -178,6 +192,27 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
 
     fun resetSMSResend_NetError(){
         myRepository.resetSMSResend_NetError()
+    }
+
+
+    //SMS Retreiver
+    fun setSMSVerificationTokenForAuthFragment(verToken:String){
+        _verificationTokenForAuthFragment.value=verToken
+
+    }
+
+    fun resetSMSVerificationTOkenForAuthFragToNull(){
+        _verificationTokenForAuthFragment.value=null
+    }
+
+    // ovo pozivam u momentu kada posaljem zahtev ka serveru za prosledjivanje sms-a sa tokenom
+    fun startSMSRetreiver(){
+        _startSMSRetreiver.value=true
+    }
+
+    fun smsRetreiverStarted(){
+        _startSMSRetreiver.value=false
+
     }
 
 

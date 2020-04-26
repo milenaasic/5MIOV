@@ -58,6 +58,7 @@ class RegistrationFragment : Fragment() {
             if(enteredPhoneNumber.isPhoneNumberValid()){
                     it.isEnabled=false
                     showProgressBar(true)
+                    activityViewModel.startSMSRetreiver()
                     activityViewModel.registerButtonClicked(enteredPhoneNumber.removePlus(),smsResend = false)
 
                 }else {

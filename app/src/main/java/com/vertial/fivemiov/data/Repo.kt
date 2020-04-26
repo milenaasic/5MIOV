@@ -298,10 +298,10 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
 
         val defResult=myAPI.setAccountEmailAndPasswordForUser(request = NetRequest_SetAccountEmailAndPass(
             phoneNumber=phoneNumber,authToken= token,email = email,password = password))
-        try{
-            val result=defResult.await()
-            Log.i(MY_TAG,"uspesno setovanje accounta $result")
-            if(result.success==true) {
+        try {
+            val result = defResult.await()
+            Log.i(MY_TAG, "uspesno setovanje accounta $result")
+            if (result.success == true) {
                 val myUncancelableJob: UncancelableJob = UncancelableJob(
                     resultAuthorization = null,
                     resultSetAccountEmailAndPass = result,
@@ -309,12 +309,10 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
                     myAPI = myAPI
                 )
 
-                if (result.e1phone.isNullOrEmpty()) {
-                    GlobalScope.launch {
-                        withContext(Dispatchers.IO) {
-                            //delay(3000)
-                            myUncancelableJob.callSetNewE1(token)
-                        }
+                GlobalScope.launch {
+                    withContext(Dispatchers.IO) {
+                        //delay(3000)
+                        myUncancelableJob.startSetAccountEmailAndPassUncancelableJob(token)
                     }
                 }
 
@@ -385,13 +383,30 @@ class UncancelableJob(val resultAuthorization:NetResponse_Authorization?,val res
              resetSipAccess(resultAuthorization.authToken)
 
             if(resultAuthorization.e1phone.isNullOrEmpty()) callSetNewE1(resultAuthorization.authToken)
-            else myDatabaseDao.updatePrenumber(resultAuthorization.e1phone,System.currentTimeMillis())
+            else {
+                    myDatabaseDao.updatePrenumber(resultAuthorization.e1phone,System.currentTimeMillis())
+                    Log.i(MY_TAG, "authorize updating e1 phone version in DB")}
 
+            if(!resultAuthorization.appVersion.isNullOrEmpty()) {
+                    myDatabaseDao.updateWebApiVersion(resultAuthorization.appVersion)
+                Log.i(MY_TAG, "authorize updating web api version in DB")}
         }
     }
 
 
+    suspend fun startSetAccountEmailAndPassUncancelableJob(token: String){
 
+        if(resultSetAccountEmailAndPass!=null){
+            if(resultSetAccountEmailAndPass.e1phone.isNullOrEmpty()) callSetNewE1(token)
+            else  { myDatabaseDao.updatePrenumber(resultSetAccountEmailAndPass.e1phone,System.currentTimeMillis())
+                Log.i(MY_TAG, "set account updating e1 phone version in DB") }
+
+            if(!resultSetAccountEmailAndPass.appVersion.isNullOrEmpty()) {
+                myDatabaseDao.updateWebApiVersion(resultSetAccountEmailAndPass.appVersion)
+                Log.i(MY_TAG, "set account updating web api version in DB")}
+        }
+
+    }
 
     private suspend fun resetSipAccess(
         authToken: String

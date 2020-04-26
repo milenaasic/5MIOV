@@ -33,7 +33,7 @@ class SipFragment : Fragment() {
     private lateinit var args:SipFragmentArgs
     private lateinit var viewModel: SipViewModel
 
-    private var isFragmentInitialized=false
+    private var navigationUpInProcess=false
     /*val sipManager: SipManager? by lazy(LazyThreadSafetyMode.NONE) {
         SipManager.newInstance(context)
     }*/
@@ -80,10 +80,9 @@ class SipFragment : Fragment() {
 
             binding.sipendbutton.setOnClickListener {
                 //sipAudioCall?.endCall()
-                sipAudioCall?.close()
-                closeLocalProfile()
-                viewModel.navigateBack()
-
+                //sipAudioCall?.close()
+                //closeLocalProfile()
+                startNavigation()
             }
 
             binding.sipMicButton.setOnClickListener {
@@ -140,6 +139,14 @@ class SipFragment : Fragment() {
 
     }
 
+    private fun startNavigation() {
+        if(!navigationUpInProcess) {
+            navigationUpInProcess=true
+            viewModel.navigateBack()
+            Log.i(MYTAG," start navigation function")
+        }
+    }
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -189,11 +196,6 @@ class SipFragment : Fragment() {
     }
 
 
-    override fun onStart() {
-        super.onStart()
-        if(isFragmentInitialized) findNavController().navigateUp()
-        else isFragmentInitialized=true
-    }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
@@ -213,8 +215,8 @@ class SipFragment : Fragment() {
     }
 
     private fun initalizePeerProfile(sipServer: String) {
-        val peer=SipProfile.Builder("ankeanke","iptel.org")
-
+        //val peer=SipProfile.Builder("ankeanke","iptel.org")
+        val peer=SipProfile.Builder("0038163352717","45.63.117.19")
         //val peer=SipProfile.Builder(PhoneNumberUtils.normalizeNumber(args.contactNumber),sipServer)
         peersipProfile=peer.build()
         Log.i(MYTAG,"peer je ${peersipProfile?.uriString}")
@@ -244,7 +246,7 @@ class SipFragment : Fragment() {
             Log.i(MYTAG," open ")
         }catch (s:SipException) {
             showToast(getString(R.string.sip_failure_message))
-            viewModel.navigateBack()
+            startNavigation()
             Log.i(MYTAG," open greska ${s.stackTrace}, ${s.cause}")
         }
 
@@ -290,8 +292,8 @@ class SipFragment : Fragment() {
                         if(context!=null) {
                             updateCallStatus(getString(R.string.sip_reg_failed))
                             showToast(resources.getString(R.string.sip_reg_failed))
-                            closeLocalProfile()
-                            viewModel.navigateBack()
+
+                            startNavigation()
                         }
 
                     })
@@ -300,8 +302,8 @@ class SipFragment : Fragment() {
         }catch (e:SipException){
             Log.i(MYTAG,"Registration SIP Exception, ${e.message}")
             showToast(resources.getString(R.string.something_went_wrong))
-            closeLocalProfile()
-            viewModel.navigateBack()
+
+            startNavigation()
         }
     }
 
@@ -355,8 +357,7 @@ class SipFragment : Fragment() {
                    if(context!=null) {
                         updateCallStatus(getString(R.string.sip_call_ended))
                        Log.i(MYTAG,"call ended listener runnable")
-
-                       viewModel.navigateBack()
+                       startNavigation()
                    }
                })
 
@@ -369,8 +370,8 @@ class SipFragment : Fragment() {
 
                 h.post(Runnable {
                     if(context!=null) {
-                        viewModel.navigateBack()
                         showToast(getString(R.string.sip_failure_message))
+                        startNavigation()
                     }
                 })
 
@@ -380,20 +381,6 @@ class SipFragment : Fragment() {
     }
 
 
-
-    private fun finishFunctions(){
-        try {
-            sipAudioCall?.endCall()
-            Log.i(MYTAG, "end call is FinishFunctions uradjen")
-        }catch (e:Throwable) {
-            Log.i(MYTAG, "end call is FinishFunctions $e")
-        }
-
-        sipAudioCall?.close()
-        closeLocalProfile()
-        viewModel.resetSipCredentials()
-
-    }
 
 
     private fun closeLocalProfile() {
@@ -413,8 +400,8 @@ class SipFragment : Fragment() {
     override fun onPause() {
         Log.d(MYTAG, "on PAUSE")
         sipAudioCall?.close()
-       closeLocalProfile()
-        //findNavController().navigateUp()
+        closeLocalProfile()
+        viewModel.resetSipCredentials()
         super.onPause()
     }
 

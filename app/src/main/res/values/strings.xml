@@ -1,6 +1,6 @@
 <resources>
 
-    <string name="app_name">5MIOV ver 1.6</string>
+    <string name="app_name">5MIOV</string>
     <string name="empty_string"> </string>
 
     <!-- Menu names -->
@@ -95,10 +95,11 @@
     <string name="sip_busy">Busy.</string>
     <string name="sip_call_established">Call Established.</string>
     <string name="sip_call_ended">Call Ended.</string>
-
+    <string name="sip_button_name">IOV Internet</string>
+    <string name="regular_call_button_name">CALL</string>
 
     <!-- ABOUT FRAGMENT-->
-    <string name="about_how_to_use_app">HOW TO MAKE A CALL \nIf you have good internet connection use VOI button, otherwise use regular CALL button</string>
+    <string name="about_how_to_use_app">If you have good internet connection use IOV INTERNET button, otherwise use regular CALL button</string>
     <string name="web_api_version">WebApi version  %1$s</string>
     <string name="mobile_app_version">Mobile App version  %1$s</string>
 

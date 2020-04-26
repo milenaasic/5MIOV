@@ -74,7 +74,7 @@ class SipViewModel(val mySipRepo: RepoSIPE1, val myRepository: Repo, application
 
     fun startTimeout(){
         viewModelScope.launch {
-            delay(1000)
+            delay(500)
             _timeout.value=true
          }
 
@@ -86,7 +86,7 @@ class SipViewModel(val mySipRepo: RepoSIPE1, val myRepository: Repo, application
 
     fun startRegTimeout(){
         viewModelScope.launch {
-            delay(1000)
+            delay(500)
             _timeoutReg.value=true
         }
     }

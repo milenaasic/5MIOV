@@ -18,17 +18,19 @@
         android:layout_marginTop="24dp"
         android:layout_marginEnd="16dp"
         android:text="@string/mobile_app_version"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="app version" />
 
     <TextView
-        android:id="@+id/eb_api_ver_textView"
+        android:id="@+id/web_api_ver_textView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:text="@string/web_api_version"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
         app:layout_constraintEnd_toEndOf="@+id/mobile_app_ver_textView"
         app:layout_constraintStart_toStartOf="@+id/mobile_app_ver_textView"
         app:layout_constraintTop_toBottomOf="@+id/mobile_app_ver_textView"
@@ -38,11 +40,33 @@
         android:id="@+id/how_to_use_app_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="8dp"
         android:text="@string/about_how_to_use_app"
-        app:layout_constraintEnd_toEndOf="@+id/eb_api_ver_textView"
-        app:layout_constraintStart_toStartOf="@+id/eb_api_ver_textView"
-        app:layout_constraintTop_toBottomOf="@+id/eb_api_ver_textView" />
+        android:textAlignment="viewStart"
+        app:layout_constraintEnd_toEndOf="@+id/web_api_ver_textView"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/web_api_ver_textView"
+        app:layout_constraintTop_toBottomOf="@+id/howToTitletextView" />
+
+    <TextView
+        android:id="@+id/howToTitletextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="How to make a call"
+        android:textColor="@color/colorPrimaryDark"
+        app:layout_constraintStart_toStartOf="@+id/web_api_ver_textView"
+        app:layout_constraintTop_toBottomOf="@+id/divider3" />
+
+    <View
+        android:id="@+id/divider3"
+        android:layout_width="409dp"
+        android:layout_height="1dp"
+        android:layout_marginTop="32dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/web_api_ver_textView" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

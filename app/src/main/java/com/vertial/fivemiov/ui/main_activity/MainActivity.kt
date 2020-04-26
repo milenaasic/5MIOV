@@ -149,7 +149,6 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 ABOUT_FRAGMENT ->{
-
                     setAboutFragmentUI()
                 }
             }
@@ -359,7 +358,7 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun setAboutFragmentUI(){
-        //TODO napravi layout
+        binding.toolbarMain.elevation = 2f
     }
 
 

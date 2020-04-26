@@ -3,8 +3,8 @@ package com.vertial.fivemiov.ui.RegistrationAuthorization
 
 import android.app.Activity
 import android.os.Bundle
+import android.text.Editable
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,17 +12,17 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.fragment.findNavController
+import com.google.android.gms.auth.api.phone.SmsRetriever
+import com.google.android.gms.tasks.Task
 import com.google.android.material.snackbar.Snackbar
-
 import com.vertial.fivemiov.R
 import com.vertial.fivemiov.databinding.FragmentAuthorizationBinding
-import com.vertial.fivemiov.databinding.FragmentRegistrationBinding
-import com.vertial.fivemiov.utils.afterTextChanged
 import com.vertial.fivemiov.utils.isOnline
 import com.vertial.fivemiov.utils.removePlus
+
 
 private val MYTAG="MY_AuthorizationFragm"
 class AuthorizationFragment : Fragment() {
@@ -34,7 +34,7 @@ class AuthorizationFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding= DataBindingUtil.inflate(inflater,R.layout.fragment_authorization,container, false)
+        binding= DataBindingUtil.inflate(inflater, R.layout.fragment_authorization,container, false)
 
         activityViewModel=requireActivity().run{
             ViewModelProvider(this)[RegAuthActivityViewModel::class.java]
@@ -147,6 +147,20 @@ class AuthorizationFragment : Fragment() {
         })
 
 
+        //SMS verification token
+        activityViewModel.verificationTokenForAuthFragment.observe(viewLifecycleOwner, Observer {
+            if(it!=null){
+                binding.tokenEditText.setText(it)
+                activityViewModel.resetSMSVerificationTOkenForAuthFragToNull()
+
+            }
+
+
+
+        })
+
+
+
     }
 
 
@@ -158,7 +172,6 @@ class AuthorizationFragment : Fragment() {
     private fun showToast(message: String) {
         Toast.makeText(requireActivity(),message, Toast.LENGTH_LONG).show()
     }
-
 
     private fun hidekeyboard(){
         val inputMethodManager = requireActivity().getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
