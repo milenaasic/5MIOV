@@ -24,16 +24,6 @@ class RepoSIPE1 (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIService){
         get() = _getSipAccessCredentialsNetError
 
 
-    suspend fun resetSipAccess(token:String){
-
-        val defResponse=myAPI.resetSipAccess(request = NetRequest_ResetSipAccess(authToken = token))
-        try {
-            val response=defResponse.await()
-        }catch (e:Throwable){
-            Log.i(MYTAG," ruta resetSipAccess, greska ${e.message}")
-        }
-
-    }
 
     fun resetSipAccessInBackGround(){
         val myJobSip=UncancelableJobSip(myDatabaseDao,myAPI)
@@ -46,9 +36,9 @@ class RepoSIPE1 (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIService){
 
     }
 
-    suspend fun setNewE1(token: String){
+    /*suspend fun setNewE1(phoneNumber: String,token: String){
 
-        val defResponse=myAPI.setNewE1(request = NetRequest_SetE1Prenumber(authToken = token))
+        val defResponse=myAPI.setNewE1(request = NetRequest_SetE1Prenumber(authToken = token,phoneNumber = phoneNumber))
         try {
             val response=defResponse.await()
         }catch (e:Throwable){
@@ -56,13 +46,16 @@ class RepoSIPE1 (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIService){
 
         }
 
-    }
+    }*/
 
-    suspend fun getSipAccessCredentials(token: String){
-        val defResponse=myAPI.getSipAccess(request = NetRequest_GetSipAccessCredentials(authToken = token))
+    suspend fun getUserNoLiveData()=myDatabaseDao.getUserNoLiveData()
+
+    suspend fun getSipAccessCredentials(token: String,phone: String){
+        val defResponse=myAPI.getSipAccess(request = NetRequest_GetSipAccessCredentials(authToken = token,phoneNumber = phone))
         try {
             val response=defResponse.await()
-            _getSipAccessCredentialsNetSuccess.value=response
+            if(response.authTokenMismatch==true) logoutAll(myDatabaseDao)
+            else _getSipAccessCredentialsNetSuccess.value=response
 
         }catch (e:Throwable){
             Log.i(MYTAG," getSipAccess greska ${e.message}")
@@ -86,51 +79,34 @@ class UncancelableJobSip(val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIServic
     val MY_TAG = "MY_klasaUncanceJObSIP"
 
     suspend fun doJob() {
-        var authtoken = ""
-        val deferredToken = GlobalScope.async(Dispatchers.IO) {
+
+        val deferredUser = GlobalScope.async(Dispatchers.IO) {
             //delay(3000)
-            myDatabaseDao.getToken()
+            myDatabaseDao.getUserNoLiveData()
         }
         try {
-            authtoken = deferredToken.await()
+            val myUser = deferredUser.await()
+            if (myUser.userToken.isNotEmpty() && myUser.userPhone.isNotEmpty()) resetSipAccess(myUser.userToken,myUser.userPhone)
 
         } catch (e: Exception) {
             Log.i(MY_TAG, "db greska reset sip credentials ${e.message}")
         }
 
-        if (authtoken.isNotEmpty()) resetSipAccess(authtoken)
-
-
     }
 
 
     private suspend fun resetSipAccess(
-        authToken: String
+        authToken: String,
+        phone: String
     ) {
         Log.i(MY_TAG, "usao u resetSipAccess")
-        val defResult = myAPI.resetSipAccess(request = NetRequest_ResetSipAccess(authToken))
+        val defResult = myAPI.resetSipAccess(request = NetRequest_ResetSipAccess(authToken=authToken,phoneNumber = phone))
         try {
             val result = defResult.await()
+            if(result.authTokenMismatch==true) logoutAll(myDatabaseDao)
         } catch (e: Throwable) {
             Log.i(MY_TAG, "greska resetSipAccess ${e.message}")
         }
     }
 
-    suspend fun callSetNewE1(token: String) {
-        Log.i(MY_TAG, "usao u callSetNewE1")
-
-        val defResult = myAPI.setNewE1(request = NetRequest_SetE1Prenumber(token))
-        try {
-            val result = defResult.await()
-            if (!result.e1prenumber.isNullOrEmpty()) {
-                myDatabaseDao.updatePrenumber(result.e1prenumber, System.currentTimeMillis())
-
-            } else {
-            }
-        } catch (e: Throwable) {
-            Log.i(MY_TAG, "greska ${e.message}")
-        }
-
-
-    }
 }

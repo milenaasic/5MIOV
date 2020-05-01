@@ -3,10 +3,11 @@ package com.vertial.fivemiov.database
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
+import com.vertial.fivemiov.model.E1Prenumber
+import com.vertial.fivemiov.model.SipAccount
 import com.vertial.fivemiov.model.User
-import com.vertial.fivemiov.utils.EMPTY_EMAIL
-import com.vertial.fivemiov.utils.EMPTY_PHONE_NUMBER
-import com.vertial.fivemiov.utils.EMPTY_TOKEN
+import com.vertial.fivemiov.model.WebApiVersion
+import com.vertial.fivemiov.utils.*
 
 @Dao
 interface MyDatabaseDao {
@@ -30,11 +31,11 @@ interface MyDatabaseDao {
     @Query("SELECT user_phone FROM user_table WHERE id=1")
     fun getPhone():String
 
-    @Query("UPDATE user_table SET email=:email WHERE ID=1")
+    @Query("UPDATE user_table SET email=:email WHERE id=1")
     fun updateUserEmail(email:String)
 
-    @Query("UPDATE user_table SET user_phone=:phoneNb,token=:token,email=:email WHERE ID=1")
-    fun logout(phoneNb: String= EMPTY_PHONE_NUMBER, token: String= EMPTY_TOKEN, email: String= EMPTY_EMAIL)
+    @Query("UPDATE user_table SET user_phone=:phoneNb,token=:token,email=:email,password=:password WHERE id=1")
+    fun logoutUser(phoneNb: String= EMPTY_PHONE_NUMBER, token: String= EMPTY_TOKEN, email: String= EMPTY_EMAIL,password:String= EMPTY_PASSWORD)
 
 
     //PRENUMBER TABLE
@@ -44,13 +45,30 @@ interface MyDatabaseDao {
     @Query("SELECT e1prenumber FROM e1_prenumber_table WHERE id=1")
     fun getPrenumber():LiveData<String>
 
+    @Query("SELECT timestamp FROM e1_prenumber_table WHERE id=1")
+    fun getE1Timestamp():Long
+
+    @Query("UPDATE e1_prenumber_table SET e1prenumber=:prenumber,timestamp=:timestamp WHERE id=1")
+    fun logoutE1Table(prenumber: String= EMPTY_E1_PRENUMBER, timestamp: Long=0L)
+
+    @Query("SELECT * FROM e1_prenumber_table")
+    fun getAllE1(): List<E1Prenumber>
+
+
+
 
     //SIP ACCOUNT TABLE
-    @Query("SELECT sipCallerId FROM sip_account_table WHERE id=1")
-    fun getSipCallerId():String
+    @Query("SELECT mainSipCallerId FROM sip_account_table WHERE id=1")
+    fun getmainSipCallerId():String
 
-    @Query("UPDATE sip_account_table SET sipCallerId=:sipCallerId WHERE id=1")
-    fun updateSipCallerId(sipCallerId:String)
+    @Query("UPDATE sip_account_table SET mainSipCallerId=:sipCallerId WHERE id=1")
+    fun updateMainSipCallerId(sipCallerId:String)
+
+    @Query("UPDATE sip_account_table SET mainSipCallerId=:mainsipCallerId,sipUserName=:sipUsername,sipPassword=:sipPassword,sipServer=:sipServer WHERE id=1")
+    fun logoutSipAccount(mainsipCallerId:String= EMPTY_MAIN_SIP_CALLER_ID, sipUsername:String= EMPTY_SIP_USERNAME,sipPassword:String= EMPTY_SIP_PASSWORD,sipServer:String= EMPTY_SIP_SERVER)
+
+    @Query("SELECT * FROM sip_account_table")
+    fun getAllSip(): List<SipAccount>
 
 
     //WebAPI version TABLE
@@ -60,5 +78,10 @@ interface MyDatabaseDao {
     @Query("SELECT webApiVersion FROM webapi_version_table WHERE id=1")
     fun getWebApiVersion():String
 
+    @Query("UPDATE webapi_version_table SET webApiVersion=:webApiVer WHERE id=1")
+    fun logoutWebApiVersion(webApiVer:String="0.0")
+
+    @Query("SELECT * FROM webapi_version_table")
+    fun getAllWebAppVer(): List<WebApiVersion>
 
 }

@@ -11,13 +11,13 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.onNavDestinationSelected
 import com.google.android.play.core.appupdate.AppUpdateManager
@@ -30,7 +30,7 @@ import com.vertial.fivemiov.api.MyAPI
 import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.ActivityMainBinding
-import com.vertial.fivemiov.ui.RegistrationAuthorization.RegistrationAuthorizationActivity
+import com.vertial.fivemiov.ui.registrationauthorization.RegistrationAuthorizationActivity
 import com.vertial.fivemiov.ui.webView.WebViewActivity
 import com.vertial.fivemiov.utils.EMPTY_EMAIL
 import com.vertial.fivemiov.utils.EMPTY_PHONE_NUMBER
@@ -203,32 +203,8 @@ class MainActivity : AppCompatActivity() {
 
         viewModel.showSetAccountDisclaimer()
 
-        //IN APP UPDATE
-        // Creates instance of the manager.
-        appUpdateManager = AppUpdateManagerFactory.create(this)
-        // Returns an intent object that you use to check for an update.
-        val appUpdateInfoTask = appUpdateManager.appUpdateInfo
-
-        // Checks that the platform will allow the specified type of update.
-        appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
-            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
-                && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)
-            ) {
-                // Request the update
-                appUpdateManager.startUpdateFlowForResult(
-                    // Pass the intent that is returned by 'getAppUpdateInfo()'.
-                    appUpdateInfo,
-                    // Or 'AppUpdateType.FLEXIBLE' for flexible updates.
-                    AppUpdateType.IMMEDIATE,
-                    // The current activity making the update request.
-                    this,
-                    // Include a request code to later monitor this update request.
-                    MY_UPDATE_REQUEST_CODE
-                )
-            }
-        }
-
-
+        // start in app update
+        //startInAppUpdate()
     }
 
     override fun onRestart() {
@@ -245,21 +221,8 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        appUpdateManager
-            .appUpdateInfo
-            .addOnSuccessListener { appUpdateInfo ->
-                if (appUpdateInfo.updateAvailability()
-                    == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS
-                ) {
-                    // If an in-app update is already running, resume the update.
-                    appUpdateManager.startUpdateFlowForResult(
-                        appUpdateInfo,
-                        IMMEDIATE,
-                        this,
-                        MY_UPDATE_REQUEST_CODE
-                    )
-                }
-            }
+       // checkIfUpdateInProcess()
+
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -300,6 +263,8 @@ class MainActivity : AppCompatActivity() {
             navigationIcon = resources.getDrawable(R.drawable.ic_back_black, null)
             elevation = 2f
             title=resources.getString(R.string.empty_string)
+            subtitle=resources.getString(R.string.empty_string)
+            Log.i(MY_TAG, "setDialPadFragmentUI()")
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
@@ -476,10 +441,60 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun startInAppUpdate(){
+        //IN APP UPDATE
+        // Creates instance of the manager.
+        appUpdateManager = AppUpdateManagerFactory.create(this)
+        // Returns an intent object that you use to check for an update.
+        val appUpdateInfoTask = appUpdateManager.appUpdateInfo
 
-    override fun onDestroy() {
-        super.onDestroy()
-
+        // Checks that the platform will allow the specified type of update.
+        appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
+            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
+                && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)
+            ) {
+                // Request the update
+                appUpdateManager.startUpdateFlowForResult(
+                    // Pass the intent that is returned by 'getAppUpdateInfo()'.
+                    appUpdateInfo,
+                    // Or 'AppUpdateType.FLEXIBLE' for flexible updates.
+                    AppUpdateType.IMMEDIATE,
+                    // The current activity making the update request.
+                    this,
+                    // Include a request code to later monitor this update request.
+                    MY_UPDATE_REQUEST_CODE
+                )
+            }
+        }
 
     }
+
+    private fun checkIfUpdateInProcess(){
+        appUpdateManager
+            .appUpdateInfo
+            .addOnSuccessListener { appUpdateInfo ->
+                if (appUpdateInfo.updateAvailability()
+                    == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS
+                ) {
+                    // If an in-app update is already running, resume the update.
+                    appUpdateManager.startUpdateFlowForResult(
+                        appUpdateInfo,
+                        IMMEDIATE,
+                        this,
+                        MY_UPDATE_REQUEST_CODE
+                    )
+                }
+            }
+
+    }
+
+
+    override fun onPause() {
+        super.onPause()
+        //provera za bug
+        //TODO ukloni proveru kada vise ne bude trebala
+        Toast.makeText(this, "User in DB:${viewModel.userData.value}",Toast.LENGTH_LONG).show()
+    }
+
+
 }

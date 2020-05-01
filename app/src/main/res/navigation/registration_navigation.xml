@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/registrationFragment"
-        android:name="com.vertial.fivemiov.ui.RegistrationAuthorization.RegistrationFragment"
+        android:name="com.vertial.fivemiov.ui.registrationauthorization.RegistrationFragment"
         android:label="fragment_registration"
         tools:layout="@layout/fragment_registration" >
         <action
@@ -27,7 +27,7 @@
     </fragment>
     <fragment
         android:id="@+id/authorizationFragment"
-        android:name="com.vertial.fivemiov.ui.RegistrationAuthorization.AuthorizationFragment"
+        android:name="com.vertial.fivemiov.ui.registrationauthorization.AuthorizationFragment"
         android:label="fragment_authorization"
         tools:layout="@layout/fragment_authorization" />
     <fragment
@@ -43,7 +43,7 @@
     </fragment>
     <fragment
         android:id="@+id/addNumberToAccount"
-        android:name="com.vertial.fivemiov.ui.RegistrationAuthorization.AddNumberToAccount"
+        android:name="com.vertial.fivemiov.ui.registrationauthorization.AddNumberToAccount"
         android:label="AddNumberToAccount"
         tools:layout="@layout/fragment_add_number_to_account" >
         <action
@@ -54,7 +54,7 @@
     </fragment>
     <fragment
         android:id="@+id/numberExistsInDatabase"
-        android:name="com.vertial.fivemiov.ui.RegistrationAuthorization.NumberExistsInDatabase"
+        android:name="com.vertial.fivemiov.ui.registrationauthorization.NumberExistsInDatabase"
         android:label="NumberExistsInDatabase"
         tools:layout="@layout/fragment_number_exists_in_database">
         <action

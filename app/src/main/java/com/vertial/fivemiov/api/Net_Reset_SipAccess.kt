@@ -7,7 +7,10 @@ import com.squareup.moshi.JsonClass
 data class NetRequest_ResetSipAccess(
 
     @Json(name="token")
-    val authToken:String
+    val authToken:String,
+
+    @Json(name="phone")
+    val phoneNumber:String
 
 )
 
@@ -18,7 +21,10 @@ data class NetResponse_ResetSipAccess(
     val success:Boolean,
 
     @Json(name="message")
-    val message:String
+    val message:String,
+
+    @Json(name="authTokenMismatch")
+    val authTokenMismatch:Boolean
 
 
 )

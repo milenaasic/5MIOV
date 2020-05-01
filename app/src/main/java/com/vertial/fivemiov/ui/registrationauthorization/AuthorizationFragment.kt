@@ -1,9 +1,8 @@
-package com.vertial.fivemiov.ui.RegistrationAuthorization
+package com.vertial.fivemiov.ui.registrationauthorization
 
 
 import android.app.Activity
 import android.os.Bundle
-import android.text.Editable
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -15,8 +14,6 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import com.google.android.gms.auth.api.phone.SmsRetriever
-import com.google.android.gms.tasks.Task
 import com.google.android.material.snackbar.Snackbar
 import com.vertial.fivemiov.R
 import com.vertial.fivemiov.databinding.FragmentAuthorizationBinding

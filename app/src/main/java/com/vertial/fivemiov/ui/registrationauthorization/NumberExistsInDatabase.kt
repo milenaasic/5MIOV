@@ -1,4 +1,4 @@
-package com.vertial.fivemiov.ui.RegistrationAuthorization
+package com.vertial.fivemiov.ui.registrationauthorization
 
 
 import android.app.Activity
@@ -112,6 +112,7 @@ class NumberExistsInDatabase : Fragment() {
                     response.success==true->{
                             showToast(response.userMessage)
                             activityViewModel.resetNmbExistsInDB_VerifyAccount_NetSuccess()
+                            activityViewModel.startSMSRetreiverFunction()
                             findNavController().navigate(NumberExistsInDatabaseDirections.actionNumberExistsInDatabaseToAuthorizationFragment())
                     }
                     response.success==false->{
@@ -142,6 +143,7 @@ class NumberExistsInDatabase : Fragment() {
                 binding.dontHaveAccountButton.isEnabled = true
                 activityViewModel.resetNmbExistsInDB_NOAccount_NetSuccess()
                 showProgressBar(false)
+                activityViewModel.startSMSRetreiverFunction()
                 findNavController().navigate(NumberExistsInDatabaseDirections.actionNumberExistsInDatabaseToAuthorizationFragment())
             }
         })

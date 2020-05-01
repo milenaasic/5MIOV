@@ -13,6 +13,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.model.ContactItem
+import com.vertial.fivemiov.utils.did24HoursPass
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import java.lang.Exception
@@ -21,7 +22,7 @@ private val MYTAG="MY_MAINFRAGM_VIEWMODEL"
 
 class MainFragmentViewModel(val repoContacts: RepoContacts,application: Application) :AndroidViewModel(application) {
 
-    private lateinit var jobInProgress:Deferred<List<ContactItem>>
+    //private lateinit var jobInProgress:Deferred<List<ContactItem>>
 
     //live data from database
     val userData=repoContacts.getUserData()
@@ -40,7 +41,7 @@ class MainFragmentViewModel(val repoContacts: RepoContacts,application: Applicat
 
 
 
-    fun cancelOngoingJob(){
+    /*fun cancelOngoingJob(){
         try {
            jobInProgress.cancel()
             Log.i(MYTAG,"canceled jobs")
@@ -48,7 +49,7 @@ class MainFragmentViewModel(val repoContacts: RepoContacts,application: Applicat
             Log.i(MYTAG,"canceling jobs ${e.message}")
         }
 
-    }
+    }*/
 
     fun populateContactList(searchString:String?) {
 
@@ -67,11 +68,11 @@ class MainFragmentViewModel(val repoContacts: RepoContacts,application: Applicat
 
         viewModelScope.launch {
 
-             val jobInProgress= runBlocking (IO) {
+             val defContactList=async (IO) {
                 repoContacts.getAllContacts(uri)
             }
             try {
-                val resultList=jobInProgress
+                val resultList=defContactList.await()
                 _contactList.value=resultList
                 _numberOfSelectedContacts.value=resultList.size
                 Log.i(MYTAG,"result je setovan")
@@ -83,6 +84,48 @@ class MainFragmentViewModel(val repoContacts: RepoContacts,application: Applicat
 
     }
 
+    fun getE1PrenumberIf24hPassed(){
+    //uzmi timestamp iz baze i proveri da li je proslo 24h
+        var myToken=""
+        var myPhoneNumber=""
+        viewModelScope.launch {
+            val defUser = async(IO) {
+                repoContacts.getUser()
+            }
+            try {
+                val user = defUser.await()
+                myToken = user.userToken
+                myPhoneNumber=user.userPhone
+            } catch (t: Throwable) {
+                Log.i(MYTAG, "nije pokupio usera iz baze ${t.message} ")
+            }
+        }
+
+        if(myToken.isNotEmpty() && myPhoneNumber.isNotEmpty()) {
+            viewModelScope.launch {
+                val defTimestamp = async(IO) {
+                    repoContacts.getE1Timestamp()
+                }
+                try {
+                    val timestamp = defTimestamp.await()
+                    Log.i(
+                        MYTAG,
+                        "timestamp je $timestamp, a system time je ${System.currentTimeMillis()} , token je $myToken"
+                    )
+                    if (did24HoursPass(System.currentTimeMillis(), timestamp)) {
+                        Log.i(MYTAG, "usao u did 24 hours passed ")
+                        repoContacts.refreshE1(phoneNumber= myPhoneNumber,token=myToken)
+                    }
+
+                } catch (e: Throwable) {
+
+                }
+
+            }
+        }
+
+
+    }
 
     //async klasican task
 

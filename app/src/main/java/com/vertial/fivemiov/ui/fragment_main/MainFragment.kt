@@ -2,6 +2,7 @@ package com.vertial.fivemiov.ui.fragment_main
 
 
 import android.Manifest
+import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.database.Cursor
@@ -11,6 +12,7 @@ import android.os.Bundle
 import android.provider.ContactsContract
 import android.util.Log
 import android.view.*
+import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.SearchView
 import androidx.appcompat.app.AlertDialog
@@ -28,7 +30,6 @@ import com.vertial.fivemiov.R
 import com.vertial.fivemiov.api.MyAPI
 import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.database.MyDatabase
-import com.vertial.fivemiov.databinding.FragmentMainBinding
 import com.vertial.fivemiov.databinding.FragmentMainLinLayoutBinding
 import com.vertial.fivemiov.fakedata.createFakeContactList
 import com.vertial.fivemiov.model.ContactItem
@@ -38,7 +39,7 @@ import com.vertial.fivemiov.ui.main_activity.MainActivity.Companion.PHONEBOOK_IS
 import com.vertial.fivemiov.ui.main_activity.MainActivityViewModel
 import com.vertial.fivemiov.utils.EMPTY_EMAIL
 import com.vertial.fivemiov.utils.EMPTY_NAME
-import kotlinx.android.synthetic.main.fragment_main.view.*
+import com.vertial.fivemiov.utils.isOnline
 
 private val MYTAG="MY_MAIN_FRAGMENT"
 
@@ -203,7 +204,7 @@ class MainFragment : Fragment(){
 
             override fun onQueryTextChange(p0: String?): Boolean {
                 Log.i(MYTAG,"on qerry text change $p0")
-                viewModel.cancelOngoingJob()
+                //viewModel.cancelOngoingJob()
                 viewModel.populateContactList(p0)
                 return true
             }
@@ -229,8 +230,16 @@ class MainFragment : Fragment(){
 
     override fun onStart() {
         super.onStart()
-
+        getE1Prenumber()
+        Log.i(MYTAG, "ON START")
     }
+
+
+    private fun getE1Prenumber() {
+        if(isOnline(requireActivity().application)) viewModel.getE1PrenumberIf24hPassed()
+    }
+
+
 
     private fun getColorForHighlightLetters():String{
         var color=0
@@ -294,6 +303,18 @@ class MainFragment : Fragment(){
     private fun showSnackBar(s:String) {
         Snackbar.make(binding.root,s,Snackbar.LENGTH_LONG).show()
     }
+
+    private fun hidekeyboard(){
+        val inputMethodManager = requireActivity().getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(binding.mainRootFrameLayout.windowToken, 0)
+        Log.i(MYTAG, "hidekeyboard()")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        hidekeyboard()
+    }
+
 
 }
 

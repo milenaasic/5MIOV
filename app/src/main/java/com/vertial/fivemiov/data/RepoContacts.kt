@@ -41,11 +41,42 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
         get() = _exportPhoneBookWebViewNetworkSuccess
 
     suspend fun logout(){
-        withContext(Dispatchers.IO){
-            myDatabaseDao.logout(EMPTY_PHONE_NUMBER, EMPTY_TOKEN, EMPTY_EMAIL)
-        }
+        coroutineScope {
+            logoutAll(myDatabaseDao = myDatabaseDao)
+         }
+
+        /*coroutineScope {
+            Log.i(MY_TAG, "e1 tabele je ${myDatabaseDao.getAllE1()}, sip ${myDatabaseDao.getAllSip()}, webapi ${myDatabaseDao.getWebApiVersion()}")
+
+                   val deferreds = listOf(     // fetch two docs at the same time
+                       async(IO) {
+                        myDatabaseDao.logoutE1Table()
+                        },  // async returns a result for the first doc
+                       async(IO) {  myDatabaseDao.logoutSipAccount() },
+                       async(IO) { myDatabaseDao.logoutWebApiVersion() }
+                   )
+
+               try {
+                   val result=deferreds.awaitAll()
+                   Log.i(MY_TAG, "e1 tabele je ${myDatabaseDao.getAllE1()}, sip ${myDatabaseDao.getAllSip()}, webapi ${myDatabaseDao.getWebApiVersion()}")
+                   Log.i(MY_TAG, "logour tri tabele je $result")
+                   Log.i(MY_TAG,"pre user logouta ${myDatabaseDao.getUserNoLiveData()}")
+                   val defa=async (IO) {  myDatabaseDao.logoutUser()}
+                   defa.await()
+                   Log.i(MY_TAG,"posle user logouta ${myDatabaseDao.getUserNoLiveData()}")
+
+               }catch(t:Throwable){
+                Log.i(MY_TAG, "greska prilikom logaouta 3 tabele je ${t.message}")
+               }
+
+
+        }*/
 
     }
+
+
+
+
 
     suspend fun getUser()=withContext(Dispatchers.IO){
             myDatabaseDao.getUserNoLiveData()
@@ -175,14 +206,20 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
             )
             try {
                 val result = deferredRes.await()
-                if(initialExport) _initialexportPhoneBookNetworkSuccess.value=true
-                else _exportPhoneBookWebViewNetworkSuccess.value = true
-                Log.i(MY_TAG, "EXPORTING PHONEBOOK SUCCESS")
 
-            } catch (e: Exception) {
-                Log.i(MY_TAG, "EXPORTING PHONEBOOK FAILURE")
-                Log.i(MY_TAG, "network greska je ${e.message}")
+                if (result.authTokenMismatch == true) logoutAll(myDatabaseDao)
+                else {
+                    if (initialExport) _initialexportPhoneBookNetworkSuccess.value = true
+                    else _exportPhoneBookWebViewNetworkSuccess.value = true
+                    Log.i(MY_TAG, "EXPORTING PHONEBOOK SUCCESS")
+                }
+
+            } catch (t: Throwable) {
+                    Log.i(MY_TAG, "EXPORTING PHONEBOOK FAILURE")
+                    Log.i(MY_TAG, "network greska je ${t.message}")
             }
+
+
     }
 
     fun initialPhoneBookExportFinished(){
@@ -194,6 +231,26 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
         _exportPhoneBookWebViewNetworkSuccess.value=false
     }
 
+
+     fun getE1Timestamp()= myDatabaseDao.getE1Timestamp()
+
+    fun refreshE1(phoneNumber: String,token:String){
+        if(token.isNotEmpty() && phoneNumber.isNotEmpty()) {
+
+            val myE1Job = UncancelableJob(phone=phoneNumber,resultAuthorization = null, resultSetAccountEmailAndPass = null, myDatabaseDao = myDatabaseDao, myAPI = myAPIService)
+
+            GlobalScope.launch {
+                withContext(IO) {
+                    //delay(3000)
+                    myE1Job.startRefreshE124HPassed(token)
+                }
+            }
+        }else{
+            Log.i(MY_TAG," token ili phone je prazan string ruta refresh E1")
+
+        }
+
+    }
 
 
 }

@@ -9,9 +9,9 @@ import androidx.room.PrimaryKey
 data class WebApiVersion (
 
     @PrimaryKey(autoGenerate = true)
-    var id:Int,
+    var id:Int=0,
 
     @ColumnInfo(name = "webApiVersion")
-    val webApiVersion: String=""
+    val webApiVersion: String="0.0"
 
 )

@@ -1,19 +1,14 @@
-package com.vertial.fivemiov.ui.RegistrationAuthorization
+package com.vertial.fivemiov.ui.registrationauthorization
 
-import android.content.BroadcastReceiver
-import android.content.ComponentName
 import android.content.Intent
 import android.content.IntentFilter
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.FragmentContainerView
-import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.NavController
-import androidx.navigation.Navigation
 import androidx.navigation.findNavController
 import com.google.android.gms.auth.api.phone.SmsRetriever
 import com.google.android.gms.tasks.Task
@@ -29,7 +24,6 @@ import com.vertial.fivemiov.ui.emty_logo_fragment.EmptyLogoFragmentDirections
 import com.vertial.fivemiov.utils.EMPTY_PHONE_NUMBER
 import com.vertial.fivemiov.utils.EMPTY_TOKEN
 import com.vertial.fivemiov.utils.isOnline
-import kotlin.math.sign
 
 private val MYTAG="MY_RegAuthActivity"
 
@@ -38,7 +32,7 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRegistrationAuthorizationBinding
     private lateinit var viewModel: RegAuthActivityViewModel
     private lateinit var smsBroadcastReceiver: SMSAuthorizationBroadcastReceiver
-    private lateinit var navController: NavController
+
 
     companion object{
         const val ENTERED_PHONE_NUMBER = "entered_phone_number"
@@ -89,14 +83,15 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
         }
 
-        navController= Navigation.findNavController(this,R.id.registration_navhost_fragment)
+
         // napravi broadcast receiver
         initializeSMSBroadcastReceiver()
 
 
 
         viewModel.userData.observe(this, Observer {user->
-
+            //TODO ukloni proveru za bug kada vise ne bude trebala
+            Toast.makeText(this, "User in DB:${user}", Toast.LENGTH_LONG).show()
             Log.i(MYTAG,("user u bazi je $user"))
             if(user!=null) {
                 if (user.userPhone != EMPTY_PHONE_NUMBER && !user.userPhone.isNullOrEmpty() && user.userToken!= EMPTY_TOKEN && !user.userToken.isNullOrEmpty()) {
@@ -118,8 +113,9 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
 
          viewModel.startSMSRetreiver.observe(this, Observer {
-            if(true){
-                startSMSRetreiver()
+             Log.i(MYTAG, "sms breceiver start, nadledanje viewmodela $it")
+            if(it){
+                startMySMSRetreiver()
                 viewModel.smsRetreiverStarted()
             }
 
@@ -129,6 +125,7 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
                 if(it!=null){
                     smsBroadcastReceiver.resetReceivedSMSMessage()
+                    val navController= findNavController(R.id.registration_navhost_fragment)
                     if(navController.currentDestination?.id==R.id.authorizationFragment) {
                        viewModel.setSMSVerificationTokenForAuthFragment(it)
 
@@ -137,6 +134,7 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
           })
 
     }
+
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.apply {
@@ -148,20 +146,23 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
         super.onSaveInstanceState(outState)
     }
 
+    // ako ispadne da ne moze da se registruje u manifestu - proveri
+    //TODO proveri da li treba i neka permission kao kada je u manifestu
     fun initializeSMSBroadcastReceiver(){
         smsBroadcastReceiver = SMSAuthorizationBroadcastReceiver()
         val filter = IntentFilter().apply {
             addAction(SmsRetriever.SMS_RETRIEVED_ACTION)
+
         }
         registerReceiver(smsBroadcastReceiver, filter)
 
     }
 
-    private fun startSMSRetreiver(){
+    private fun startMySMSRetreiver(){
 
         val client = SmsRetriever.getClient(this)
         val task: Task<Void> = client.startSmsRetriever()
-
+        Log.i(MYTAG,"  started retriever, cekam odgovor 5 minuta")
         task.addOnSuccessListener {
             Log.i(MYTAG,"  Successfully started retriever, expect broadcast intent")
             // Successfully started retriever, expect broadcast intent

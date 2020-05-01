@@ -7,7 +7,10 @@ import com.squareup.moshi.JsonClass
 data class NetRequest_GetSipCallerIds(
 
     @Json(name="token")
-    val authToken:String
+    val authToken:String,
+
+    @Json(name="phone")
+    val phoneNumber:String
 
 )
 
@@ -24,7 +27,10 @@ data class NetResponse_GetSipCallerIds(
     val message:String,
 
     @Json(name="version")
-    val appVersion:String
+    val appVersion:String,
+
+    @Json(name="authTokenMismatch")
+    val authTokenMismatch:Boolean
 
 )
 

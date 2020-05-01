@@ -24,7 +24,7 @@
         android:theme="@style/AppTheme">
 
         <activity
-            android:name=".ui.RegistrationAuthorization.RegistrationAuthorizationActivity"
+            android:name=".ui.registrationauthorization.RegistrationAuthorizationActivity"
             android:screenOrientation="portrait"
             android:theme="@style/RegistrationTheme">
             <intent-filter>
@@ -40,7 +40,10 @@
         <activity
             android:name=".ui.main_activity.MainActivity"
             android:launchMode="singleTop"
-            android:screenOrientation="portrait"></activity>
+            android:screenOrientation="portrait">
+        </activity>
+
+
     </application>
 
 </manifest>

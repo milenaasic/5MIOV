@@ -40,7 +40,10 @@ data class NetResponse_SetAccountEmailAndPass(
     val appVersion:String?,
 
     @Json(name="e1phone")
-    val e1phone:String?
+    val e1phone:String?,
+
+    @Json(name="authTokenMismatch")
+    val authTokenMismatch:Boolean
 
 )
 

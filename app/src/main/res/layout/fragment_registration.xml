@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:focusableInTouchMode="true"
-        tools:context=".ui.RegistrationAuthorization.RegistrationFragment">
+        tools:context=".ui.registrationauthorization.RegistrationFragment">
 
 
         <TextView

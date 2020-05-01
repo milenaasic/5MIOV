@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import com.vertial.fivemiov.api.*
 import com.vertial.fivemiov.database.MyDatabaseDao
 import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers.IO
 
 
 private const val MY_TAG="MY_Repository"
@@ -100,7 +101,6 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
             else _registrationSuccess.value=result
 
         } catch (e:Throwable){
-            val m=e.cause
             val errorMessage:String?=e.message
             if(smsResend) _smsResendNetworkError.value=e.message
             else _registrationNetworkError.value=e.toString()
@@ -222,6 +222,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
             Log.i(MY_TAG,"uspesna autorizacija $result")
             if(result.success==true) {
                 val uncancelableJob = UncancelableJob(
+                    phone=phone,
                     resultAuthorization = result,
                     resultSetAccountEmailAndPass = null,
                     myDatabaseDao = myDatabaseDao,
@@ -301,32 +302,37 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
         try {
             val result = defResult.await()
             Log.i(MY_TAG, "uspesno setovanje accounta $result")
-            if (result.success == true) {
-                val myUncancelableJob: UncancelableJob = UncancelableJob(
-                    resultAuthorization = null,
-                    resultSetAccountEmailAndPass = result,
-                    myDatabaseDao = myDatabaseDao,
-                    myAPI = myAPI
-                )
 
-                GlobalScope.launch {
-                    withContext(Dispatchers.IO) {
-                        //delay(3000)
-                        myUncancelableJob.startSetAccountEmailAndPassUncancelableJob(token)
+            if(result.authTokenMismatch==true) logoutAll(myDatabaseDao)
+            else {
+                if (result.success == true) {
+                    val myUncancelableJob: UncancelableJob = UncancelableJob(
+                        phone = phoneNumber,
+                        resultAuthorization = null,
+                        resultSetAccountEmailAndPass = result,
+                        myDatabaseDao = myDatabaseDao,
+                        myAPI = myAPI
+                    )
+
+                    GlobalScope.launch {
+                        withContext(Dispatchers.IO) {
+                            //delay(3000)
+                            myUncancelableJob.startSetAccountEmailAndPassUncancelableJob(token)
+                        }
                     }
-                }
 
-                GlobalScope.launch {
-                    withContext(Dispatchers.IO) {
-                        //delay(3000)
-                        Log.i(MY_TAG, "prosao delay pre upisa u bazu email-a")
-                        if (result.email.isNotEmpty()) myDatabaseDao.updateUserEmail(email)
+                    GlobalScope.launch {
+                        withContext(Dispatchers.IO) {
+                            //delay(3000)
+                            Log.i(MY_TAG, "prosao delay pre upisa u bazu email-a")
+                            if (result.email.isNotEmpty()) myDatabaseDao.updateUserEmail(email)
 
+                        }
                     }
-                }
 
+                }
+                _setAccountEmailAndPassSuccess.value = result.userMsg
             }
-            _setAccountEmailAndPassSuccess.value=result.userMsg
         }
         catch (e:Throwable){
             val errorMessage:String?=e.message
@@ -372,7 +378,12 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
 
 }
 
-class UncancelableJob(val resultAuthorization:NetResponse_Authorization?,val resultSetAccountEmailAndPass:NetResponse_SetAccountEmailAndPass?,val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
+class UncancelableJob(
+                        val phone: String,
+                        val resultAuthorization:NetResponse_Authorization?,
+                        val resultSetAccountEmailAndPass:NetResponse_SetAccountEmailAndPass?,
+                        val myDatabaseDao: MyDatabaseDao,
+                        val myAPI: MyAPIService){
 
     val MY_TAG="MY_klasaUncanceJOb"
 
@@ -382,7 +393,7 @@ class UncancelableJob(val resultAuthorization:NetResponse_Authorization?,val res
 
              resetSipAccess(resultAuthorization.authToken)
 
-            if(resultAuthorization.e1phone.isNullOrEmpty()) callSetNewE1(resultAuthorization.authToken)
+            if(resultAuthorization.e1phone.isNullOrEmpty()) callSetNewE1(phone=phone,token=resultAuthorization.authToken)
             else {
                     myDatabaseDao.updatePrenumber(resultAuthorization.e1phone,System.currentTimeMillis())
                     Log.i(MY_TAG, "authorize updating e1 phone version in DB")}
@@ -397,7 +408,7 @@ class UncancelableJob(val resultAuthorization:NetResponse_Authorization?,val res
     suspend fun startSetAccountEmailAndPassUncancelableJob(token: String){
 
         if(resultSetAccountEmailAndPass!=null){
-            if(resultSetAccountEmailAndPass.e1phone.isNullOrEmpty()) callSetNewE1(token)
+            if(resultSetAccountEmailAndPass.e1phone.isNullOrEmpty()) callSetNewE1(phone=phone,token=token)
             else  { myDatabaseDao.updatePrenumber(resultSetAccountEmailAndPass.e1phone,System.currentTimeMillis())
                 Log.i(MY_TAG, "set account updating e1 phone version in DB") }
 
@@ -408,46 +419,51 @@ class UncancelableJob(val resultAuthorization:NetResponse_Authorization?,val res
 
     }
 
+    suspend fun startRefreshE124HPassed(token: String){
+        callSetNewE1(phone=phone,token = token)
+
+    }
+
     private suspend fun resetSipAccess(
         authToken: String
     ) {
         Log.i(MY_TAG,"usao u resetSipAccess")
-        val defResult= myAPI.resetSipAccess(request = NetRequest_ResetSipAccess(authToken))
+        val defResult= myAPI.resetSipAccess(request = NetRequest_ResetSipAccess(authToken=authToken,phoneNumber = phone))
         try {
             val result=defResult.await()
+            if(result.authTokenMismatch==true) logoutAll(myDatabaseDao)
         }catch (e:Throwable){
             Log.i(MY_TAG,"greska resetSipAccess ${e.message}")
         }
     }
 
-    suspend fun callSetNewE1(token: String){
-        Log.i(MY_TAG,"usao u callSetNewE1")
+    suspend fun callSetNewE1(phone: String,token: String) {
+        Log.i(MY_TAG, "usao u callSetNewE1")
 
-        val defResult=myAPI.setNewE1(request = NetRequest_SetE1Prenumber(token))
+        val defResult = myAPI.setNewE1(
+            request = NetRequest_SetE1Prenumber(
+                authToken = token,
+                phoneNumber = phone
+            )
+        )
         try {
-            val result=defResult.await()
-            if(!result.e1prenumber.isNullOrEmpty()){
-                myDatabaseDao.updatePrenumber(result.e1prenumber,System.currentTimeMillis())
+            val result = defResult.await()
 
-            }else{}
+            if (result.authTokenMismatch == true) logoutAll(myDatabaseDao)
+            else{
+                    if (!result.e1prenumber.isNullOrEmpty()) {
+                        myDatabaseDao.updatePrenumber(result.e1prenumber, System.currentTimeMillis())
+                    }
+
+                    if (!result.appVersion.isNullOrEmpty()) {
+                        myDatabaseDao.updateWebApiVersion(result.appVersion)
+                    }
+            }
         }catch (e:Throwable){
-            Log.i(MY_TAG,"greska ${e.message}")
+            Log.i(MY_TAG,"greska callSetNEw E1 ${e.message}")
         }
 
-
     }
-
-    /*private suspend fun callSetSipCallerID() {
-      Log.i(MY_TAG,"usao u callSetSipCallerID()")
-      val defResult=myAPI.setSipCallerId(request =NetRequest_SetSipCallerId())
-      try {
-          val result=defResult.await()
-      }catch (e:Throwable){
-          Log.i(MY_TAG,"greska callSetSipCallerID() ${e.message}")
-      }
-
-
-  }*/
 
 
 }

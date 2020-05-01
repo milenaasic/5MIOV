@@ -16,7 +16,10 @@ data class NetRequest_SetSipCallerId(
     val password:String,
 
     @Json(name="sipCallerId")
-    val sipCallerId:String
+    val sipCallerId:String,
+
+    @Json(name="phone")
+    val phoneNumber:String
 
 )
 
@@ -34,7 +37,10 @@ data class NetResponse_SetSipCallerId(
     val message:String,
 
     @Json(name="version")
-    val appVersion:String?
+    val appVersion:String?,
+
+    @Json(name="authTokenMismatch")
+    val authTokenMismatch:Boolean
 
 )
 

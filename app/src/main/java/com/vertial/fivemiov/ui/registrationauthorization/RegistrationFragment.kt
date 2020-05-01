@@ -1,10 +1,7 @@
-package com.vertial.fivemiov.ui.RegistrationAuthorization
+package com.vertial.fivemiov.ui.registrationauthorization
 
 import android.app.Activity
 import android.os.Bundle
-import android.telephony.PhoneNumberUtils
-import android.text.Editable
-import android.text.TextWatcher
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -20,7 +17,6 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 
 import com.vertial.fivemiov.R
-import com.vertial.fivemiov.api.NetResponse_Registration
 import com.vertial.fivemiov.databinding.FragmentRegistrationBinding
 import com.vertial.fivemiov.utils.*
 
@@ -43,28 +39,28 @@ class RegistrationFragment : Fragment() {
         binding.phoneNumberEditText.setText(PLUS_NIGERIAN_PREFIX)
 
         binding.registerButton.setOnClickListener {
-
+            it.isEnabled=false
             hidekeyboard()
             binding.rootRegContLayout.requestFocus()
             if(!isOnline(requireActivity().application)) {
                 showSnackBar(resources.getString(R.string.no_internet))
+                it.isEnabled=true
                 return@setOnClickListener}
 
 
             Log.i(MY_TAG,"registrtion button je clicked}")
-            it.isEnabled=false
+
 
             val enteredPhoneNumber=binding.phoneNumberEditText.text.toString()
             if(enteredPhoneNumber.isPhoneNumberValid()){
                     it.isEnabled=false
                     showProgressBar(true)
-                    activityViewModel.startSMSRetreiver()
                     activityViewModel.registerButtonClicked(enteredPhoneNumber.removePlus(),smsResend = false)
 
-                }else {
+            }else {
                     it.isEnabled=true
                      binding.enterPhoneTextInputLayout.setError(resources.getString(R.string.not_valid_phone_number))
-                }
+            }
         }
 
         binding.addNumToAccountButton.setOnClickListener {
@@ -117,6 +113,7 @@ class RegistrationFragment : Fragment() {
                      response.success == true && response.phoneNumberAlreadyAssigned == false -> {
                          showToast(response.userMessage)
                          activityViewModel.resetRegistrationNetSuccess()
+                         activityViewModel.startSMSRetreiverFunction()
                          findNavController().navigate(RegistrationFragmentDirections.actionRegistrationFragmentToAuthorizationFragment())
                      }
 

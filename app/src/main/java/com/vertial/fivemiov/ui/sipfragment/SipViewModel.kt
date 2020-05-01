@@ -39,21 +39,20 @@ class SipViewModel(val mySipRepo: RepoSIPE1, val myRepository: Repo, application
     // trazi nove sip credentials
     fun getSipAccountCredentials(){
 
-        var authtoken:String=""
         viewModelScope.launch{
-            var authtoken=""
-            val deferredToken = viewModelScope.async(IO) {
+            val deferredUser = viewModelScope.async(IO) {
                 //delay(3000)
-                myRepository.getTokenFromDB()
+                mySipRepo.getUserNoLiveData()
             }
             try {
-                authtoken = deferredToken.await()
+                val myUser = deferredUser.await()
+                if(myUser.userToken.isNotEmpty() && myUser.userPhone.isNotEmpty()) mySipRepo.getSipAccessCredentials(token = myUser.userToken,phone = myUser.userPhone)
 
             } catch (e: Exception) {
                 Log.i(MYTAG,"db greska iz getSipAccountCredentials ${e.message}")
             }
-           Log.i(MYTAG," token iz baze je $authtoken")
-            if(authtoken.isNotEmpty()) mySipRepo.getSipAccessCredentials(authtoken)
+
+
             }
     }
 

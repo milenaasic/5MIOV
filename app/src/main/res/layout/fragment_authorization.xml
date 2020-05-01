@@ -15,7 +15,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:focusableInTouchMode="true"
-            tools:context=".ui.RegistrationAuthorization.AuthorizationFragment">
+            tools:context=".ui.registrationauthorization.AuthorizationFragment">
 
             <TextView
                 android:id="@+id/logo_auth_textView"

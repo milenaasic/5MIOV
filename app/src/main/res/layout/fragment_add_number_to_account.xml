@@ -14,7 +14,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:focusableInTouchMode="true"
-            tools:context=".ui.RegistrationAuthorization.AddNumberToAccount">
+            tools:context=".ui.registrationauthorization.AddNumberToAccount">
 
             <TextView
                 android:id="@+id/logo_textVIew2"

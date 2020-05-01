@@ -1,4 +1,4 @@
-package com.vertial.fivemiov.ui.RegistrationAuthorization
+package com.vertial.fivemiov.ui.registrationauthorization
 
 import android.content.BroadcastReceiver
 import android.content.Context

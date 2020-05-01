@@ -1,4 +1,4 @@
-package com.vertial.fivemiov.ui.RegistrationAuthorization
+package com.vertial.fivemiov.ui.registrationauthorization
 
 import android.app.Application
 import android.util.Log
@@ -6,7 +6,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.vertial.fivemiov.api.NetResponse_Registration
 import com.vertial.fivemiov.data.Repo
 import com.vertial.fivemiov.data.RepoSIPE1
 import kotlinx.coroutines.launch
@@ -206,7 +205,7 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
     }
 
     // ovo pozivam u momentu kada posaljem zahtev ka serveru za prosledjivanje sms-a sa tokenom
-    fun startSMSRetreiver(){
+    fun startSMSRetreiverFunction(){
         _startSMSRetreiver.value=true
     }
 

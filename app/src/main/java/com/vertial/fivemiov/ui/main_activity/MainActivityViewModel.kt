@@ -12,9 +12,7 @@ import androidx.lifecycle.viewModelScope
 import com.vertial.fivemiov.model.PhoneBookItem
 import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.model.PhoneItem
-import com.vertial.fivemiov.utils.EMPTY_EMAIL
-import com.vertial.fivemiov.utils.EMPTY_PHONE_NUMBER
-import com.vertial.fivemiov.utils.removeEmptyContactItem
+import com.vertial.fivemiov.utils.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import java.lang.Exception
@@ -49,7 +47,9 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
 
     fun logout(){
         viewModelScope.launch {
-            myRepository.logout()
+            withContext(Dispatchers.IO){
+                myRepository.logout()
+            }
         }
     }
 
@@ -86,7 +86,7 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
                 val defferedPhones=(resultList.indices).map {
                     viewModelScope.async(IO) {
                         val list=myRepository.getPhoneNumbersForContact(resultList[it].lookUpKey)
-                        val phoneArray=convertPhoneListToPhoneArray(list)
+                        val phoneArray= convertPhoneListToPhoneArray(list)
                         Log.i(MY_TAG,"get phone book phonearray ${phoneArray.toList()}")
                         phoneBookList.add(
                             PhoneBookItem(
@@ -110,14 +110,7 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
 
     }
 
-    private fun convertPhoneListToPhoneArray(phoneList: List<PhoneItem>): Array<String> {
-        val resultList= mutableListOf<String>()
-        for(item in phoneList){
-            resultList.add(PhoneNumberUtils.normalizeNumber(item.phoneNumber))
-        }
-        return resultList.toTypedArray()
 
-    }
 
     fun exportPhoneBook(phoneBook:List<PhoneBookItem>){
 

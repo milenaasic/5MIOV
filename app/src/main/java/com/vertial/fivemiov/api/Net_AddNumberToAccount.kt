@@ -27,9 +27,7 @@ data class NetResponse_AddNumberToAccount (
     val message:String,
 
     @Json(name="userMsg")
-    val usermessage:String,
+    val usermessage:String
 
-    @Json(name="version")
-    val appVersion:String?
 )
 

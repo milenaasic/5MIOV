@@ -20,7 +20,7 @@ import com.vertial.fivemiov.utils.*
 
 private const val NAME="MY_Database"
 
-@Database(entities = [User::class, E1Prenumber::class,SipAccount::class,WebApiVersion::class],version = 2,exportSchema = false )
+@Database(entities = [User::class, E1Prenumber::class,SipAccount::class,WebApiVersion::class],version = 1,exportSchema = false )
 abstract class MyDatabase:RoomDatabase(){
 
     abstract val myDatabaseDao:MyDatabaseDao
@@ -45,7 +45,7 @@ abstract class MyDatabase:RoomDatabase(){
                             override fun onCreate(db: SupportSQLiteDatabase) {
                                 super.onCreate(db)
                                 Log.i(NAME,"DB on create")
-                                val myvalues=ContentValues().apply {
+                               val myvalues=ContentValues().apply {
                                     put("user_phone", EMPTY_PHONE_NUMBER)
                                     put("token", EMPTY_TOKEN)
                                     put("email", EMPTY_EMAIL)
@@ -53,12 +53,12 @@ abstract class MyDatabase:RoomDatabase(){
                                 }
                                 val myValues2=ContentValues().apply {
                                     put("e1prenumber", EMPTY_E1_PRENUMBER)
-                                    put("timestamp",System.currentTimeMillis())
+                                    put("timestamp",0L)
 
                                  }
 
                                 val myValues3=ContentValues().apply {
-                                    put("sipCallerId", EMPTY_SIP_CALLER_ID)
+                                    put("mainSipCallerId", EMPTY_MAIN_SIP_CALLER_ID)
                                     put("sipUsername", EMPTY_SIP_USERNAME)
                                     put("sipPassword", EMPTY_SIP_PASSWORD)
                                     put("sipServer", EMPTY_SIP_SERVER)
@@ -78,6 +78,7 @@ abstract class MyDatabase:RoomDatabase(){
                                     Log.w("MY_database error",e)}
 
                             }
+
                         })
                         .build()
                     INSTANCE = instance

@@ -13,10 +13,7 @@ import com.vertial.fivemiov.model.PhoneBookItem
 import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.model.ContactItem
 import com.vertial.fivemiov.model.PhoneItem
-import com.vertial.fivemiov.utils.EMPTY_NAME
-import com.vertial.fivemiov.utils.EMPTY_PHONE_NUMBER
-import com.vertial.fivemiov.utils.removeEmptyContactItem
-import com.vertial.fivemiov.utils.removePlus
+import com.vertial.fivemiov.utils.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -78,14 +75,14 @@ class WebViewViewModel(val myRepository: RepoContacts, application: Application)
 
     }
 
-    private fun convertPhoneListToPhoneArray(phoneList: List<PhoneItem>): Array<String> {
+  /*  private fun convertPhoneListToPhoneArray(phoneList: List<PhoneItem>): Array<String> {
         val resultList= mutableListOf<String>()
         for(item in phoneList){
             resultList.add(PhoneNumberUtils.normalizeNumber(item.phoneNumber).removePlus())
         }
         return resultList.toTypedArray()
 
-    }
+    }*/
 
     fun exportPhoneBook(phoneBook:List<PhoneBookItem>){
 

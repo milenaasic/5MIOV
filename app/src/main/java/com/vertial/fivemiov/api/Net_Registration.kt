@@ -27,10 +27,7 @@ data class NetResponse_Registration(
     val code:Int,
 
     @Json(name="phoneNumberAlreadyAssigned")
-    val phoneNumberAlreadyAssigned:Boolean,
-
-    @Json(name="version")
-    val appVersion:String?
+    val phoneNumberAlreadyAssigned:Boolean
 
 
 )

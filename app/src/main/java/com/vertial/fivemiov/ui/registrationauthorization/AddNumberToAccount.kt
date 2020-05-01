@@ -1,17 +1,15 @@
-package com.vertial.fivemiov.ui.RegistrationAuthorization
+package com.vertial.fivemiov.ui.registrationauthorization
 
 
 import android.app.Activity
 import android.os.Bundle
 import android.util.Log
-import android.view.KeyEvent
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
-import android.widget.TextView
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
@@ -43,9 +41,8 @@ class AddNumberToAccount : Fragment() {
         binding.addNmbPhoneEditText.setText(PLUS_NIGERIAN_PREFIX)
 
         binding.addphoneButton.setOnClickListener {
-            //binding.rootAddNumberConstrLayout.isEnabled=false
-            binding.rootAddNumberConstrLayout.requestFocus()
             it.isEnabled=false
+            binding.rootAddNumberConstrLayout.requestFocus()
             hidekeyboard()
             if(allEnteredFieldsAreValid()){
                 showProgressBar(true)
@@ -121,11 +118,13 @@ class AddNumberToAccount : Fragment() {
 
         activityViewModel.addNumberToAccuntNetworkSuccess.observe(viewLifecycleOwner,Observer{response->
             Log.i(MY_TAG,"net response je ${response.toString()}")
+
             if(response!=null) {
                 when {
                     response.success == true -> {
                         showToast(response.usermessage)
                         activityViewModel.resetAddNumberToAccountNetSuccess()
+                        activityViewModel.startSMSRetreiverFunction()
                         findNavController().navigate(AddNumberToAccountDirections.actionAddNumberToAccountToAuthorizationFragment())
                     }
 

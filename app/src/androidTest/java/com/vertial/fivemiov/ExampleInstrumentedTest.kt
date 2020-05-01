@@ -1,7 +1,12 @@
 package com.vertial.fivemiov
 
+import android.telephony.PhoneNumberUtils
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.vertial.fivemiov.utils.NIGERIAN_PREFIX
+import com.vertial.fivemiov.utils.removeDoubleZeroAtBegining
+import com.vertial.fivemiov.utils.removeFirstZeroAddPrefix
+import com.vertial.fivemiov.utils.removePlus
 
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -19,6 +24,9 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("com.vertial.sipdnidphone", appContext.packageName)
+        assertEquals("com.vertial.fivemiov", appContext.packageName)
     }
+
+
+
 }

@@ -13,6 +13,7 @@ import android.util.Log
 import android.util.Patterns
 import android.widget.EditText
 import com.vertial.fivemiov.model.ContactItem
+import com.vertial.fivemiov.model.PhoneItem
 
 private val MYTAG="MY_helpers"
 
@@ -68,10 +69,20 @@ fun String.removeDoubleZeroAtBegining():String{
 fun String.removeFirstZeroAddPrefix(prefix:String):String{
 
     if(!this.trim().startsWith(ONE_ZERO)) return this
-    return this.trim().removePrefix(ONE_ZERO).plus(NIGERIAN_PREFIX)
+    else return "$NIGERIAN_PREFIX${this.trim().removePrefix(ONE_ZERO)}"
 }
 
+fun convertPhoneListToPhoneArray(phoneList: List<PhoneItem>): Array<String> {
+    val resultList= mutableListOf<String>()
+    for(item in phoneList){
+        //noramlizuj broj, ukloni +, ukoloni dve 00 (ako ima), jednu nulu zameni sa 234
+        val myPhoneNumber=PhoneNumberUtils.normalizeNumber(item.phoneNumber)
+        resultList.add(myPhoneNumber.removePlus().removeDoubleZeroAtBegining().removeFirstZeroAddPrefix(NIGERIAN_PREFIX))
 
+    }
+    return resultList.toTypedArray()
+
+}
 
 
 

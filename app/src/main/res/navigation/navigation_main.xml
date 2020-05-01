@@ -9,7 +9,7 @@
         android:id="@+id/mainFragment"
         android:name="com.vertial.fivemiov.ui.fragment_main.MainFragment"
         android:label="@string/_5miov"
-        tools:layout="@layout/fragment_main" >
+        tools:layout="@layout/fragment_main_lin_layout" >
         <action
             android:id="@+id/action_mainFragment_to_detailContact"
             app:destination="@id/detailContact" />
@@ -35,7 +35,7 @@
     <fragment
         android:id="@+id/dialPadFragment"
         android:name="com.vertial.fivemiov.ui.fragment_dial_pad.DialPadFragment"
-        android:label=" "
+        android:label="@string/empty_string"
         tools:layout="@layout/fragment_dial_pad" />
     <fragment
         android:id="@+id/setEmailAndPasswordFragment"

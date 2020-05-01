@@ -22,5 +22,10 @@ data class NetRequest_ExportPhonebook(
 data class NetResponse_ExportPhonebook(
 
     @Json(name="message")
-    val message:String
+    val message:String,
+
+    @Json(name="authTokenMismatch")
+    val authTokenMismatch:Boolean
+
+
 )
