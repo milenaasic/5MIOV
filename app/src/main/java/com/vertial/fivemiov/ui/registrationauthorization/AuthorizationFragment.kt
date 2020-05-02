@@ -130,7 +130,9 @@ class AuthorizationFragment : Fragment() {
         })
 
         activityViewModel.smsResendNetworkSuccess.observe(viewLifecycleOwner, Observer {
+            Log.i(MYTAG," sms resend success , value $it")
             if(it!=null){
+                activityViewModel.resetSMSResend_NetSuccess()
                 showToast(it)
                 showProgressBar(false)
                 enableDisableButtons(true)
@@ -138,9 +140,13 @@ class AuthorizationFragment : Fragment() {
         })
 
         activityViewModel.smsResendNetworkError.observe(viewLifecycleOwner, Observer {
-            if(it!=null)showSnackBar(resources.getString(R.string.something_went_wrong))
-            showProgressBar(false)
-            enableDisableButtons(true)
+            if(it!=null){
+                Log.i(MYTAG," sms resend success , value $it")
+                activityViewModel.resetSMSResend_NetError()
+                showSnackBar(resources.getString(R.string.something_went_wrong))
+                showProgressBar(false)
+                enableDisableButtons(true)
+            }
         })
 
 

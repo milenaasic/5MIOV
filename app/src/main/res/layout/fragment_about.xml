@@ -43,6 +43,7 @@
         android:layout_marginTop="8dp"
         android:text="@string/about_how_to_use_app"
         android:textAlignment="viewStart"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
         app:layout_constraintEnd_toEndOf="@+id/web_api_ver_textView"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/web_api_ver_textView"
@@ -54,16 +55,20 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="How to make a call"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
         android:textColor="@color/colorPrimaryDark"
         app:layout_constraintStart_toStartOf="@+id/web_api_ver_textView"
         app:layout_constraintTop_toBottomOf="@+id/divider3" />
 
     <View
         android:id="@+id/divider3"
-        android:layout_width="409dp"
+        android:layout_width="0dp"
         android:layout_height="1dp"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="32dp"
+        android:layout_marginEnd="16dp"
         android:background="?android:attr/listDivider"
+        android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/web_api_ver_textView" />

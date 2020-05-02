@@ -170,12 +170,12 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
 
     }
 
-    fun resendSMS(phoneNumber:String){
+    /*fun resendSMS(phoneNumber:String){
         viewModelScope.launch {
             myRepository.resendSMS(phoneNumber)
         }
 
-    }
+    }*/
 
     fun resetAuthorization_NetSuccess(){
         myRepository.resetAuthorization_NetSuccess()
@@ -214,5 +214,9 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
 
     }
 
+    override fun onCleared() {
+        Log.i(MY_TAG,"ON CLEARED")
+        super.onCleared()
 
+    }
 }

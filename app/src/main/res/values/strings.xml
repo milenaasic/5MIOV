@@ -96,13 +96,13 @@
     <string name="sip_call_established">Call Established.</string>
     <string name="sip_call_ended">Call Ended.</string>
     <string name="sip_button_name">IOV Internet</string>
-    <string name="regular_call_button_name">CALL</string>
+    <string name="regular_call_button_name">PRENUMBER</string>
 
     <!-- ABOUT FRAGMENT-->
-    <string name="about_how_to_use_app">If you have good internet connection use IOV INTERNET button, otherwise use regular CALL button</string>
+    <string name="about_how_to_use_app">If you have good internet connection use IOV INTERNET button for cheaper calls, otherwise use PRENUMBER button.</string>
     <string name="web_api_version">WebApi version  %1$s</string>
     <string name="mobile_app_version">Mobile App version  %1$s</string>
-
+    <string name="no_audio_permission">No audio permission</string>
 
 
 </resources>

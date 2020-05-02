@@ -238,12 +238,12 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
                 }
 
                 withContext(Dispatchers.IO) {
-                    if (!result.email.isNullOrEmpty()) myDatabaseDao.updateUsersPhoneTokenEmail(
-                        phone,
-                        result.authToken,
-                        result.email
-                    )
-                    else myDatabaseDao.updateUsersPhoneAndToken(phone, result.authToken)
+                    if (result.email.isNotEmpty()
+                        && result.email.isNotBlank()
+                        && result.authToken.isNotEmpty()
+                        && result.authToken.isNotBlank()
+                        ) myDatabaseDao.updateUsersPhoneTokenEmail(phone, result.authToken, result.email)
+                    else if(result.authToken.isNotEmpty() && result.authToken.isNotBlank()) myDatabaseDao.updateUsersPhoneAndToken(phone, result.authToken)
                 }
             }
 
@@ -276,7 +276,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
     }
 
 
-    suspend fun resendSMS(phone: String){
+    /*suspend fun resendSMS(phone: String){
         val defResponse=myAPI.sendRegistrationToServer(request = NetRequest_Registration(phoneNumber = phone ))
         try{
             val result=defResponse.await()
@@ -287,7 +287,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
             Log.i(MY_TAG,"greska $errorMessage, a cela gresak je $e")
         }
 
-    }
+    }*/
 
 
 
@@ -325,7 +325,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
                         withContext(Dispatchers.IO) {
                             //delay(3000)
                             Log.i(MY_TAG, "prosao delay pre upisa u bazu email-a")
-                            if (result.email.isNotEmpty()) myDatabaseDao.updateUserEmail(email)
+                            if (result.email.isNotEmpty() && result.email.isNotBlank()) myDatabaseDao.updateUserEmail(result.email)
 
                         }
                     }
@@ -350,6 +350,10 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
         _setAccountEmailAndPassError.value=null
     }
 
+    suspend fun getUser()=withContext(Dispatchers.IO){
+        myDatabaseDao.getUserNoLiveData()
+
+    }
 
     fun getPhoneNumberFromDB():String{
         return myDatabaseDao.getPhone()
@@ -391,16 +395,27 @@ class UncancelableJob(
         Log.i(MY_TAG,"unceleable job je started $resultAuthorization")
         if(resultAuthorization!=null){
 
-             resetSipAccess(resultAuthorization.authToken)
+            if(resultAuthorization.authToken.isNotEmpty() && resultAuthorization.authToken.isNotBlank()) {
 
-            if(resultAuthorization.e1phone.isNullOrEmpty()) callSetNewE1(phone=phone,token=resultAuthorization.authToken)
-            else {
-                    myDatabaseDao.updatePrenumber(resultAuthorization.e1phone,System.currentTimeMillis())
-                    Log.i(MY_TAG, "authorize updating e1 phone version in DB")}
+                resetSipAccess(resultAuthorization.authToken)
 
-            if(!resultAuthorization.appVersion.isNullOrEmpty()) {
+                if (resultAuthorization.e1phone.isNullOrEmpty() || resultAuthorization.e1phone.isBlank()) callSetNewE1(
+                    phone = phone,
+                    token = resultAuthorization.authToken
+                )
+                else {
+                    myDatabaseDao.updatePrenumber(
+                        resultAuthorization.e1phone,
+                        System.currentTimeMillis()
+                    )
+                    Log.i(MY_TAG, "authorize updating e1 phone version in DB")
+                }
+
+                if (!resultAuthorization.appVersion.isNullOrEmpty() && !resultAuthorization.appVersion.isNullOrBlank()) {
                     myDatabaseDao.updateWebApiVersion(resultAuthorization.appVersion)
-                Log.i(MY_TAG, "authorize updating web api version in DB")}
+                    Log.i(MY_TAG, "authorize updating web api version in DB")
+                }
+            }
         }
     }
 
@@ -408,11 +423,12 @@ class UncancelableJob(
     suspend fun startSetAccountEmailAndPassUncancelableJob(token: String){
 
         if(resultSetAccountEmailAndPass!=null){
-            if(resultSetAccountEmailAndPass.e1phone.isNullOrEmpty()) callSetNewE1(phone=phone,token=token)
+
+            if(resultSetAccountEmailAndPass.e1phone.isNullOrEmpty() || resultSetAccountEmailAndPass.e1phone.isNullOrBlank() ) callSetNewE1(phone=phone,token=token)
             else  { myDatabaseDao.updatePrenumber(resultSetAccountEmailAndPass.e1phone,System.currentTimeMillis())
                 Log.i(MY_TAG, "set account updating e1 phone version in DB") }
 
-            if(!resultSetAccountEmailAndPass.appVersion.isNullOrEmpty()) {
+            if(!resultSetAccountEmailAndPass.appVersion.isNullOrEmpty() || !resultSetAccountEmailAndPass.appVersion.isNullOrBlank()) {
                 myDatabaseDao.updateWebApiVersion(resultSetAccountEmailAndPass.appVersion)
                 Log.i(MY_TAG, "set account updating web api version in DB")}
         }
@@ -451,11 +467,11 @@ class UncancelableJob(
 
             if (result.authTokenMismatch == true) logoutAll(myDatabaseDao)
             else{
-                    if (!result.e1prenumber.isNullOrEmpty()) {
+                    if (!result.e1prenumber.isNullOrEmpty() && !result.e1prenumber.isNullOrBlank()) {
                         myDatabaseDao.updatePrenumber(result.e1prenumber, System.currentTimeMillis())
                     }
 
-                    if (!result.appVersion.isNullOrEmpty()) {
+                    if (!result.appVersion.isNullOrEmpty() && !result.appVersion.isNullOrBlank()) {
                         myDatabaseDao.updateWebApiVersion(result.appVersion)
                     }
             }

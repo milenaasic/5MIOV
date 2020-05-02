@@ -118,7 +118,7 @@ class MainFragmentViewModel(val repoContacts: RepoContacts,application: Applicat
                     }
 
                 } catch (e: Throwable) {
-
+                    Log.i(MYTAG, "24 hours passed ${e.message} ")
                 }
 
             }

@@ -57,15 +57,17 @@ class SetEmailAndPasswordFragment : Fragment() {
 
 
         binding.setAccountSubmitButton.setOnClickListener {
+            it.isEnabled=false
             binding.rootSetEmailPass.requestFocus()
             hidekeyboard()
 
             if(!isOnline(requireActivity().application)) {
+                it.isEnabled=true
                 showSnackBar(resources.getString(R.string.no_internet))
                 return@setOnClickListener}
 
             if(allEnteredFieldsAreValid()) {
-                it.isEnabled=false
+
                 showProgressBar(true)
                 Log.i(MYTAG,"setCredentials je kliknut")
                     viewModel.setAccountAndEmailForUser(
@@ -73,7 +75,7 @@ class SetEmailAndPasswordFragment : Fragment() {
                                 binding.setAccountPassEditText.text.toString()
                     )
 
-            }
+            } else  it.isEnabled=true
          }
 
         binding.setAccountConfirmpassEditText.setOnEditorActionListener { view, action, keyEvent ->

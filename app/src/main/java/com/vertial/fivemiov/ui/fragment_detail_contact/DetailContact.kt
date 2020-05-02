@@ -82,7 +82,7 @@ class DetailContact : Fragment() {
 
         viewModel=ViewModelProvider(this,DetailContactViewModelFactory(args.contactLookUpKey,repo,requireActivity().application)).get(DetailContactViewModel::class.java)
         val sipManager=SipManager.newInstance(requireContext())
-        if(!isVOIPsupported(requireContext()))showSnackBar(resources.getString(R.string.VOIP_not_supported)+", SipManager is $sipManager")
+        //if(!isVOIPsupported(requireContext()))showSnackBar(resources.getString(R.string.VOIP_not_supported)+", SipManager is $sipManager")
 
 
         phoneAdapter= DetailContactAdapter(

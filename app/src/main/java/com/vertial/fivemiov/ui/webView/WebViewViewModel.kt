@@ -15,6 +15,7 @@ import com.vertial.fivemiov.model.ContactItem
 import com.vertial.fivemiov.model.PhoneItem
 import com.vertial.fivemiov.utils.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import java.lang.Exception
@@ -75,23 +76,20 @@ class WebViewViewModel(val myRepository: RepoContacts, application: Application)
 
     }
 
-  /*  private fun convertPhoneListToPhoneArray(phoneList: List<PhoneItem>): Array<String> {
-        val resultList= mutableListOf<String>()
-        for(item in phoneList){
-            resultList.add(PhoneNumberUtils.normalizeNumber(item.phoneNumber).removePlus())
-        }
-        return resultList.toTypedArray()
 
-    }*/
 
     fun exportPhoneBook(phoneBook:List<PhoneBookItem>){
 
         val myUser=user.value
-        if(myUser!=null && myUser.userPhone!= EMPTY_PHONE_NUMBER){
-            viewModelScope.launch {
-                myRepository.exportPhoneBook(myUser.userToken,myUser.userPhone,phoneBook)
-            }
-        }
+
+        if(myUser!=null
+            && myUser.userPhone!= EMPTY_PHONE_NUMBER && myUser.userPhone.isNotEmpty()
+            && myUser.userToken!= EMPTY_TOKEN && myUser.userToken.isNotEmpty()
+            ) {
+                viewModelScope.launch {
+                        myRepository.exportPhoneBook(myUser.userToken,myUser.userPhone,phoneBook)
+                }
+             }
 
     }
 

@@ -173,7 +173,10 @@ class SipFragment : Fragment() {
 
         viewModel.getSipCredentialsNetSuccess.observe(viewLifecycleOwner, Observer{response->
             if(response!=null) {
-                if (response.sipUserName.isNotEmpty()&& response.sipPassword.isNotEmpty() && response.sipServer.isNotEmpty()){
+                if (   response.sipUserName.isNotEmpty() && response.sipUserName.isNotBlank()
+                        && response.sipPassword.isNotEmpty() && response.sipPassword.isNotBlank()
+                        && response.sipServer.isNotEmpty() && response.sipServer.isNotBlank()
+                ){
                     initializeManager(sipUserName = response.sipUserName,sipPassword = response.sipPassword,sipServer = response.sipServer,sipCallerId = response.sipCallerId)
                     viewModel.resetgetSipAccountCredentialsNetSuccess()
                 }else {

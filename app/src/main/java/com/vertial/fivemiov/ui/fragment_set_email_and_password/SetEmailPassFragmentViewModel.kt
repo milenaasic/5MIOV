@@ -5,6 +5,9 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.vertial.fivemiov.data.Repo
+import com.vertial.fivemiov.model.User
+import com.vertial.fivemiov.utils.EMPTY_PHONE_NUMBER
+import com.vertial.fivemiov.utils.EMPTY_TOKEN
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
@@ -19,33 +22,32 @@ class SetEmailPassFragmentViewModel(val myrepository: Repo, application: Applica
     val setAccountEmailAndPassError=myrepository.setAccountEmailAndPassError
 
     fun setAccountAndEmailForUser(email:String,password:String){
-        var authtoken:String=""
-        var phoneNumber:String=""
-        //pokupi broj i token iz baze
+
             viewModelScope.launch {
-                val deferredPhone = viewModelScope.async(IO) {
+                val deferredUser = viewModelScope.async(IO) {
                     //delay(3000)
-                    myrepository.getPhoneNumberFromDB()
+                    myrepository.getUser()
                 }
                 try {
-                     phoneNumber = deferredPhone.await()
+                     val myUser = deferredUser.await()
+                    if(myUser!=null){
+                        Log.i(MYTAG, "setEmialView MOdel ${myUser.userPhone},$myUser.authtoken,$email,$password")
+                        if( myUser.userPhone.isNotEmpty()
+                            && myUser.userPhone!= EMPTY_PHONE_NUMBER
+                            && myUser.userToken.isNotEmpty()
+                            && myUser.userToken!= EMPTY_TOKEN) myrepository.setAccountEmailAndPasswordForUser(phoneNumber = myUser.userPhone,
+                                                                                                                token=myUser.userToken,
+                                                                                                                email = email,
+                                                                                                                password = password)
+
+                    }
 
                 } catch (e: Exception) {
                     Log.i(MYTAG,"db greska ${e.message}")
                 }
 
-                val deferredToken = viewModelScope.async(IO) {
-                    //delay(3000)
-                    myrepository.getTokenFromDB()
-                }
-                try {
-                    authtoken = deferredToken.await()
 
-                } catch (e: Exception) {
-                    Log.i(MYTAG,"db greska ${e.message}")
-                }
-                Log.i(MYTAG, "setEmialView MOdel $phoneNumber,$authtoken,$email,$password")
-                if(phoneNumber.isNotEmpty() && authtoken.isNotEmpty()) myrepository.setAccountEmailAndPasswordForUser(phoneNumber,authtoken,email, password)
+
             }
 
     }

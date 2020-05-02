@@ -35,7 +35,7 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
     val initialexportPhoneBookNetworkSuccess: LiveData<Boolean>
         get() = _initialexportPhoneBookNetworkSuccess
 
-    //initial export phonebook network response
+    // export phonebook from webview network response
     private val _exportPhoneBookWebViewNetworkSuccess = MutableLiveData<Boolean>()
     val exportPhoneBookWebViewNetworkSuccess: LiveData<Boolean>
         get() = _exportPhoneBookWebViewNetworkSuccess

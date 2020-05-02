@@ -29,24 +29,32 @@ fun setNameWithColoredLetters(view:TextView, item: ContactItem, textToColor:Stri
 
 @BindingAdapter("setThumbPhoto")
 fun setThumbnailPhoto(view: ImageView, item: ContactItem?){
-    if(item?.name=== EMPTY_NAME){
-        Glide.with(view)
-            .load(android.R.color.background_light)
-            .apply(RequestOptions().error(android.R.color.white).fallback(android.R.color.background_light))
+    if(item?.name== EMPTY_NAME){
+        try{
+            Glide.with(view)
+            .load(R.drawable.thumbnail_background_white)
+            .apply(RequestOptions().error(R.drawable.thumbnail_background_white).fallback(R.drawable.thumbnail_background_white))
             .apply(RequestOptions().circleCrop())
             .into(view)
-    }else {Glide.with(view)
-            .load(item?.photoThumbUri)
-            .apply(RequestOptions().error(R.drawable.thumbnail_background).fallback(R.drawable.thumbnail_background))
-            .apply(RequestOptions().circleCrop())
-            .into(view)
-            }
-
+        }catch (t:Throwable){
+            Log.i(MYTAG, "setThumbPhoto error ${t.message}")
+        }
+    }else {
+        try {
+            Glide.with(view)
+                .load(item?.photoThumbUri)
+                .apply(RequestOptions().error(R.drawable.thumbnail_background).fallback(R.drawable.thumbnail_background))
+                .apply(RequestOptions().circleCrop())
+                .into(view)
+        } catch (t: Throwable) {
+            Log.i(MYTAG, "setThumbPhoto error ${t.message}")
+        }
+    }
 }
 
 @BindingAdapter("setFirstLetter")
 fun setFirstLetter(view: TextView, item: ContactItem?){
-    if((item?.name=== EMPTY_NAME))view.text= ""
+    if((item?.name==EMPTY_NAME))view.text= ""
     else   {if(item?.photoThumbUri==null ) view.text= item?.name?.first().toString()
             else view.text= ""}
 }

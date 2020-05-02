@@ -158,7 +158,7 @@ class MainActivity : AppCompatActivity() {
 
 
         viewModel.userData.observe(this, Observer { user ->
-            if (user.userPhone==EMPTY_PHONE_NUMBER || user.userPhone.isNullOrEmpty() || user.userToken== EMPTY_TOKEN || user.userToken.isNullOrEmpty()) {
+            if (user.userPhone==EMPTY_PHONE_NUMBER || user.userPhone.isEmpty() || user.userToken== EMPTY_TOKEN || user.userToken.isEmpty()) {
                 startActivity(Intent(this, RegistrationAuthorizationActivity::class.java))
                 finish()
             }else{
@@ -323,7 +323,7 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun setAboutFragmentUI(){
-        binding.toolbarMain.elevation = 2f
+        //binding.toolbarMain.elevation = 2f
     }
 
 

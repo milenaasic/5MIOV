@@ -115,7 +115,10 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
     fun exportPhoneBook(phoneBook:List<PhoneBookItem>){
 
         val myUser=userData.value
-        if(myUser!=null && myUser.userPhone!= EMPTY_PHONE_NUMBER && myUser.userPhone.isNotEmpty()){
+        if(myUser!=null
+                && myUser.userPhone!= EMPTY_PHONE_NUMBER && myUser.userPhone.isNotEmpty()
+                && myUser.userToken!= EMPTY_TOKEN && myUser.userToken.isNotEmpty())
+            {
             viewModelScope.launch {
                 myRepository.exportPhoneBook(myUser.userToken,myUser.userPhone,phoneBook,initialExport = true)
             }

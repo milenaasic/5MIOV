@@ -20,6 +20,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.vertial.fivemiov.R
 import com.vertial.fivemiov.api.MyAPI
@@ -28,7 +29,9 @@ import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentDialPadBinding
 import com.vertial.fivemiov.ui.fragment_main.MainFragment
+import com.vertial.fivemiov.utils.isVOIPsupported
 import com.vertial.fivemiov.utils.isValidPhoneNumber
+import kotlinx.android.synthetic.main.fragment_dial_pad.*
 
 
 private val MYTAG="MY_DialPadFragment"
@@ -40,8 +43,10 @@ class DialPadFragment : Fragment() {
     private lateinit var clipboard:ClipboardManager
 
     companion object{
-        val MY_PERMISSIONS_REQUEST_MAKE_PHONE_CALL=11
+        val MY_PERMISSIONS_REQUEST_MAKE_CALL_and_SIP_and_AUDIO_DIALPAD=11
         val FORMATTING_COUNTRY_CODE="US"
+        val NOTHING=""
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -82,8 +87,32 @@ class DialPadFragment : Fragment() {
             button11.setOnClickListener { appendDigit((it as Button).text) }
             //brisanje
             button12.setOnClickListener { deleteDigit() }
-            //poziv
-            button13.setOnClickListener { if(checkForPermissions()) makePhoneCall()}
+
+            // prenumber poziv
+            buttonPrenumberCallDialpad.setOnClickListener { if(checkForPermissions()) makePhoneCall()}
+
+            // sip poziv
+            buttonSipCallDialpadFrag.setOnClickListener {
+
+                if(isVOIPsupported(requireContext())){
+                        enableCallButtons(false)
+                        val phoneNumber=binding.editTextEnterNumber.text.toString()
+
+                        if(checkForPermissions()) {
+                            if(phoneNumber.isValidPhoneNumber()) findNavController().
+                                navigate(DialPadFragmentDirections.actionDialPadFragmentToSipFragment(PhoneNumberUtils.normalizeNumber(phoneNumber),NOTHING))
+                            else {
+                                showSnackBar(resources.getString(R.string.not_valid_phone_number))
+                                enableCallButtons(true)
+                            }
+
+                        }
+
+
+
+                } else  showSnackBar(resources.getString(R.string.VOIP_not_supported))
+
+             }
 
          }
 
@@ -93,6 +122,8 @@ class DialPadFragment : Fragment() {
              addTextChangedListener(PhoneNumberFormattingTextWatcher(FORMATTING_COUNTRY_CODE))
 
           }
+
+       // if(!isVOIPsupported(requireContext())) showSnackBar(resources.getString(R.string.VOIP_not_supported))
 
         return binding.root
     }
@@ -129,6 +160,17 @@ class DialPadFragment : Fragment() {
             binding.editTextEnterNumber.isCursorVisible=false
         }
         if(charCount>1) binding.editTextEnterNumber.text.delete(charCount - 1, charCount)
+    }
+
+    private fun enableCallButtons(b:Boolean){
+        if(b) {
+                binding.buttonPrenumberCallDialpad.isEnabled=true
+                binding.buttonSipCallDialpadFrag.isEnabled=true
+        }else {
+            binding.buttonPrenumberCallDialpad.isEnabled=false
+            binding.buttonSipCallDialpadFrag.isEnabled=false
+        }
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -170,9 +212,14 @@ class DialPadFragment : Fragment() {
     private fun checkForPermissions():Boolean{
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true
         else {
-            if (requireActivity().checkSelfPermission(Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-                    requestPermissions(arrayOf(Manifest.permission.CALL_PHONE), MY_PERMISSIONS_REQUEST_MAKE_PHONE_CALL)
-                    return false
+            if (requireActivity().checkSelfPermission(Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED ||
+                requireActivity().checkSelfPermission(Manifest.permission.USE_SIP) != PackageManager.PERMISSION_GRANTED ||
+                requireActivity().checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED
+            ) {
+                requestPermissions(arrayOf(Manifest.permission.CALL_PHONE,Manifest.permission.USE_SIP,Manifest.permission.RECORD_AUDIO),
+                    MY_PERMISSIONS_REQUEST_MAKE_CALL_and_SIP_and_AUDIO_DIALPAD
+                )
+                return false
             } else return true
         }
 
@@ -185,13 +232,30 @@ class DialPadFragment : Fragment() {
     ) {
 
         when (requestCode) {
-            MainFragment.MY_PERMISSIONS_REQUEST_READ_CONTACTS -> {
+            MY_PERMISSIONS_REQUEST_MAKE_CALL_and_SIP_and_AUDIO_DIALPAD-> {
                 // If request is cancelled, the result arrays are empty.
-                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                    makePhoneCall()
-                } else {
-                    showSnackBar(resources.getString(R.string.no_permission_make_phone_call))
+                if (grantResults.isNotEmpty()) {
+
+                    if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                        Log.i(MYTAG,"grantResults 0 je ${grantResults[0]}")
+                    } else {
+                        showSnackBar(resources.getString(R.string.no_permission_make_phone_call))
+                    }
+
+
+                    if (grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+                        Log.i(MYTAG,"grantResults 1 je ${grantResults[1]}")
+                    } else {
+                        showSnackBar(resources.getString(R.string.no_SIP_permission))
+                    }
+
+                    if (grantResults[2] == PackageManager.PERMISSION_GRANTED) {
+                        Log.i(MYTAG,"grantResults 2 audio je ${grantResults[1]}")
+                    } else {
+                        showSnackBar(resources.getString(R.string.no_audio_permission))
+                    }
                 }
+
                 return
             }
 
@@ -203,8 +267,7 @@ class DialPadFragment : Fragment() {
 
 
     private fun makePhoneCall() {
-        //TODO NAPRAVI FUNKCIJU ZA NORMALIZACIJU , DODAVANJE #
-        //TODO PROVERI DA LI IMA RESOLVE ACTIVITY ZA PHONE CALL
+
         val phone = PhoneNumberUtils.normalizeNumber(binding.editTextEnterNumber.text.toString())
         Log.i(MYTAG, "normalizovan broj je $phone")
         if (phone.isValidPhoneNumber()) {
@@ -224,7 +287,7 @@ class DialPadFragment : Fragment() {
 
 
     private fun showSnackBar(s:String) {
-        Snackbar.make(binding.root,s, Snackbar.LENGTH_LONG).show()
+        Snackbar.make(binding.coordLayDialpadFragment,s, Snackbar.LENGTH_INDEFINITE).setAction("OK"){}.show()
     }
 
 }
