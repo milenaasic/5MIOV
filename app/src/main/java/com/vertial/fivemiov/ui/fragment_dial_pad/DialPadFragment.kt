@@ -15,6 +15,7 @@ import android.telephony.PhoneNumberUtils
 import android.text.Editable
 import android.util.Log
 import android.view.*
+import android.view.accessibility.AccessibilityEvent
 import android.widget.Button
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -41,6 +42,7 @@ class DialPadFragment : Fragment() {
     private lateinit var viewModel: DialpadFragmViewModel
     private lateinit var myPrenumber:String
     private lateinit var clipboard:ClipboardManager
+    private var currentCursorPosition=0
 
     companion object{
         val MY_PERMISSIONS_REQUEST_MAKE_CALL_and_SIP_and_AUDIO_DIALPAD=11
@@ -89,10 +91,16 @@ class DialPadFragment : Fragment() {
             button12.setOnClickListener { deleteDigit() }
 
             // prenumber poziv
-            buttonPrenumberCallDialpad.setOnClickListener { if(checkForPermissions()) makePhoneCall()}
+            buttonPrenumberCallDialpad.setOnClickListener { if(checkForPermissions()) {
+                                                                                        binding.editTextEnterNumber.isCursorVisible=false
+                                                                                        makePhoneCall()
+                                                                                        }
+                                                            }
 
             // sip poziv
             buttonSipCallDialpadFrag.setOnClickListener {
+
+                binding.editTextEnterNumber.isCursorVisible=false
 
                 if(isVOIPsupported(requireContext())){
                         enableCallButtons(false)
@@ -105,10 +113,7 @@ class DialPadFragment : Fragment() {
                                 showSnackBar(resources.getString(R.string.not_valid_phone_number))
                                 enableCallButtons(true)
                             }
-
                         }
-
-
 
                 } else  showSnackBar(resources.getString(R.string.VOIP_not_supported))
 
@@ -120,8 +125,26 @@ class DialPadFragment : Fragment() {
          binding.editTextEnterNumber.apply {
              setShowSoftInputOnFocus(false)
              addTextChangedListener(PhoneNumberFormattingTextWatcher(FORMATTING_COUNTRY_CODE))
+             accessibilityDelegate=object : View.AccessibilityDelegate() {
+                 override fun sendAccessibilityEvent(host: View?, eventType: Int) {
+                     super.sendAccessibilityEvent(host, eventType)
+                     if(eventType==AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED){
+                       val start=binding.editTextEnterNumber.selectionStart
+                       val end=binding.editTextEnterNumber.selectionEnd
+                       if(start==end)
+                         Log.i(MYTAG, " accessibility event TYPE_VIEW_TEXT_SELECTION_CHANGED, start $start, end $end")
+                         currentCursorPosition=start
+
+                     }
+                 }
+             }
 
           }
+
+          binding.editTextEnterNumber.setOnClickListener {
+              Log.i(MYTAG, "duzina u edit tekstu je ${binding.editTextEnterNumber.length()} ")
+              if(binding.editTextEnterNumber.length()!=0) binding.editTextEnterNumber.isCursorVisible=true
+           }
 
        // if(!isVOIPsupported(requireContext())) showSnackBar(resources.getString(R.string.VOIP_not_supported))
 
@@ -148,18 +171,33 @@ class DialPadFragment : Fragment() {
 
     private fun appendDigit(char:CharSequence){
         binding.editTextEnterNumber.apply {
-            text.append(char)
+
+            text.insert(this.getSelectionStart(), char)
+            //text.append(char)
             isCursorVisible=true
          }
     }
 
     private fun deleteDigit(){
+
         val charCount:Int = binding.editTextEnterNumber.length()
-        if (charCount == 1) {
+        Log.i(MYTAG, " char count je $charCount")
+        Log.i(MYTAG, " pozicija je $currentCursorPosition")
+        when (charCount){
+            0->{}
+            1->{ binding.editTextEnterNumber.text.delete(charCount - 1, charCount)
+                binding.editTextEnterNumber.isCursorVisible=false}
+            else->{
+                if(currentCursorPosition!=0 && charCount>=currentCursorPosition)  binding.editTextEnterNumber.text.delete(currentCursorPosition - 1, currentCursorPosition)
+            }
+
+        }
+
+       /* if (charCount == 1) {
             binding.editTextEnterNumber.text.delete(charCount - 1, charCount)
             binding.editTextEnterNumber.isCursorVisible=false
         }
-        if(charCount>1) binding.editTextEnterNumber.text.delete(charCount - 1, charCount)
+        if(charCount>1) binding.editTextEnterNumber.text.delete(charCount - 1, charCount)*/
     }
 
     private fun enableCallButtons(b:Boolean){
@@ -205,7 +243,12 @@ class DialPadFragment : Fragment() {
         val item = clipboard.primaryClip?.getItemAt(0)
         val pasteData:CharSequence? = item?.text
         if(pasteData!=null &&(pasteData.toString().isValidPhoneNumber())){
-            binding.editTextEnterNumber.text=Editable.Factory.getInstance().newEditable(pasteData)
+            binding.editTextEnterNumber.apply {
+                text=Editable.Factory.getInstance().newEditable(pasteData)
+                setSelection(pasteData.lastIndex+1)
+
+            }
+
         } else showSnackBar(resources.getString(R.string.clipboard_invalid_data_type))
     }
 
