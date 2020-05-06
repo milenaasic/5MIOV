@@ -11,16 +11,13 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.vertial.fivemiov.model.E1Prenumber
-import com.vertial.fivemiov.model.SipAccount
-import com.vertial.fivemiov.model.User
-import com.vertial.fivemiov.model.WebApiVersion
+import com.vertial.fivemiov.model.*
 import com.vertial.fivemiov.utils.*
 
 
 private const val NAME="MY_Database"
 
-@Database(entities = [User::class, E1Prenumber::class,SipAccount::class,WebApiVersion::class],version = 1,exportSchema = false )
+@Database(entities = [User::class, E1Prenumber::class,SipAccount::class,WebApiVersion::class,UsersSipCallerIDs::class],version = 1,exportSchema = true)
 abstract class MyDatabase:RoomDatabase(){
 
     abstract val myDatabaseDao:MyDatabaseDao

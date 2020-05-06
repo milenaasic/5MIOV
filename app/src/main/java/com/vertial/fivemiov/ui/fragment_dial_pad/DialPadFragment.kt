@@ -105,10 +105,10 @@ class DialPadFragment : Fragment() {
                 if(isVOIPsupported(requireContext())){
                         enableCallButtons(false)
                         val phoneNumber=binding.editTextEnterNumber.text.toString()
-
+                        val normPhoneNumber=PhoneNumberUtils.normalizeNumber(phoneNumber)
                         if(checkForPermissions()) {
-                            if(phoneNumber.isValidPhoneNumber()) findNavController().
-                                navigate(DialPadFragmentDirections.actionDialPadFragmentToSipFragment(PhoneNumberUtils.normalizeNumber(phoneNumber),NOTHING))
+                            if(normPhoneNumber.isValidPhoneNumber()) findNavController().
+                                navigate(DialPadFragmentDirections.actionDialPadFragmentToSipFragment(normPhoneNumber,normPhoneNumber))
                             else {
                                 showSnackBar(resources.getString(R.string.not_valid_phone_number))
                                 enableCallButtons(true)
@@ -147,6 +147,7 @@ class DialPadFragment : Fragment() {
            }
 
        // if(!isVOIPsupported(requireContext())) showSnackBar(resources.getString(R.string.VOIP_not_supported))
+        requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         return binding.root
     }

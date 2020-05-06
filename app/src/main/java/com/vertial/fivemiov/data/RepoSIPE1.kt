@@ -79,7 +79,7 @@ class UncancelableJobSip(val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIServic
     val MY_TAG = "MY_klasaUncanceJObSIP"
 
     suspend fun doJob() {
-
+        Log.i(MY_TAG, "usao u doJOb")
         val deferredUser = GlobalScope.async(Dispatchers.IO) {
             //delay(3000)
             myDatabaseDao.getUserNoLiveData()

@@ -74,10 +74,16 @@ fun String.removeFirstZeroAddPrefix(prefix:String):String{
 
 fun convertPhoneListToPhoneArray(phoneList: List<PhoneItem>): Array<String> {
     val resultList= mutableListOf<String>()
+
     for(item in phoneList){
         //noramlizuj broj, ukloni +, ukoloni dve 00 (ako ima), jednu nulu zameni sa 234
-        val myPhoneNumber=PhoneNumberUtils.normalizeNumber(item.phoneNumber)
-        resultList.add(myPhoneNumber.removePlus().removeDoubleZeroAtBegining().removeFirstZeroAddPrefix(NIGERIAN_PREFIX))
+        if(item!=null){
+            if(!item.phoneNumber.isNullOrEmpty() && !item.phoneNumber.isNullOrBlank()){
+                val myPhoneNumber=PhoneNumberUtils.normalizeNumber(item.phoneNumber)
+                resultList.add(myPhoneNumber.removePlus().removeDoubleZeroAtBegining().removeFirstZeroAddPrefix(NIGERIAN_PREFIX))
+            }
+
+        }
 
     }
     return resultList.toTypedArray()

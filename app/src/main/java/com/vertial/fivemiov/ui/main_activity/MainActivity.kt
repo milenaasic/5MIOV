@@ -158,11 +158,13 @@ class MainActivity : AppCompatActivity() {
 
 
         viewModel.userData.observe(this, Observer { user ->
-            if (user.userPhone==EMPTY_PHONE_NUMBER || user.userPhone.isEmpty() || user.userToken== EMPTY_TOKEN || user.userToken.isEmpty()) {
-                startActivity(Intent(this, RegistrationAuthorizationActivity::class.java))
-                finish()
-            }else{
-                userHasEmailAndPass = !user.userEmail.equals(EMPTY_EMAIL)
+            if(user!=null){
+                if (user.userPhone==EMPTY_PHONE_NUMBER || user.userPhone.isEmpty() || user.userToken== EMPTY_TOKEN || user.userToken.isEmpty()) {
+                    startActivity(Intent(this, RegistrationAuthorizationActivity::class.java))
+                    finish()
+                }else{
+                    userHasEmailAndPass = !user.userEmail.equals(EMPTY_EMAIL)
+                }
             }
         })
 
@@ -174,6 +176,7 @@ class MainActivity : AppCompatActivity() {
         })
 
         viewModel.phoneBookExported.observe(this, Observer {
+        if(it!=null) {
             if (it) {
                 viewModel.phoneBookExportFinished()
                 val sharedPreferences =
@@ -189,15 +192,19 @@ class MainActivity : AppCompatActivity() {
 
                 }
             }
+        }
 
         })
 
         viewModel.shouldShowSetAccountDisclaimer.observe(this, Observer {
             Log.i(MY_TAG,"observera za setAccount Disclaimer je $it")
-            if(it) {
+
+            if(it!=null) {
+                if (it) {
                     showSetAccountDialog()
                     viewModel.setAccountDialogDiscalimerShown()
 
+                }
             }
          })
 
@@ -433,7 +440,7 @@ class MainActivity : AppCompatActivity() {
             sharedPreferences.edit().putBoolean(DISCLAIMER_WAS_SHOWN, true).apply()
             Log.i(
                 MY_TAG,
-                "  phoneBookIsExported promenljiva posle promene ${sharedPreferences.getBoolean(
+                "  usao u ima disclaimer promenljivu posle promene ${sharedPreferences.getBoolean(
                     DISCLAIMER_WAS_SHOWN,
                     false
                 )}"
@@ -493,7 +500,7 @@ class MainActivity : AppCompatActivity() {
         super.onPause()
         //provera za bug
         //TODO ukloni proveru kada vise ne bude trebala
-        Toast.makeText(this, "User in DB:${viewModel.userData.value}",Toast.LENGTH_LONG).show()
+        Toast.makeText(this, "User in DB Main:${viewModel.userData.value}",Toast.LENGTH_LONG).show()
     }
 
 

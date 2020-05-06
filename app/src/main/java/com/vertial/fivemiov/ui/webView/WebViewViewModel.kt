@@ -39,38 +39,60 @@ class WebViewViewModel(val myRepository: RepoContacts, application: Application)
 
 
     fun getPhoneBook(){
-       // Log.i(MY_TAG,"get phone boook webview")
+       Log.i(MY_TAG,"get phone boook webview")
+
 
         viewModelScope.launch {
-            val deferredList=viewModelScope.async(Dispatchers.IO){
+
+            var phoneBookContactsList = listOf<ContactItem>()
+            val phoneBookList = mutableListOf<PhoneBookItem>()
+
+            val deferredList = viewModelScope.async(Dispatchers.IO) {
                 myRepository.getAllContacts(ContactsContract.Contacts.CONTENT_URI)
             }
             try {
-                val phoneBookList= mutableListOf<PhoneBookItem>()
-                val resultListWithEmptyContact=deferredList.await()
-                val resultList=removeEmptyContactItem(resultListWithEmptyContact)
-               // Log.i(MY_TAG,"get phone book lista $resultList")
-                val defferedPhones=(resultList.indices).map {
-                    viewModelScope.async(Dispatchers.IO) {
-                        val list=myRepository.getPhoneNumbersForContact(resultList[it].lookUpKey)
-                        val phoneArray=convertPhoneListToPhoneArray(list)
-                        //Log.i(MY_TAG,"get phone book phonearray ${phoneArray.toList()}")
-                        phoneBookList.add(
-                            PhoneBookItem(
-                                resultList[it].name,
-                                phoneArray
+                //val phoneBookList= mutableListOf<PhoneBookItem>()
+                val resultListWithEmptyContact = deferredList.await()
+                phoneBookContactsList = resultListWithEmptyContact
+                Log.i(MY_TAG, " phone book je $phoneBookContactsList")
+
+            } catch (e: Exception) {
+                Log.i(MY_TAG, e.message ?: "no message")
+            }
+
+
+            Log.i(MY_TAG, "druga coroutine za telefone  , $phoneBookContactsList")
+            if (!phoneBookContactsList.isNullOrEmpty()) {
+                //izbaci poslednji prazan kontakt
+                val resultList = removeEmptyContactItem(phoneBookContactsList)
+                Log.i(MY_TAG, "druga coroutine bez empty  kontakta  , $resultList")
+                // pokupi telefone za svaki kontakt
+                if (resultList.isNotEmpty()) {
+
+                    val defferedPhones = (resultList.indices).map {
+                        viewModelScope.async(IO) {
+                            val list =
+                                myRepository.getPhoneNumbersForContact(resultList[it].lookUpKey)
+                            val phoneArray = convertPhoneListToPhoneArray(list)
+                            Log.i(MY_TAG, "get phone book phonearray ${phoneArray.toList()}")
+                            phoneBookList.add(
+                                PhoneBookItem(
+                                    resultList[it].name,
+                                    phoneArray
+                                )
                             )
-                        )
+                        }
+                    }
+                    try {
+                        val resultSuccessList = defferedPhones.map { it.await() }
+                        Log.i(MY_TAG, "get phone book resul svih deferred je ${resultSuccessList}")
+                        if (!phoneBookList.isNullOrEmpty()) _phoneBook.value = phoneBookList
+
+                    } catch (t: Throwable) {
+                        Log.i(MY_TAG, t.message ?: "no message")
                     }
                 }
 
-                val resultP=defferedPhones.map { it.await() }
-
-                _phoneBook.value=phoneBookList
-
-
-            }catch (e: Exception){
-                Log.i(MY_TAG,e.message?:"no message")
             }
         }
 
@@ -97,7 +119,7 @@ class WebViewViewModel(val myRepository: RepoContacts, application: Application)
         myRepository.phoneBookExportFinishedFromWebView()
     }
 
-    fun loadloadDashboard(){
+    /*fun loadloadDashboard(){
         viewModelScope.launch {
 
             val loadDashDef=MyAPI.retrofitService.loadDashboard()
@@ -109,7 +131,7 @@ class WebViewViewModel(val myRepository: RepoContacts, application: Application)
             }
         }
 
-    }
+    }*/
 
 
 

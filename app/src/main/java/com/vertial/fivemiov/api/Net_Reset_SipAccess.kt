@@ -10,7 +10,10 @@ data class NetRequest_ResetSipAccess(
     val authToken:String,
 
     @Json(name="phone")
-    val phoneNumber:String
+    val phoneNumber:String,
+
+    @Json(name="forceReset")
+    val forceReset:Int=1
 
 )
 

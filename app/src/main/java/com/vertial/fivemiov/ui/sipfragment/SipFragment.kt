@@ -22,6 +22,7 @@ import com.vertial.fivemiov.data.Repo
 import com.vertial.fivemiov.data.RepoSIPE1
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentSipBinding
+import kotlinx.android.synthetic.main.fragment_sip.*
 
 
 private val MYTAG="MY_Sip fragment"
@@ -57,11 +58,15 @@ class SipFragment : Fragment() {
 
         binding= DataBindingUtil.inflate(inflater, R.layout.fragment_sip,container,false)
         binding.apply {
+
             nametextView.text=args.contactName
-            sipnumbertextView.text=args.contactNumber
+            //sipnumbertextView.text=args.contactNumber
             sipMicButton.isEnabled=false
             speakerFAB.isEnabled=false
         }
+
+        if(args.contactName==args.contactNumber) binding.sipnumbertextView.text=" "
+        else binding.sipnumbertextView.text=args.contactNumber
 
         val database= MyDatabase.getInstance(requireActivity().application).myDatabaseDao
         val mApi= MyAPI.retrofitService
@@ -212,7 +217,7 @@ class SipFragment : Fragment() {
     }
 
     private fun initializeManager(sipUserName:String, sipPassword:String, sipServer:String,sipCallerId:String) {
-        Log.i(MYTAG,"initialize manager")
+        Log.i(MYTAG,"initialize manager,")
         sipManager=SipManager.newInstance(requireContext())
         if(sipManager!=null) {
             initalizePeerProfile(sipServer)
@@ -223,6 +228,7 @@ class SipFragment : Fragment() {
     private fun initalizePeerProfile(sipServer: String) {
         //val peer=SipProfile.Builder("ankeanke","iptel.org")
         //val peer=SipProfile.Builder("0038163352717","45.63.117.19")
+        Log.i(MYTAG," broj iz args ${args.contactNumber}, ime je ${args.contactName}")
         val peer=SipProfile.Builder(PhoneNumberUtils.normalizeNumber(args.contactNumber),sipServer)
         peersipProfile=peer.build()
         Log.i(MYTAG,"peer je ${peersipProfile?.uriString}")
@@ -243,15 +249,15 @@ class SipFragment : Fragment() {
                 .setDisplayName("Milena")*/
         //val mysipProfileBuilder = SipProfile.Builder("milena", "iptel.org").setPassword("Milena77")
 
-        val mysipProfileBuilder = SipProfile.Builder("9df9c99896", "45.63.117.19")
+        /*val mysipProfileBuilder = SipProfile.Builder("9df9c99896", "45.63.117.19")
                .setPassword("a6c192f08b061")
-               .setDisplayName("Milena")
+               .setDisplayName("Milena")*/
 
 
         Log.i(MYTAG, "password je $sipPassword")
-        /*val mysipProfileBuilder = SipProfile.Builder(sipUserName, sipServer)
+        val mysipProfileBuilder = SipProfile.Builder(sipUserName, sipServer)
                                             .setPassword(sipPassword)
-                                            .setDisplayName(sipCallerId)*/
+                                            .setDisplayName(sipCallerId)
 
         me=mysipProfileBuilder.build()
         Log.i(MYTAG,"me je ${me?.uriString}")

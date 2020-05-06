@@ -112,10 +112,10 @@ class AuthorizationFragment : Fragment() {
 
         activityViewModel.authorizationNetworkSuccess.observe(viewLifecycleOwner, Observer {response->
             if(response!=null){
-            activityViewModel.resetAuthorization_NetSuccess()
-            showProgressBar(false)
-            enableDisableButtons(true)
-            response.userMessage.let { showToast(it) }
+                activityViewModel.resetAuthorization_NetSuccess()
+                showProgressBar(false)
+                enableDisableButtons(true)
+                response.userMessage.let { showToast(it) }
 
             }
         })
@@ -157,8 +157,6 @@ class AuthorizationFragment : Fragment() {
                 activityViewModel.resetSMSVerificationTOkenForAuthFragToNull()
 
             }
-
-
 
         })
 

@@ -91,8 +91,9 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
         viewModel.userData.observe(this, Observer {user->
             //TODO ukloni proveru za bug kada vise ne bude trebala
-            Toast.makeText(this, "User in DB:${user}", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "User in DB Registration:${user}", Toast.LENGTH_LONG).show()
             Log.i(MYTAG,("user u bazi je $user"))
+
             if(user!=null) {
                 if (user.userPhone != EMPTY_PHONE_NUMBER && !user.userPhone.isNullOrEmpty() && user.userToken!= EMPTY_TOKEN && !user.userToken.isNullOrEmpty()) {
                     startActivity(Intent(this, MainActivity::class.java))
@@ -114,10 +115,12 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
          viewModel.startSMSRetreiver.observe(this, Observer {
              Log.i(MYTAG, "sms breceiver start, nadledanje viewmodela $it")
-            if(it){
-                startMySMSRetreiver()
-                viewModel.smsRetreiverStarted()
-            }
+             if(it!=null) {
+                 if (it) {
+                     startMySMSRetreiver()
+                     viewModel.smsRetreiverStarted()
+                 }
+             }
 
          })
 
@@ -152,7 +155,6 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
         smsBroadcastReceiver = SMSAuthorizationBroadcastReceiver()
         val filter = IntentFilter().apply {
             addAction(SmsRetriever.SMS_RETRIEVED_ACTION)
-
         }
         registerReceiver(smsBroadcastReceiver, filter)
 

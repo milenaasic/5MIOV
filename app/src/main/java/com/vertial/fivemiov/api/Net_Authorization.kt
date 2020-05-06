@@ -41,10 +41,22 @@ data class NetResponse_Authorization(
     @Json(name="authToken")
     val authToken:String,
 
-    @Json(name="e1phone")
-    val e1phone:String?,
+    @Json(name="sipServer")
+    val sipServer:String,
+
+    @Json(name="sipPassword")
+    val sipPassword:String,
+
+    @Json(name="sipUserName")
+    val sipUserName:String,
+
+    @Json(name="sipRedy")
+    val sipReady:Boolean,
 
     @Json(name="sipCallerId")
-    val sipCallerId:String?
+    val sipCallerId:String?,
+
+    @Json(name="e1phone")
+    val e1phone:String?
 
 )

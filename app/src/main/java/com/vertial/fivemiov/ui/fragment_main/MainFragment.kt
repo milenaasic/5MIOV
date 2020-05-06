@@ -137,24 +137,27 @@ class MainFragment : Fragment(){
         super.onViewCreated(view, savedInstanceState)
 
         viewModel.userData.observe(viewLifecycleOwner, Observer {user->
-            Log.i(MYTAG," user je $user")
-            if(user.userEmail==EMPTY_EMAIL) binding.setEmailAndPassButton.visibility=View.VISIBLE
-            else binding.setEmailAndPassButton.visibility=View.GONE
+            if(user!=null) {
+                Log.i(MYTAG, " user je $user")
+                if (user.userEmail == EMPTY_EMAIL) binding.setEmailAndPassButton.visibility =
+                    View.VISIBLE
+                else binding.setEmailAndPassButton.visibility = View.GONE
+            }
         })
 
         viewModel.contactList.observe(viewLifecycleOwner, Observer {list->
 
-            contactsAdapter.dataList=list
+            if(list!=null) contactsAdapter.dataList=list
 
          })
 
         viewModel.numberOfSelectedContacts.observe(viewLifecycleOwner, Observer {
-            binding.nbOfContactsTextView.text=String.format(resources.getString(R.string.nb_of_contacts_found,it-1))
+            if(it!=null) binding.nbOfContactsTextView.text=String.format(resources.getString(R.string.nb_of_contacts_found,it-1))
 
          })
 
         viewModel.currentSearchString.observe(viewLifecycleOwner, Observer {
-            contactsAdapter.stringToColor=it
+            if(it!=null) contactsAdapter.stringToColor=it
 
         })
     }
@@ -224,7 +227,6 @@ class MainFragment : Fragment(){
 
         }
 
-        //super.onCreateOptionsMenu(menu, inflater)
     }
 
 

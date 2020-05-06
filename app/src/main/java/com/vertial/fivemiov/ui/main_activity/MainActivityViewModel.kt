@@ -11,6 +11,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.vertial.fivemiov.model.PhoneBookItem
 import com.vertial.fivemiov.data.RepoContacts
+import com.vertial.fivemiov.model.ContactItem
 import com.vertial.fivemiov.model.PhoneItem
 import com.vertial.fivemiov.utils.*
 import kotlinx.coroutines.*
@@ -73,39 +74,62 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
     fun getPhoneBook(){
         Log.i(MY_TAG,"get phone boook")
 
+
         viewModelScope.launch {
+
+            var phoneBookContactsList= listOf<ContactItem>()
+            val phoneBookList= mutableListOf<PhoneBookItem>()
+
             val deferredList=viewModelScope.async(IO){
              myRepository.getAllContacts(ContactsContract.Contacts.CONTENT_URI)
             }
             try {
-                val phoneBookList= mutableListOf<PhoneBookItem>()
+
                 val resultListWithEmptyContact=deferredList.await()
                 Log.i(MY_TAG,"get phone book lista $resultListWithEmptyContact")
-                val resultList= removeEmptyContactItem(resultListWithEmptyContact)
-
-                val defferedPhones=(resultList.indices).map {
-                    viewModelScope.async(IO) {
-                        val list=myRepository.getPhoneNumbersForContact(resultList[it].lookUpKey)
-                        val phoneArray= convertPhoneListToPhoneArray(list)
-                        Log.i(MY_TAG,"get phone book phonearray ${phoneArray.toList()}")
-                        phoneBookList.add(
-                            PhoneBookItem(
-                                resultList[it].name,
-                                phoneArray
-                            )
-                        )
-                    }
-                }
-
-                val resultP=defferedPhones.map { it.await() }
-                Log.i(MY_TAG,"get phone book resul svih deferred je ${resultP}")
-
-                _phoneBook.value=phoneBookList
+                phoneBookContactsList=resultListWithEmptyContact
 
 
             }catch (e:Exception){
                 Log.i(MY_TAG,e.message?:"no message")
             }
+
+
+              if (!phoneBookContactsList.isNullOrEmpty()) {
+                //izbaci poslednji prazan kontakt
+                  val resultList= removeEmptyContactItem(phoneBookContactsList)
+                  // pokupi telefone za svaki kontakt
+                  if (resultList.isNotEmpty()) {
+
+                      val defferedPhones = (resultList.indices).map {
+                          viewModelScope.async(IO) {
+                              val list =
+                                  myRepository.getPhoneNumbersForContact(resultList[it].lookUpKey)
+                              val phoneArray = convertPhoneListToPhoneArray(list)
+                              Log.i(MY_TAG, "get phone book phonearray ${phoneArray.toList()}")
+                              phoneBookList.add(
+                                  PhoneBookItem(
+                                      resultList[it].name,
+                                      phoneArray
+                                  )
+                              )
+                          }
+                      }
+
+                      try {
+                          val resultSuccessList = defferedPhones.map { it.await() }
+                          Log.i(
+                              MY_TAG,
+                              "get phone book resul svih deferred je ${resultSuccessList}"
+                          )
+                          if (!phoneBookList.isNullOrEmpty()) _phoneBook.value = phoneBookList
+
+                      } catch (t: Throwable) {
+                          Log.i(MY_TAG, t.message ?: "no message")
+                      }
+                  }
+
+              }
           }
 
     }

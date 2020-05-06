@@ -81,7 +81,7 @@ class DetailContact : Fragment() {
         val repo= RepoContacts(requireActivity().contentResolver,database,apiService)
 
         viewModel=ViewModelProvider(this,DetailContactViewModelFactory(args.contactLookUpKey,repo,requireActivity().application)).get(DetailContactViewModel::class.java)
-        val sipManager=SipManager.newInstance(requireContext())
+        //val sipManager=SipManager.newInstance(requireContext())
         //if(!isVOIPsupported(requireContext()))showSnackBar(resources.getString(R.string.VOIP_not_supported)+", SipManager is $sipManager")
 
 
@@ -147,13 +147,14 @@ class DetailContact : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         viewModel.phoneList.observe(viewLifecycleOwner, Observer {
-
-                phoneAdapter.dataList=it.toSet().toList()
+                if(it!=null){
+                    phoneAdapter.dataList=it.toSet().toList()
+                }
 
          })
 
          viewModel.prefixNumber.observe(viewLifecycleOwner, Observer {
-            myPrefixNumber=it
+                if(it!=null) myPrefixNumber=it
           })
     }
 

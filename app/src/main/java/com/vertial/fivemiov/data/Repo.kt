@@ -303,8 +303,6 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
             val result = defResult.await()
             Log.i(MY_TAG, "uspesno setovanje accounta $result")
 
-            if(result.authTokenMismatch==true) logoutAll(myDatabaseDao)
-            else {
                 if (result.success == true) {
                     val myUncancelableJob: UncancelableJob = UncancelableJob(
                         phone = phoneNumber,
@@ -332,7 +330,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
 
                 }
                 _setAccountEmailAndPassSuccess.value = result.userMsg
-            }
+
         }
         catch (e:Throwable){
             val errorMessage:String?=e.message
@@ -397,7 +395,7 @@ class UncancelableJob(
 
             if(resultAuthorization.authToken.isNotEmpty() && resultAuthorization.authToken.isNotBlank()) {
 
-                resetSipAccess(resultAuthorization.authToken)
+                if(resultAuthorization.sipReady==false) resetSipAccess(resultAuthorization.authToken)
 
                 if (resultAuthorization.e1phone.isNullOrEmpty() || resultAuthorization.e1phone.isBlank()) callSetNewE1(
                     phone = phone,

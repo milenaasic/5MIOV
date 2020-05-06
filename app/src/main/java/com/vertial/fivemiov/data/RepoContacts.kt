@@ -185,6 +185,7 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
 
                 )
             }
+
         } finally {
             cursor.close();
         }

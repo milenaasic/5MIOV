@@ -6,6 +6,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.provider.ContactsContract
 import android.util.Log
 import android.view.KeyEvent
 import android.webkit.WebResourceRequest
@@ -23,6 +24,7 @@ import com.vertial.fivemiov.api.MyAPI
 import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.ActivityWebViewBinding
+import com.vertial.fivemiov.model.PhoneBookItem
 import com.vertial.fivemiov.model.User
 import com.vertial.fivemiov.ui.main_activity.MainActivity
 
@@ -70,7 +72,9 @@ class WebViewActivity : AppCompatActivity() {
         viewModel.phoneBook.observe(this, Observer {
             if (it != null) {
                 Log.i(MY_TAG,"phone book je $it")
-                viewModel.exportPhoneBook(it)
+               // val testLIst= mutableListOf<PhoneBookItem?>()
+                val mylist=it.filter { item:PhoneBookItem?->item!=null }
+                viewModel.exportPhoneBook(mylist)
             }
         })
 
