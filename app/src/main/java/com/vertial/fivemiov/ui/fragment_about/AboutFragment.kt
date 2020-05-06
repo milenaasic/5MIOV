@@ -62,7 +62,6 @@ class AboutFragment : Fragment() {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         menu.findItem(R.id.dialPadFragment).isVisible=false
         menu.findItem(R.id.menu_item_myaccount).isVisible=false
-        menu.findItem(R.id.menu_item_logout).isVisible=false
         menu.findItem(R.id.aboutFragment).isVisible=false
 
     }

@@ -342,10 +342,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when(item.itemId){
-            R.id.menu_item_logout-> {
-                                    handleLogOut()
-                                    return true
-                                    }
+
             R.id.menu_item_myaccount->{
                                     startActivity(Intent(this, WebViewActivity::class.java))
                                     return true

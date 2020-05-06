@@ -73,7 +73,7 @@
     <string name="clipboard_invalid_data_type">Clipboard contains an invalid data type</string>
     <string name="account_email_is_set">Your account is set</string>
     <string name="something_went_wrong">Something went wrong</string>
-    <string name="VOIP_not_supported">Your OS does not support native SIP library</string>
+    <string name="VOIP_not_supported">Unfortunately your current system does not support iOV NET calls."</string>
     <string name="no_SIP_permission">No permission to make VOIP call!</string>
 
 
@@ -95,11 +95,11 @@
     <string name="sip_busy">Busy.</string>
     <string name="sip_call_established">Call Established.</string>
     <string name="sip_call_ended">Call Ended.</string>
-    <string name="sip_button_name">IOV Internet</string>
-    <string name="regular_call_button_name">PRENUMBER</string>
+    <string name="sip_button_name">iOV NET</string>
+    <string name="regular_call_button_name">5MiOV</string>
 
     <!-- ABOUT FRAGMENT-->
-    <string name="about_how_to_use_app">If you have good internet connection use IOV INTERNET button for cheaper calls, otherwise use PRENUMBER button.</string>
+    <string name="about_how_to_use_app">If you have good internet connection use iOV NET button for cheaper calls, otherwise use 5MiOV button.</string>
     <string name="web_api_version">WebApi version  %1$s</string>
     <string name="mobile_app_version">Mobile App version  %1$s</string>
     <string name="no_audio_permission">No audio permission</string>

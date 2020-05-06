@@ -144,7 +144,6 @@ class SetEmailAndPasswordFragment : Fragment() {
         super.onCreateOptionsMenu(menu, inflater)
            menu.findItem(R.id.menu_item_myaccount).setVisible(false)
            menu.findItem(R.id.dialPadFragment).setVisible(false)
-           menu.findItem(R.id.menu_item_logout).setVisible(false)
            menu.findItem(R.id.aboutFragment).setVisible(false)
     }
 

@@ -168,7 +168,6 @@ class MainFragment : Fragment(){
         val mitem=menu.findItem(R.id.menu_item_search)
         val itemMyAccount= menu.findItem(R.id.menu_item_myaccount)
         val itemDialPad=menu.findItem(R.id.dialPadFragment)
-        val itemLogout=menu.findItem(R.id.menu_item_logout)
         val itemAboutFragment=menu.findItem(R.id.aboutFragment)
         searchViewActionBar=menu.findItem(R.id.menu_item_search).actionView as SearchView
         searchViewActionBar.setQueryHint(getString(R.string.search_hint))
@@ -179,7 +178,6 @@ class MainFragment : Fragment(){
                 Log.i(MYTAG,"on search expand listener")
                 itemMyAccount.isVisible=false
                 itemDialPad.isVisible=false
-                itemLogout.isVisible=false
                 itemAboutFragment.isVisible=false
                 searchViewActionBar.isIconified=false
                 return true
@@ -189,7 +187,6 @@ class MainFragment : Fragment(){
                 searchViewActionBar.isIconified=true
                 itemMyAccount.isVisible=true
                 itemDialPad.isVisible=true
-                itemLogout.isVisible=true
                 itemAboutFragment.isVisible=true
                 searchViewActionBar.clearFocus()
                 return true

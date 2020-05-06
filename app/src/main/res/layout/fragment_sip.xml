@@ -85,38 +85,45 @@
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/sip_mic_Button"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:layout_marginEnd="32dp"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_marginEnd="16dp"
 
             android:elevation="1dp"
             android:tint="@color/colorPrimaryDark"
             app:backgroundTint="@color/design_default_color_background"
+            app:fabCustomSize="80dp"
             app:layout_constraintBottom_toBottomOf="@+id/speaker_FAB"
-            app:layout_constraintEnd_toEndOf="parent"
 
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/speaker_FAB"
             app:layout_constraintTop_toTopOf="@+id/speaker_FAB"
+            app:maxImageSize="40dp"
             app:rippleColor="@color/colorPrimary"
             app:srcCompat="@drawable/ic_mic_on" />
 
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/speaker_FAB"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:layout_marginStart="32dp"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_marginStart="16dp"
             android:layout_marginTop="24dp"
 
             android:elevation="1dp"
+            android:scaleType="center"
             android:tint="@color/colorPrimaryDark"
             app:backgroundTint="@color/design_default_color_background"
+            app:ensureMinTouchTargetSize="true"
+
+            app:fabCustomSize="80dp"
+            app:fabSize="auto"
             app:layout_constraintEnd_toStartOf="@+id/sip_mic_Button"
             app:layout_constraintHorizontal_bias="0.5"
-
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/imageView3"
+            app:maxImageSize="40dp"
             app:rippleColor="@color/colorPrimary"
             app:srcCompat="@drawable/ic_volume_off" />
 

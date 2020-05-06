@@ -216,7 +216,6 @@ class DialPadFragment : Fragment() {
         inflater.inflate(R.menu.dial_pad_menu,menu)
         menu.findItem(R.id.dialPadFragment).isVisible=false
         menu.findItem(R.id.menu_item_myaccount).isVisible=false
-        menu.findItem(R.id.menu_item_logout).isVisible=false
         menu.findItem(R.id.aboutFragment).isVisible=false
 
         //da li je Paste item visible

@@ -169,7 +169,6 @@ class DetailContact : Fragment() {
         super.onCreateOptionsMenu(menu, inflater)
         menu.findItem(R.id.dialPadFragment).isVisible=false
         menu.findItem(R.id.menu_item_myaccount).isVisible=false
-        menu.findItem(R.id.menu_item_logout).isVisible=false
         menu.findItem(R.id.aboutFragment).isVisible=false
     }
 
