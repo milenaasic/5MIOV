@@ -130,9 +130,9 @@ fun EditText.afterTextChanged(afterTextChanged: (String) -> Unit) {
 //obrada kontakt liste
 
 fun removeEmptyContactItem(inputlist:List<ContactItem>):List<ContactItem>{
+
     val list= inputlist.toMutableList()
     Log.i(MYTAG,"poslednji element je ${list.last()}")
     if(list.last().name== EMPTY_NAME) list.removeAt(list.size-1)
-    Log.i(MYTAG,"poslednji element posle izbacivanja poslednje je ${list.last()}")
     return list
 }

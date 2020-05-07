@@ -34,7 +34,7 @@ class WebViewViewModel(val myRepository: RepoContacts, application: Application)
     val phoneBookExported=myRepository.exportPhoneBookWebViewNetworkSuccess
 
     init {
-        getPhoneBook()
+        //getPhoneBook()
     }
 
 

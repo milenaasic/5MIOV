@@ -94,8 +94,8 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
                 Log.i(MY_TAG,e.message?:"no message")
             }
 
-
               if (!phoneBookContactsList.isNullOrEmpty()) {
+                Log.i(MY_TAG," lista nije prazna ni nije null ali je $phoneBookContactsList")
                 //izbaci poslednji prazan kontakt
                   val resultList= removeEmptyContactItem(phoneBookContactsList)
                   // pokupi telefone za svaki kontakt
