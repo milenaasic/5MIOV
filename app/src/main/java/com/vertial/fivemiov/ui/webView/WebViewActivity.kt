@@ -69,6 +69,18 @@ class WebViewActivity : AppCompatActivity() {
 
         })
 
+        viewModel.startGetingPhoneBook.observe(this, Observer {
+            if(it!=null){
+                if(it==true){
+                    viewModel.getPhoneBook()
+                    viewModel.resetStartGetingPhoneBook()
+
+                }
+
+            }
+
+         })
+
         viewModel.phoneBook.observe(this, Observer {
             if (it != null) {
                 Log.i(MY_TAG,"phone book je $it")
@@ -96,7 +108,7 @@ class WebViewActivity : AppCompatActivity() {
                         " usao u ima phoneBookIsExported promenljiva i vrednost je $isExported"
                     )
                     sharedPreferences.edit().putBoolean(MainActivity.PHONEBOOK_IS_EXPORTED, true)
-                        .commit()
+                        .apply()
                     Log.i(MY_TAG, "  phoneBookIsExported promenljiva posle promene $isExported")
                 }
             }

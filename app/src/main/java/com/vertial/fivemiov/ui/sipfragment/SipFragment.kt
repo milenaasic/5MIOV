@@ -33,15 +33,14 @@ class SipFragment : Fragment() {
     private lateinit var viewModel: SipViewModel
 
     private var navigationUpInProcess=false
-    /*val sipManager: SipManager? by lazy(LazyThreadSafetyMode.NONE) {
-        SipManager.newInstance(context)
-    }*/
+
 
     private var sipManager: SipManager?=null
     private var me:SipProfile? = null
     private var peersipProfile:SipProfile?=null
     private var sipAudioCall:SipAudioCall?=null
-    private var setSpeakerMode:Boolean?=null
+    private var setSpeakerMode:Boolean=false
+    private var setMicMode:Boolean=true
 
 
 
@@ -57,13 +56,8 @@ class SipFragment : Fragment() {
     ): View? {
 
         binding= DataBindingUtil.inflate(inflater, R.layout.fragment_sip,container,false)
-        binding.apply {
+        binding.nametextView.text=args.contactName
 
-            nametextView.text=args.contactName
-            //sipnumbertextView.text=args.contactNumber
-            sipMicButton.isEnabled=false
-            speakerFAB.isEnabled=false
-        }
 
         if(args.contactName==args.contactNumber) binding.sipnumbertextView.text=" "
         else binding.sipnumbertextView.text=args.contactNumber
@@ -82,54 +76,36 @@ class SipFragment : Fragment() {
 
 
             binding.sipendbutton.setOnClickListener {
-                //sipAudioCall?.endCall()
-                //sipAudioCall?.close()
-                //closeLocalProfile()
                 startNavigation()
             }
 
             binding.sipMicButton.setOnClickListener {
-                if (sipAudioCall != null) {
-                    if (sipAudioCall?.isMuted == true) {
-                        sipAudioCall?.toggleMute()
-                        binding.sipMicButton.setImageResource(R.drawable.ic_mic_on)
-                        //resources.getDrawable(R.drawable.ic_volume_mute, null)
-                        Log.i(MYTAG, "mute button set to false")
+               toggleSipMicButton()
+                    if (setMicMode == true) {
+                        if (sipAudioCall?.isMuted==true) sipAudioCall?.toggleMute()
 
                     } else {
-                        sipAudioCall?.toggleMute()
-                        binding.sipMicButton.setImageResource(R.drawable.ic_mic_off)
-                        //resources.getDrawable(R.drawable.ic_volume_off, null)
+                        if (sipAudioCall?.isMuted==false) sipAudioCall?.toggleMute()
                         Log.i(MYTAG, "mute button set to true ")
                     }
 
-                }
+
             }
 
 
             binding.speakerFAB.setOnClickListener {
-                if (sipAudioCall != null) {
-                    when (setSpeakerMode) {
-                        null -> {
-                            sipAudioCall?.setSpeakerMode(true)
-                            setSpeakerMode = true
-                            binding.speakerFAB.setImageResource(R.drawable.ic_volume_mute)
-
-                        }
+                Log.i(MYTAG,"binding.speakerFAB.setOnClickListener")
+               toggleSpeakerButton()
+                when (setSpeakerMode) {
                         true -> {
-                            sipAudioCall?.setSpeakerMode(false)
-                            setSpeakerMode = false
-                            binding.speakerFAB.setImageResource(R.drawable.ic_volume_off)
-
+                            Log.i(MYTAG,"binding.speakerFAB.setOnClickListener setSpekae mode je $setSpeakerMode")
+                            sipAudioCall?.setSpeakerMode(true)
                         }
                         false -> {
-                            sipAudioCall?.setSpeakerMode(true)
-                            setSpeakerMode = true
-                            binding.speakerFAB.setImageResource(R.drawable.ic_volume_mute)
+                            sipAudioCall?.setSpeakerMode(false)
 
                         }
                     }
-                }
 
             }
 
@@ -358,15 +334,16 @@ class SipFragment : Fragment() {
                 h.post(Runnable {
                     if(context!=null){
                     updateCallStatus(getString(R.string.sip_call_established))
-                    binding.speakerFAB.isEnabled=true
-                    binding.sipMicButton.isEnabled=true
+                    //binding.speakerFAB.isEnabled=true
+                    //binding.sipMicButton.isEnabled=true
                     }
                 })
                 call?.startAudio()
-                call?.setSpeakerMode(false)
-                if(call?.isMuted==true) {
-                        call.toggleMute()
-
+                call?.setSpeakerMode(setSpeakerMode)
+                if(setMicMode==true){
+                    if(call?.isMuted==true) call.toggleMute()
+                }else{
+                    if(call?.isMuted==false) call.toggleMute()
                 }
 
             }
@@ -444,6 +421,42 @@ class SipFragment : Fragment() {
     private fun showToast(message: String) {
         Toast.makeText(requireActivity(),message, Toast.LENGTH_LONG).show()
     }
+
+    private fun toggleSpeakerButton(){
+        if(setSpeakerMode) {
+                    binding.speakerFAB.apply {
+                        setImageResource(R.drawable.ic_volume_off)
+                        elevation=1F
+                     }
+                    setSpeakerMode=false
+        } else {
+
+            binding.speakerFAB.apply {
+                setImageResource(R.drawable.ic_volume_mute)
+                elevation=12F
+             }
+            setSpeakerMode=true
+        }
+    }
+
+    private fun toggleSipMicButton(){
+        if(setMicMode) {
+            binding.sipMicButton.apply {
+                setImageResource(R.drawable.ic_mic_on)
+                elevation=12F
+            }
+            setMicMode=false
+        } else {
+            binding.sipMicButton.apply {
+                setImageResource(R.drawable.ic_mic_off)
+                elevation=1F
+            }
+            setMicMode=true
+        }
+    }
+
+
+
 
 
 }

@@ -27,6 +27,10 @@ class WebViewViewModel(val myRepository: RepoContacts, application: Application)
     val user=myRepository.getUserData()
 
     //phonebook
+    private val _startGetingPhoneBook = MutableLiveData<Boolean>()
+    val startGetingPhoneBook: LiveData<Boolean>
+        get() = _startGetingPhoneBook
+
     private val _phoneBook = MutableLiveData<List<PhoneBookItem>>()
     val phoneBook: LiveData<List<PhoneBookItem>>
         get() = _phoneBook
@@ -34,7 +38,15 @@ class WebViewViewModel(val myRepository: RepoContacts, application: Application)
     val phoneBookExported=myRepository.exportPhoneBookWebViewNetworkSuccess
 
     init {
-        //getPhoneBook()
+        startGetingPhoneBook()
+    }
+
+    fun startGetingPhoneBook(){
+        _startGetingPhoneBook.value=true
+    }
+
+    fun resetStartGetingPhoneBook(){
+        _startGetingPhoneBook.value=false
     }
 
 
