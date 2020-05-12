@@ -31,7 +31,6 @@ import com.vertial.fivemiov.api.MyAPI
 import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentMainLinLayoutBinding
-import com.vertial.fivemiov.fakedata.createFakeContactList
 import com.vertial.fivemiov.model.ContactItem
 import com.vertial.fivemiov.ui.main_activity.MainActivity
 import com.vertial.fivemiov.ui.main_activity.MainActivity.Companion.MAIN_ACTIVITY_SHARED_PREF_NAME

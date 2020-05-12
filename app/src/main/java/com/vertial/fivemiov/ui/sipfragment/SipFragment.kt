@@ -341,9 +341,9 @@ class SipFragment : Fragment() {
                 call?.startAudio()
                 call?.setSpeakerMode(setSpeakerMode)
                 if(setMicMode==true){
-                    if(call?.isMuted==true) call.toggleMute()
+                    if(call?.isMuted!=true) call?.toggleMute()
                 }else{
-                    if(call?.isMuted==false) call.toggleMute()
+                    if(call?.isMuted!=false) call?.toggleMute()
                 }
 
             }
@@ -442,14 +442,14 @@ class SipFragment : Fragment() {
     private fun toggleSipMicButton(){
         if(setMicMode) {
             binding.sipMicButton.apply {
-                setImageResource(R.drawable.ic_mic_on)
-                elevation=12F
+                setImageResource(R.drawable.ic_mic_off)
+                elevation=1F
             }
             setMicMode=false
         } else {
             binding.sipMicButton.apply {
-                setImageResource(R.drawable.ic_mic_off)
-                elevation=1F
+                setImageResource(R.drawable.ic_mic_on)
+                elevation=12F
             }
             setMicMode=true
         }

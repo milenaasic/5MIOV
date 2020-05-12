@@ -2,6 +2,7 @@ package com.vertial.fivemiov.api
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
+import com.vertial.fivemiov.ui.main_activity.MainActivity
 
 @JsonClass(generateAdapter = true)
 data class NetRequest_Registration(

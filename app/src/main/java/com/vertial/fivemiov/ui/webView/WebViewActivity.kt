@@ -37,6 +37,7 @@ class WebViewActivity : AppCompatActivity() {
 
     companion object{
          const val HEADER_AUTH_TOKEN_KEY="wvtk"
+         const val HEADER_AUTH_PHONE_KEY="phone"
          const val DASHBOARD_URL= BASE_URL+"dashboard"
     }
 
@@ -65,7 +66,7 @@ class WebViewActivity : AppCompatActivity() {
 
         viewModel.user.observe(this, Observer {
             Log.i(MY_TAG, " user je $it")
-            binding.myWebView.loadUrl(DASHBOARD_URL, getCustomHeaders(it.userToken))
+            if(it!=null) binding.myWebView.loadUrl(DASHBOARD_URL, getCustomHeaders(token=it.userToken,phone=it.userPhone))
 
         })
 
@@ -136,9 +137,10 @@ class WebViewActivity : AppCompatActivity() {
         return super.onKeyDown(keyCode, event)
     }*/
 
-    fun getCustomHeaders(token:String): Map<String, String> {
+    fun getCustomHeaders(token:String, phone:String): Map<String, String> {
         val map = mutableMapOf<String, String>()
         map.put(HEADER_AUTH_TOKEN_KEY, token)
+        map.put(HEADER_AUTH_PHONE_KEY,phone)
         return map
     }
 

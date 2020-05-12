@@ -212,6 +212,7 @@ class MainActivity : AppCompatActivity() {
 
         // start in app update
         //startInAppUpdate()
+
     }
 
     override fun onRestart() {

@@ -15,6 +15,7 @@ import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentAboutBinding
 import com.vertial.fivemiov.ui.fragment_dial_pad.DialpadFragmViewModel
 import com.vertial.fivemiov.ui.fragment_dial_pad.DialpadFragmentViewModelFactory
+import com.vertial.fivemiov.ui.myapplication.MyApplication
 
 private const val MYTAG="MY_AboutFragment"
 class AboutFragment : Fragment() {
@@ -65,6 +66,15 @@ class AboutFragment : Fragment() {
         menu.findItem(R.id.aboutFragment).isVisible=false
 
     }
+
+
+    private fun getMobAppVersionFromApplication():String {
+
+        val myApp=requireActivity().application as MyApplication
+        return myApp.mobileAppVersion
+
+    }
+
 
     private fun getMobAppVersion():String{
 

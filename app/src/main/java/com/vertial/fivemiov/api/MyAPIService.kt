@@ -1,6 +1,7 @@
 package com.vertial.fivemiov.api
 
 import android.annotation.TargetApi
+import android.content.Context
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -17,6 +18,8 @@ private const val NAME="MY_API"
 //@TargetApi (26)
 //val coded=java.util.Base64.getEncoder().encodeToString("5miov:tester".toByteArray())
 val coded="NW1pb3Y6dGVzdGVy"
+val basicCoded="Basic NW1pb3Y6dGVzdGVy"
+
 
 const val BASE_URL ="https://5miov.vertial.net/"
 
@@ -56,9 +59,11 @@ object MyAPI {
 
     //Registrationa and Authorization Process
 
+
     @POST("api/user/signup")
     fun sendRegistrationToServer(
         @Header("Authorization") authorization:String="Basic $coded",
+       // @Header("MobileAppVersion") mobileAppVersion: String ="1.2",
         @Body request: NetRequest_Registration): Deferred<NetResponse_Registration>
 
     /*fun sendRegistrationToServer(
