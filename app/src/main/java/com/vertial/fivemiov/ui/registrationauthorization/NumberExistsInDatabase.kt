@@ -27,7 +27,7 @@ private val MY_TAG="MY_NumberExistsInDB"
 class NumberExistsInDatabase : Fragment() {
 
     private lateinit var binding: FragmentNumberExistsInDatabaseBinding
-    private lateinit var activityViewModel:RegAuthActivityViewModel
+    private var activityViewModel:RegAuthActivityViewModel?=null
 
 
     override fun onCreateView(
@@ -41,7 +41,7 @@ class NumberExistsInDatabase : Fragment() {
             ViewModelProvider(this)[RegAuthActivityViewModel::class.java]
         }
 
-        binding.numExistsPhoneTextView.text=String.format(resources.getString(R.string.add_plus_before_phone,activityViewModel.enteredPhoneNumber))
+        binding.numExistsPhoneTextView.text=String.format(resources.getString(R.string.add_plus_before_phone,activityViewModel?.enteredPhoneNumber?:" "))
 
         binding.nmbExistsSubmitButton.setOnClickListener {
             binding.nmbExistsRoot.requestFocus()
@@ -50,8 +50,8 @@ class NumberExistsInDatabase : Fragment() {
             hidekeyboard()
             if(allEnteredFieldsAreValid()){
                 showProgressBar(true)
-                activityViewModel.signInParameter=true
-                activityViewModel.numberExistsInDBVerifyAccount(
+                activityViewModel?.signInParameter=true
+                activityViewModel?.numberExistsInDBVerifyAccount(
                     binding.nmbExistsEmailEditText.text.toString(),
                     binding.nmbExistsPassEditText.text.toString()
                 )
@@ -78,8 +78,8 @@ class NumberExistsInDatabase : Fragment() {
             it.isEnabled=false
             binding.nmbExistsSubmitButton.isEnabled=false
             showProgressBar(true)
-            activityViewModel.signInParameter=false
-            activityViewModel.numberExistsInDb_NoAccount()
+            activityViewModel?.signInParameter=false
+            activityViewModel?.numberExistsInDb_NoAccount()
 
          }
 
@@ -106,18 +106,18 @@ class NumberExistsInDatabase : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        activityViewModel.nmbExistsInDBUserHasAccountSuccess.observe(viewLifecycleOwner, Observer {response->
+        activityViewModel?.nmbExistsInDBUserHasAccountSuccess?.observe(viewLifecycleOwner, Observer {response->
             if(response!=null) {
                 when{
                     response.success==true->{
                             showToast(response.userMessage)
-                            activityViewModel.resetNmbExistsInDB_VerifyAccount_NetSuccess()
-                            activityViewModel.startSMSRetreiverFunction()
+                            activityViewModel?.resetNmbExistsInDB_VerifyAccount_NetSuccess()
+                            activityViewModel?.startSMSRetreiverFunction()
                             findNavController().navigate(NumberExistsInDatabaseDirections.actionNumberExistsInDatabaseToAuthorizationFragment())
                     }
                     response.success==false->{
                         showSnackBar(response.userMessage)
-                        activityViewModel.resetNmbExistsInDB_VerifyAccount_NetSuccess()
+                        activityViewModel?.resetNmbExistsInDB_VerifyAccount_NetSuccess()
 
                     }
                 }
@@ -127,33 +127,33 @@ class NumberExistsInDatabase : Fragment() {
             }
          })
 
-        activityViewModel.nmbExistsInDBUserHasAccountError.observe(viewLifecycleOwner, Observer {
+        activityViewModel?.nmbExistsInDBUserHasAccountError?.observe(viewLifecycleOwner, Observer {
             if(it!=null) {
                 showSnackBar(resources.getString(R.string.something_went_wrong))
                 binding.nmbExistsSubmitButton.isEnabled = true
                 binding.dontHaveAccountButton.isEnabled = true
-                activityViewModel.resetNmbExistsInDB_VerifyAccount_NetError()
+                activityViewModel?.resetNmbExistsInDB_VerifyAccount_NetError()
                 showProgressBar(false)
             }
         })
 
-        activityViewModel.nmbExistsInDB_NoAccountSuccess.observe(viewLifecycleOwner, Observer {response->
+        activityViewModel?.nmbExistsInDB_NoAccountSuccess?.observe(viewLifecycleOwner, Observer {response->
             if(response!=null) {
                 binding.nmbExistsSubmitButton.isEnabled = true
                 binding.dontHaveAccountButton.isEnabled = true
-                activityViewModel.resetNmbExistsInDB_NOAccount_NetSuccess()
+                activityViewModel?.resetNmbExistsInDB_NOAccount_NetSuccess()
                 showProgressBar(false)
-                activityViewModel.startSMSRetreiverFunction()
+                activityViewModel?.startSMSRetreiverFunction()
                 findNavController().navigate(NumberExistsInDatabaseDirections.actionNumberExistsInDatabaseToAuthorizationFragment())
             }
         })
 
-        activityViewModel.nmbExistsInDB_NoAccountError.observe(viewLifecycleOwner, Observer {
+        activityViewModel?.nmbExistsInDB_NoAccountError?.observe(viewLifecycleOwner, Observer {
             if(it!=null) {
                 showSnackBar(resources.getString(R.string.something_went_wrong))
                 binding.nmbExistsSubmitButton.isEnabled = true
                 binding.dontHaveAccountButton.isEnabled = true
-                activityViewModel.resetNmbExistsInDB_NOAccount_NetError()
+                activityViewModel?.resetNmbExistsInDB_NOAccount_NetError()
                 showProgressBar(false)
             }
         })
@@ -161,7 +161,7 @@ class NumberExistsInDatabase : Fragment() {
 
     override fun onDestroy() {
         Log.i(MY_TAG,"onDestroy()")
-        if(activityViewModel!=null) activityViewModel.resetSignUpParameters()
+        if(activityViewModel!=null) activityViewModel?.resetSignUpParameters()
         super.onDestroy()
 
     }

@@ -12,6 +12,7 @@ import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.*
+import java.util.concurrent.TimeUnit
 
 private const val NAME="MY_API"
 
@@ -148,6 +149,11 @@ object MyAPI {
          @Body request: NetRequest_GetSipAccessCredentials): Deferred<NetResponse_GetSipAccessCredentials>
 
 
+    // get Credit ruta
+    @POST("api/account/credit")
+    fun getCurrentCredit(
+        @Header("Authorization") authorization:String="Basic $coded",
+        @Body request: NetRequest_GetCurrentCredit): Deferred<NetResponse_GetCurrentCredit>
 
 }
 

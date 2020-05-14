@@ -3,13 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/navigation_main"
-    app:startDestination="@id/mainFragment">
+    app:startDestination="@id/dialPadFragment">
 
     <fragment
         android:id="@+id/mainFragment"
         android:name="com.vertial.fivemiov.ui.fragment_main.MainFragment"
-        android:label="@string/_5miov"
-        tools:layout="@layout/fragment_main_lin_layout" >
+        android:label="@string/fragment_contacts_title"
+        tools:layout="@layout/fragment_main_lin_layout">
         <action
             android:id="@+id/action_mainFragment_to_detailContact"
             app:destination="@id/detailContact" />
@@ -40,6 +40,10 @@
         <action
             android:id="@+id/action_dialPadFragment_to_sipFragment"
             app:destination="@id/sipFragment" />
+        <action
+            android:id="@+id/action_dialPadFragment_to_setEmailAndPasswordFragment"
+            app:destination="@id/setEmailAndPasswordFragment"
+            app:launchSingleTop="true" />
     </fragment>
     <fragment
         android:id="@+id/setEmailAndPasswordFragment"
@@ -48,7 +52,12 @@
         <action
             android:id="@+id/action_setEmailAndPasswordFragment_to_mainFragment"
             app:destination="@id/mainFragment"
-            app:popUpTo="@+id/setEmailAndPasswordFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_setEmailAndPasswordFragment_to_dialPadFragment"
+            app:destination="@id/dialPadFragment"
+            app:launchSingleTop="true"
+            app:popUpTo="@id/setEmailAndPasswordFragment"
             app:popUpToInclusive="true" />
     </fragment>
     <fragment

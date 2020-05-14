@@ -252,7 +252,7 @@ class MainActivity : AppCompatActivity() {
     private fun setMainFragmentUI() {
         binding.toolbarMain.apply {
             elevation=(4 * resources.displayMetrics.density)
-            title=resources.getString(R.string.app_name)
+            title=resources.getString(R.string.fragment_contacts_title)
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 window.decorView.systemUiVisibility= 0
@@ -268,17 +268,17 @@ class MainActivity : AppCompatActivity() {
 
     private fun setDialPadFragmentUI() {
         binding.toolbarMain.apply {
-            navigationIcon = resources.getDrawable(R.drawable.ic_back_black, null)
-            elevation = 2f
-            title=resources.getString(R.string.empty_string)
-            subtitle=resources.getString(R.string.empty_string)
+            //navigationIcon = resources.getDrawable(R.drawable.ic_back_black, null)
+            elevation=(4 * resources.displayMetrics.density)
+            title=resources.getString(R.string.app_name)
+            //subtitle=resources.getString(R.string.empty_string)
             Log.i(MY_TAG, "setDialPadFragmentUI()")
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             window.decorView.systemUiVisibility= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
             window.statusBarColor= Color.TRANSPARENT
-        }
+        }*/
     }
 
     private fun setDetailContactFragmentUI(){
@@ -354,18 +354,18 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun handleLogOut() {
+    /*private fun handleLogOut() {
        if(userHasEmailAndPass) logout()
         else showAlertDialog()
 
-    }
+    }*/
 
-    private fun logout() {
+    /*private fun logout() {
         Log.i(MY_TAG,"   log out funkcija")
         viewModel.logout()
-    }
+    }*/
 
-    private fun showAlertDialog(){
+    /*private fun showAlertDialog(){
         val alertDialog=AlertDialog.Builder(this)
             .setMessage(getString(R.string.log_out_warning))
             .setPositiveButton("LOG OUT ANYWAY",object:DialogInterface.OnClickListener {
@@ -380,7 +380,7 @@ class MainActivity : AppCompatActivity() {
 
         alertDialog.show()
 
-    }
+    }*/
 
 
     override fun onSaveInstanceState(outState: Bundle) {

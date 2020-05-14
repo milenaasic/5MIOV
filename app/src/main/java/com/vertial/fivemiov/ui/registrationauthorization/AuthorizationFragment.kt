@@ -17,6 +17,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
 import com.vertial.fivemiov.R
 import com.vertial.fivemiov.databinding.FragmentAuthorizationBinding
+import com.vertial.fivemiov.utils.afterTextChanged
 import com.vertial.fivemiov.utils.isOnline
 import com.vertial.fivemiov.utils.removePlus
 
@@ -47,12 +48,12 @@ class AuthorizationFragment : Fragment() {
                 showSnackBar(resources.getString(R.string.no_internet))
                 return@setOnClickListener}
 
-            enableDisableButtons(false)
 
             if(binding.tokenEditText.text.toString().isBlank()){
-                        binding.tokenEditText.setError(resources.getString(R.string.enter_token))
-                        it.isEnabled=true
+                        binding.tokenTextInputLayout.setError(resources.getString(R.string.enter_token))
+
             } else {
+                    enableDisableButtons(false)
                     showProgressBar(true)
                     activityViewModel.submitButtonClicked(binding.tokenEditText.text.toString())
             }
@@ -102,6 +103,14 @@ class AuthorizationFragment : Fragment() {
 
         }
 
+        // da se iskljuci greska kada pritisnes ponovo na text edit polje
+        binding.tokenEditText.apply {
+            afterTextChanged { binding.tokenTextInputLayout.error=null }
+            setOnFocusChangeListener { view, hasFocus ->
+                if(hasFocus) binding.tokenTextInputLayout.error=null
+
+            }
+        }
 
         return binding.root
     }
@@ -112,6 +121,7 @@ class AuthorizationFragment : Fragment() {
 
         activityViewModel.authorizationNetworkSuccess.observe(viewLifecycleOwner, Observer {response->
             if(response!=null){
+                Log.i(MYTAG,"auth success response je $response")
                 activityViewModel.resetAuthorization_NetSuccess()
                 showProgressBar(false)
                 enableDisableButtons(true)

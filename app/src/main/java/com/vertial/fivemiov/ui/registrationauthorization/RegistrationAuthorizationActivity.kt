@@ -31,7 +31,7 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityRegistrationAuthorizationBinding
     private lateinit var viewModel: RegAuthActivityViewModel
-    //private lateinit var smsBroadcastReceiver: SMSAuthorizationBroadcastReceiver
+    private lateinit var smsBroadcastReceiver: SMSAuthorizationBroadcastReceiver
 
 
     companion object{
@@ -85,7 +85,7 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
 
         // napravi broadcast receiver
-       // initializeSMSBroadcastReceiver()
+        initializeSMSBroadcastReceiver()
 
 
 
@@ -117,13 +117,13 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
              Log.i(MYTAG, "sms breceiver start, nadledanje viewmodela $it")
              if(it!=null) {
                  if (it) {
-                     //startMySMSRetreiver()
+                     startMySMSRetreiver()
                      viewModel.smsRetreiverStarted()
                  }
              }
 
          })
-         /*smsBroadcastReceiver.receivedSMSMessage.observe(this, Observer {
+         smsBroadcastReceiver.receivedSMSMessage.observe(this, Observer {
 
                 if(it!=null){
                     smsBroadcastReceiver.resetReceivedSMSMessage()
@@ -133,7 +133,7 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
                     }
                 }
-          })*/
+          })
 
     }
 
@@ -150,14 +150,14 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
     // ako ispadne da ne moze da se registruje u manifestu - proveri
     //TODO proveri da li treba i neka permission kao kada je u manifestu
-    /*fun initializeSMSBroadcastReceiver(){
+    fun initializeSMSBroadcastReceiver(){
         smsBroadcastReceiver = SMSAuthorizationBroadcastReceiver()
         val filter = IntentFilter().apply {
             addAction(SmsRetriever.SMS_RETRIEVED_ACTION)
         }
         registerReceiver(smsBroadcastReceiver, filter)
 
-    }*/
+    }
 
     private fun startMySMSRetreiver(){
 
@@ -179,7 +179,7 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
 
     override fun onDestroy() {
-        //unregisterReceiver(smsBroadcastReceiver)
+        unregisterReceiver(smsBroadcastReceiver)
         super.onDestroy()
         Log.i(MYTAG,"On Destroy")
 

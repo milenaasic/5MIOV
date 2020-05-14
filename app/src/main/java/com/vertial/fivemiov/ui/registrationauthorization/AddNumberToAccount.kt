@@ -25,7 +25,7 @@ private const val MY_TAG="MY_AddNumberToAccount"
 class AddNumberToAccount : Fragment() {
 
     private lateinit var binding:FragmentAddNumberToAccountBinding
-    private lateinit var activityViewModel:RegAuthActivityViewModel
+    private var activityViewModel:RegAuthActivityViewModel?=null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -46,7 +46,7 @@ class AddNumberToAccount : Fragment() {
             hidekeyboard()
             if(allEnteredFieldsAreValid()){
                 showProgressBar(true)
-                activityViewModel.addNumberToAccountButtonClicked(
+                activityViewModel?.addNumberToAccountButtonClicked(
                     (binding.addNmbPhoneEditText.text.toString()).removePlus(),
                     binding.addNmbEmailEditText.text.toString(),
                     binding.addNmbPassEditText.text.toString()
@@ -106,31 +106,31 @@ class AddNumberToAccount : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        activityViewModel.addNumberToAccuntNetworkError.observe(viewLifecycleOwner,Observer{
+        activityViewModel?.addNumberToAccuntNetworkError?.observe(viewLifecycleOwner,Observer{
             if(it!=null) {
                 showSnackBar(resources.getString(R.string.something_went_wrong))
-                activityViewModel.resetAddNumberToAccountNetError()
+                activityViewModel?.resetAddNumberToAccountNetError()
                 binding.addphoneButton.isEnabled = true
                 showProgressBar(false)
             }
         })
 
 
-        activityViewModel.addNumberToAccuntNetworkSuccess.observe(viewLifecycleOwner,Observer{response->
+        activityViewModel?.addNumberToAccuntNetworkSuccess?.observe(viewLifecycleOwner,Observer{response->
             Log.i(MY_TAG,"net response je ${response.toString()}")
 
             if(response!=null) {
                 when {
                     response.success == true -> {
                         showToast(response.usermessage)
-                        activityViewModel.resetAddNumberToAccountNetSuccess()
-                        activityViewModel.startSMSRetreiverFunction()
+                        activityViewModel?.resetAddNumberToAccountNetSuccess()
+                        activityViewModel?.startSMSRetreiverFunction()
                         findNavController().navigate(AddNumberToAccountDirections.actionAddNumberToAccountToAuthorizationFragment())
                     }
 
                     response.success == false -> {
                         showSnackBar(response.usermessage)
-                        activityViewModel.resetAddNumberToAccountNetSuccess()
+                        activityViewModel?.resetAddNumberToAccountNetSuccess()
                     }
                 }
 
@@ -144,7 +144,7 @@ class AddNumberToAccount : Fragment() {
 
     override fun onDestroy() {
         Log.i(MY_TAG,"onDestroy()")
-        if(activityViewModel!=null) activityViewModel.resetSignUpParameters()
+        if(activityViewModel!=null) activityViewModel?.resetSignUpParameters()
         super.onDestroy()
 
     }

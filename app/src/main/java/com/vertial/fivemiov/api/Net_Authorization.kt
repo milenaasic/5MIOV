@@ -50,7 +50,7 @@ data class NetResponse_Authorization(
     @Json(name="sipUserName")
     val sipUserName:String,
 
-    @Json(name="sipRedy")
+    @Json(name="sipReady")
     val sipReady:Boolean,
 
     @Json(name="sipCallerId")

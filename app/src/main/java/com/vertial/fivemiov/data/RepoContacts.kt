@@ -8,6 +8,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.vertial.fivemiov.api.MyAPIService
 import com.vertial.fivemiov.api.NetRequest_ExportPhonebook
+import com.vertial.fivemiov.api.NetRequest_GetCurrentCredit
+import com.vertial.fivemiov.api.NetResponse_GetCurrentCredit
 import com.vertial.fivemiov.database.MyDatabaseDao
 import com.vertial.fivemiov.model.PhoneBookItem
 import com.vertial.fivemiov.model.PhoneItem
@@ -29,6 +31,15 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
     // Live Data
     fun getPremunber() = myDatabaseDao.getPrenumber()
 
+    //getCredit DialPad fragment network response
+    private val _getCredit_NetSuccess= MutableLiveData<NetResponse_GetCurrentCredit?>()
+    val getCredit_NetSuccess: LiveData<NetResponse_GetCurrentCredit?>
+        get() = _getCredit_NetSuccess
+
+    private val _getCredit_NetError= MutableLiveData<String?>()
+    val getCredit_NetError: LiveData<String?>
+        get() = _getCredit_NetError
+
 
     //initial export phonebook network response
     private val _initialexportPhoneBookNetworkSuccess = MutableLiveData<Boolean>()
@@ -40,39 +51,13 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
     val exportPhoneBookWebViewNetworkSuccess: LiveData<Boolean>
         get() = _exportPhoneBookWebViewNetworkSuccess
 
-    suspend fun logout(){
+    /*suspend fun logout(){
         coroutineScope {
             logoutAll(myDatabaseDao = myDatabaseDao)
          }
 
-        /*coroutineScope {
-            Log.i(MY_TAG, "e1 tabele je ${myDatabaseDao.getAllE1()}, sip ${myDatabaseDao.getAllSip()}, webapi ${myDatabaseDao.getWebApiVersion()}")
 
-                   val deferreds = listOf(     // fetch two docs at the same time
-                       async(IO) {
-                        myDatabaseDao.logoutE1Table()
-                        },  // async returns a result for the first doc
-                       async(IO) {  myDatabaseDao.logoutSipAccount() },
-                       async(IO) { myDatabaseDao.logoutWebApiVersion() }
-                   )
-
-               try {
-                   val result=deferreds.awaitAll()
-                   Log.i(MY_TAG, "e1 tabele je ${myDatabaseDao.getAllE1()}, sip ${myDatabaseDao.getAllSip()}, webapi ${myDatabaseDao.getWebApiVersion()}")
-                   Log.i(MY_TAG, "logour tri tabele je $result")
-                   Log.i(MY_TAG,"pre user logouta ${myDatabaseDao.getUserNoLiveData()}")
-                   val defa=async (IO) {  myDatabaseDao.logoutUser()}
-                   defa.await()
-                   Log.i(MY_TAG,"posle user logouta ${myDatabaseDao.getUserNoLiveData()}")
-
-               }catch(t:Throwable){
-                Log.i(MY_TAG, "greska prilikom logaouta 3 tabele je ${t.message}")
-               }
-
-
-        }*/
-
-    }
+    }*/
 
 
 
@@ -82,6 +67,49 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
             myDatabaseDao.getUserNoLiveData()
 
     }
+
+    //getCredit DialPad fragment
+    suspend fun getCredit(phone:String,token:String){
+
+        val deferredRes = myAPIService.getCurrentCredit(
+            request = NetRequest_GetCurrentCredit(authToken= token,phoneNumber= phone)
+        )
+        try {
+            val result = deferredRes.await()
+            if (result.authTokenMismatch == true) {
+                coroutineScope {
+                    withContext(Dispatchers.IO) {
+                    Log.i(MY_TAG," usao u funkciju mismatch je true")
+                        logoutAll(myDatabaseDao)
+                    }
+                }
+            } else {
+                if(result.success==true && !result.e1phone.isNullOrEmpty()){
+                   coroutineScope {
+                       withContext(Dispatchers.IO){
+                                myDatabaseDao.updatePrenumber(result.e1phone, System.currentTimeMillis())
+                       }
+                   }
+                }
+                _getCredit_NetSuccess.value=result
+            }
+
+        } catch (t: Throwable) {
+            val errorMessage:String?=t.message
+            _getCredit_NetError.value=t.toString()
+            Log.i(MY_TAG, "network greska je ${t.message}")
+        }
+    }
+
+    //getCredit DialPadFragment funkcije resetovanja stanja
+    fun resetGetCreditNetSuccess(){
+        _getCredit_NetSuccess.value=null
+    }
+
+    fun resetGetCreditNetError(){
+        _getCredit_NetError.value=null
+    }
+
 
 
     fun getAllContacts(uri: Uri):List<ContactItem>{

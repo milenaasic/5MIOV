@@ -2,7 +2,6 @@ package com.vertial.fivemiov.ui.fragment_dial_pad
 
 
 import android.Manifest
-import android.content.ClipDescription.MIMETYPE_TEXT_PLAIN
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
@@ -14,25 +13,27 @@ import android.telephony.PhoneNumberFormattingTextWatcher
 import android.telephony.PhoneNumberUtils
 import android.text.Editable
 import android.util.Log
+import android.util.TypedValue
 import android.view.*
 import android.view.accessibility.AccessibilityEvent
 import android.widget.Button
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import com.vertial.fivemiov.R
 import com.vertial.fivemiov.api.MyAPI
-import com.vertial.fivemiov.data.Repo
 import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentDialPadBinding
-import com.vertial.fivemiov.ui.fragment_main.MainFragment
+import com.vertial.fivemiov.utils.EMPTY_EMAIL
+import com.vertial.fivemiov.utils.isOnline
 import com.vertial.fivemiov.utils.isVOIPsupported
 import com.vertial.fivemiov.utils.isValidPhoneNumber
-import kotlinx.android.synthetic.main.fragment_dial_pad.*
 
 
 private val MYTAG="MY_DialPadFragment"
@@ -43,6 +44,8 @@ class DialPadFragment : Fragment() {
     private lateinit var myPrenumber:String
     private lateinit var clipboard:ClipboardManager
     private var currentCursorPosition=0
+
+    private lateinit var bsb:BottomSheetBehavior<FragmentContainerView>
 
     companion object{
         val MY_PERMISSIONS_REQUEST_MAKE_CALL_and_SIP_and_AUDIO_DIALPAD=11
@@ -146,10 +149,43 @@ class DialPadFragment : Fragment() {
               if(binding.editTextEnterNumber.length()!=0) binding.editTextEnterNumber.isCursorVisible=true
            }
 
-       // if(!isVOIPsupported(requireContext())) showSnackBar(resources.getString(R.string.VOIP_not_supported))
+        binding.setEmailAndPassButton.setOnClickListener{
+            findNavController().navigate(DialPadFragmentDirections.actionDialPadFragmentToSetEmailAndPasswordFragment())
+        }
+
+        registerForContextMenu(binding.editTextEnterNumber)
+
         requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
+        //configureBottomSlidePanel()
+
+
         return binding.root
+    }
+
+    private fun configureBottomSlidePanel() {
+        Log.i(MYTAG," usao u backdrop fragment ")
+
+        bsb=BottomSheetBehavior.from(binding.recentcallsFragment)
+        bsb.state = BottomSheetBehavior.STATE_EXPANDED
+        //Log.i(MYTAG," state na pocetku je ${bsb.state.toString()}")
+        //Log.i(MYTAG," peak na pocetku je ${bsb.peekHeight.toString()}")
+        //peek height je u pikselima
+       val dip = 50f
+        val px = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            dip,
+            resources.getDisplayMetrics()
+        )
+        Log.i(MYTAG,"24 dipa u pikseliam je ${px.toInt()}")
+
+        bsb.peekHeight=px.toInt()
+        Log.i(MYTAG," peek height je ${bsb.peekHeight}")
+
+        //Log.i(MYTAG," state je ${bsb.state.toString()}")
+        bsb.state = BottomSheetBehavior.STATE_COLLAPSED
+
+
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -158,16 +194,49 @@ class DialPadFragment : Fragment() {
         viewModel.myPrenumber.observe(viewLifecycleOwner, Observer {
             if(it!=null) myPrenumber=it
         })
+
+        viewModel.userData.observe(viewLifecycleOwner, Observer {user->
+           if(user!=null) {
+               Log.i(MYTAG, " user je $user")
+               if (user.userEmail == EMPTY_EMAIL) binding.setEmailAndPassButton.visibility =
+                   View.VISIBLE
+               else binding.setEmailAndPassButton.visibility = View.GONE
+           }
+       })
+
+        viewModel.getCreditNetSuccess.observe(viewLifecycleOwner, Observer {response->
+
+             if(response!=null){
+                if(response.success==true && response.credit.isNotEmpty() && response.currency.isNotEmpty()){
+                    binding.creditTextView.text=resources.getString(R.string.current_credit,response.credit,response.currency)
+
+                }
+                 viewModel.resetGetCreditNetSuccess()
+
+            }
+
+         })
+
+         viewModel.getCreditNetworkError.observe(viewLifecycleOwner, Observer {
+            if(it!=null) viewModel.resetGetCreditNetSuccess()
+
+          })
+
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         clipboard= requireActivity().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        //configureBottomSlidePanel()
     }
 
     override fun onStart() {
         super.onStart()
+        Log.i(MYTAG, " onSTart")
+        if(isOnline(requireActivity().application)) viewModel.getCredit()
+        else binding.creditTextView.text="No internet"
         //requireActivity().actionBar?.setBackgroundDrawable(resources.getDrawable(android.R.color.transparent,null))
+        //configureBottomSlidePanel()
     }
 
     private fun appendDigit(char:CharSequence){
@@ -214,25 +283,48 @@ class DialPadFragment : Fragment() {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.dial_pad_menu,menu)
-        menu.findItem(R.id.dialPadFragment).isVisible=false
-        menu.findItem(R.id.menu_item_myaccount).isVisible=false
-        menu.findItem(R.id.aboutFragment).isVisible=false
+        menu.findItem(R.id.menuItemRecentCalls).isVisible=false
+
 
         //da li je Paste item visible
-        menu.findItem(R.id.menu_item_paste).isEnabled=
+       /* menu.findItem(R.id.menu_item_paste).isEnabled=
                 // This disables the paste menu item, since the clipboard has data but it is not plain text
             when {
             !clipboard.hasPrimaryClip() -> false
             !(clipboard.primaryClipDescription?.hasMimeType(MIMETYPE_TEXT_PLAIN))!! -> false
             else -> true
+        }*/
+    }
+
+    override fun onCreateContextMenu(
+        menu: ContextMenu,
+        v: View,
+        menuInfo: ContextMenu.ContextMenuInfo?
+    ) {
+        super.onCreateContextMenu(menu, v, menuInfo)
+        val inflater: MenuInflater = requireActivity().menuInflater
+        inflater.inflate(R.menu.enter_phone_number_context_menu, menu)
+    }
+
+
+    override fun onContextItemSelected(item: MenuItem): Boolean {
+
+        return when (item.itemId) {
+            R.id.menuPaste -> {
+                pastePhoneNumber()
+                true
+            }
+
+            else -> super.onContextItemSelected(item)
         }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
         when (item.itemId){
-            R.id.menu_item_paste->{
-                pastePhoneNumber()
+            R.id.menuItemRecentCalls->{
+                if(bsb.state==BottomSheetBehavior.STATE_COLLAPSED)  bsb.state = BottomSheetBehavior.STATE_EXPANDED
+                else bsb.state = BottomSheetBehavior.STATE_COLLAPSED
                 return true
             }
         else->return super.onOptionsItemSelected(item)
@@ -242,6 +334,7 @@ class DialPadFragment : Fragment() {
     private fun pastePhoneNumber() {
         val item = clipboard.primaryClip?.getItemAt(0)
         val pasteData:CharSequence? = item?.text
+        Log.i(MYTAG," paste na klipu je $pasteData")
         if(pasteData!=null &&(pasteData.toString().isValidPhoneNumber())){
             binding.editTextEnterNumber.apply {
                 text=Editable.Factory.getInstance().newEditable(pasteData)

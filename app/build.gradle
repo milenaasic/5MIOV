@@ -9,7 +9,6 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'androidx.navigation.safeargs'
 
 
-
 android {
     compileSdkVersion 29
     buildToolsVersion "29.0.0"
@@ -18,7 +17,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 29
         versionCode 1
-        versionName "1.7.5"
+        versionName "1.7.6"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         javaCompileOptions {
@@ -64,7 +63,7 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
 
     //material design
-    implementation "com.google.android.material:material:1.1.0"
+    implementation 'com.google.android.material:material:1.1.0'
 
     //retrofit
     implementation 'com.squareup.retrofit2:retrofit:2.8.1'

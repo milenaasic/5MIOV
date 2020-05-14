@@ -2,8 +2,20 @@
 <menu
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
     <item
-        android:id="@+id/menu_item_paste"
-        android:title="@string/paste"
+        android:id="@+id/mainFragment"
+        android:icon="@drawable/ic_contacts"
+        android:title="@string/contacts_menu_item_title"
+        android:orderInCategory="2"
         app:showAsAction="always" />
+
+    <item
+        android:id="@+id/menuItemRecentCalls"
+        android:icon="@drawable/ic_call_history"
+        android:title="Recent"
+        android:orderInCategory="1"
+        app:showAsAction="always" />
+
+
 </menu>

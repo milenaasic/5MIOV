@@ -46,13 +46,13 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
 
     }
 
-    fun logout(){
+    /*fun logout(){
         viewModelScope.launch {
             withContext(Dispatchers.IO){
                 myRepository.logout()
             }
         }
-    }
+    }*/
 
     fun showSetAccountDisclaimer(){
         viewModelScope.launch {

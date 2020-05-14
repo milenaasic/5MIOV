@@ -86,9 +86,9 @@ class MainFragment : Fragment(){
 
         }
 
-        binding.setEmailAndPassButton.setOnClickListener{
+        /*binding.setEmailAndPassButton.setOnClickListener{
             findNavController().navigate(MainFragmentDirections.actionMainFragmentToSetEmailAndPasswordFragment())
-        }
+        }*/
 
         return binding.root
     }
@@ -135,14 +135,14 @@ class MainFragment : Fragment(){
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.userData.observe(viewLifecycleOwner, Observer {user->
+        /*viewModel.userData.observe(viewLifecycleOwner, Observer {user->
             if(user!=null) {
                 Log.i(MYTAG, " user je $user")
                 if (user.userEmail == EMPTY_EMAIL) binding.setEmailAndPassButton.visibility =
                     View.VISIBLE
                 else binding.setEmailAndPassButton.visibility = View.GONE
             }
-        })
+        })*/
 
         viewModel.contactList.observe(viewLifecycleOwner, Observer {list->
 
@@ -166,7 +166,7 @@ class MainFragment : Fragment(){
         inflater.inflate(R.menu.main_fragment_menu,menu)
         val mitem=menu.findItem(R.id.menu_item_search)
         val itemMyAccount= menu.findItem(R.id.menu_item_myaccount)
-        val itemDialPad=menu.findItem(R.id.dialPadFragment)
+        //val itemDialPad=menu.findItem(R.id.dialPadFragment)
         val itemAboutFragment=menu.findItem(R.id.aboutFragment)
         searchViewActionBar=menu.findItem(R.id.menu_item_search).actionView as SearchView
         searchViewActionBar.setQueryHint(getString(R.string.search_hint))
@@ -176,7 +176,7 @@ class MainFragment : Fragment(){
             override fun onMenuItemActionExpand(p0: MenuItem?): Boolean {
                 Log.i(MYTAG,"on search expand listener")
                 itemMyAccount.isVisible=false
-                itemDialPad.isVisible=false
+               // itemDialPad.isVisible=false
                 itemAboutFragment.isVisible=false
                 searchViewActionBar.isIconified=false
                 return true
@@ -185,7 +185,7 @@ class MainFragment : Fragment(){
                 Log.i(MYTAG,"on search collapse listener")
                 searchViewActionBar.isIconified=true
                 itemMyAccount.isVisible=true
-                itemDialPad.isVisible=true
+               // itemDialPad.isVisible=true
                 itemAboutFragment.isVisible=true
                 searchViewActionBar.clearFocus()
                 return true
@@ -212,7 +212,7 @@ class MainFragment : Fragment(){
 
         searchViewActionBar.setOnCloseListener{
             itemMyAccount.isVisible=true
-            itemDialPad.isVisible=true
+            //itemDialPad.isVisible=true
             Log.i(MYTAG,"on search collapse listener")
             true
         }

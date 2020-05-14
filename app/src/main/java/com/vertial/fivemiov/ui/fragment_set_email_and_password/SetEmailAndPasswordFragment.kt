@@ -125,7 +125,7 @@ class SetEmailAndPasswordFragment : Fragment() {
                 viewModel.resetSetEmailAndPassNetSuccess()
                 showToast(message)
                 showProgressBar(false)
-                findNavController().navigate(SetEmailAndPasswordFragmentDirections.actionSetEmailAndPasswordFragmentToMainFragment())
+                findNavController().navigate(SetEmailAndPasswordFragmentDirections.actionSetEmailAndPasswordFragmentToDialPadFragment())
             }
          })
 
@@ -143,7 +143,7 @@ class SetEmailAndPasswordFragment : Fragment() {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
            menu.findItem(R.id.menu_item_myaccount).setVisible(false)
-           menu.findItem(R.id.dialPadFragment).setVisible(false)
+           //menu.findItem(R.id.dialPadFragment).setVisible(false)
            menu.findItem(R.id.aboutFragment).setVisible(false)
     }
 
