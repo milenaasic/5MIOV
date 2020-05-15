@@ -7,6 +7,7 @@ import com.vertial.fivemiov.api.*
 import com.vertial.fivemiov.database.MyDatabaseDao
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
+import java.lang.Exception
 
 
 private const val MY_TAG="MY_Repository"
@@ -102,6 +103,10 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
 
         } catch (e:Throwable){
             val errorMessage:String?=e.message
+            GlobalScope.launch {
+                withContext(IO){
+                    SendErrorrToServer(myAPI,"sendRegistationToServer,$phone,smsResend_$smsResend",e.message.toString()).sendError()
+                } }
             if(smsResend) _smsResendNetworkError.value=e.message
             else _registrationNetworkError.value=e.toString()
             Log.i(MY_TAG,"greska $errorMessage, a cela gresak je $e")
@@ -138,6 +143,10 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
         }
         catch (e:Throwable){
             val errorMessage:String?=e.message
+            GlobalScope.launch {
+                withContext(IO){
+                    SendErrorrToServer(myAPI,"assignPhoneNumberToAccount $phone, $email,$password smsResend $smsResend",e.message.toString()).sendError()
+                } }
             if(smsResend)_smsResendNetworkError.value=errorMessage
             else _addNumberToAccountNetworkError.value=errorMessage
             Log.i(MY_TAG,"cela greska ${e}")
@@ -168,6 +177,10 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
         }
         catch (e:Throwable){
             val errorMessage:String?=e.message
+            GlobalScope.launch {
+                withContext(IO){
+                    SendErrorrToServer(myAPI,"numberExistsInDBVerifyAccount $enteredPhoneNumber $email,$password smsResend $smsResend",e.message.toString()).sendError()
+                } }
             if(smsResend) _smsResendNetworkError.value=e.message
             else _nmbExistsInDBUserHasAccountError.value=errorMessage
             Log.i(MY_TAG,"greska nmb exists in DB user has account$e")
@@ -187,6 +200,10 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
         }
         catch (e:Throwable){
             val errorMessage:String?=e.message
+            GlobalScope.launch {
+                withContext(IO){
+                    SendErrorrToServer(myAPI,"numberExistsInDB_NOAccount $enteredPhoneNumber, smsResend $smsResend",e.message.toString()).sendError()
+                } }
             _nmbExistsInDB_NoAccountError.value=errorMessage
             Log.i(MY_TAG,"greska nmb exists in DB no account $e")
         }
@@ -252,6 +269,10 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
         }
         catch (e:Throwable){
             val errorMessage:String?=e.message
+            GlobalScope.launch {
+                withContext(IO){
+                    SendErrorrToServer(myAPI,"authorizeThisUser,$phone,$smsToken,$email,$password",e.message.toString()).sendError()
+                } }
             _authorizationNetworkError.value=errorMessage
             Log.i(MY_TAG,"greska je $e")
         }
@@ -334,6 +355,10 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
         }
         catch (e:Throwable){
             val errorMessage:String?=e.message
+            GlobalScope.launch {
+                withContext(IO){
+                    SendErrorrToServer(myAPI,"setAccountEmailAndPasswordForUser $phoneNumber, $token, $email, $password",e.message.toString()).sendError()
+                } }
             _setAccountEmailAndPassError.value=errorMessage
             Log.i(MY_TAG,"greska $e")
         }
@@ -481,3 +506,4 @@ class UncancelableJob(
 
 
 }
+

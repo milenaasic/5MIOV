@@ -24,7 +24,7 @@ data class NetResponse_Registration(
     @Json(name="userMsg")
     val userMessage:String,
 
-    @Json(name="code")
+    @Json(name="codec")
     val code:Int,
 
     @Json(name="phoneNumberAlreadyAssigned")

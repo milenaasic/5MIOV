@@ -96,6 +96,10 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
 
         } catch (t: Throwable) {
             val errorMessage:String?=t.message
+            GlobalScope.launch {
+                withContext(IO){
+                    SendErrorrToServer( myAPIService,"getCredit $phone, $token",t.message.toString()).sendError()
+                } }
             _getCredit_NetError.value=t.toString()
             Log.i(MY_TAG, "network greska je ${t.message}")
         }

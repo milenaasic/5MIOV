@@ -2,6 +2,7 @@ package com.vertial.fivemiov.ui.webView
 
 import android.annotation.TargetApi
 import android.content.Context
+import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -9,12 +10,14 @@ import android.os.Looper
 import android.provider.ContactsContract
 import android.util.Log
 import android.view.KeyEvent
+import android.view.View
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -144,20 +147,38 @@ class WebViewActivity : AppCompatActivity() {
         return map
     }
 
-}
 
 
-class MyWebWievClient() : WebViewClient() {
+
+    inner class MyWebWievClient() : WebViewClient() {
 
         override fun shouldOverrideUrlLoading(
             view: WebView?,
             request: WebResourceRequest?
         ): Boolean {
-            Log.i(MY_TAG, "shouldOverrideUrlLoading, url je ${request?.url}, super je ${super.shouldOverrideUrlLoading(view, request)}")
+            Log.i(
+                MY_TAG, "shouldOverrideUrlLoading, url je ${request?.url}, super je ${super.shouldOverrideUrlLoading(view, request)}"
+            )
             return super.shouldOverrideUrlLoading(view, request)
 
         }
 
 
+        override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+            super.onPageStarted(view, url, favicon)
+            Log.i(MY_TAG, "web view client onPage started")
+
+        }
+
+        override fun onPageFinished(view: WebView?, url: String?) {
+            super.onPageFinished(view, url)
+            //progress bar gone
+            Log.i(MY_TAG, "web view client onPage finished")
+            binding.webViewLinLayout.visibility= View.GONE
+
+
+        }
+
+    }
 }
 

@@ -155,5 +155,12 @@ object MyAPI {
         @Header("Authorization") authorization:String="Basic $coded",
         @Body request: NetRequest_GetCurrentCredit): Deferred<NetResponse_GetCurrentCredit>
 
+
+     // posalji gresku na server
+
+     @POST("api/mobileLog")
+     fun sendErrorToServer(
+         @Header("Authorization") authorization:String="Basic $coded",
+         @Query("process") process:String, @Query("message") errorMsg:String):Deferred<String>
 }
 

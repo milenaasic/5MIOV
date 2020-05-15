@@ -77,8 +77,7 @@ class MainActivity : AppCompatActivity() {
         val myApi = MyAPI.retrofitService
         val myRepository = RepoContacts(contentResolver, myDatabaseDao, myApi)
 
-        /*val myApp=application as MyApplication
-        val myAppContanier=myApp.myAppContainer*/
+
 
         viewModel = ViewModelProvider(this,
             MainActivityViewModelFactory(
@@ -132,6 +131,13 @@ class MainActivity : AppCompatActivity() {
 
             when (savedInstanceState.get(CURRENT_FRAGMENT)) {
                 MAIN_FRAGMENT -> {
+
+
+
+
+
+
+                    setMainFragmentUI()
                 }
                 DIAL_PAD_FRAGMENT -> {
                     setDialPadFragmentUI()
@@ -211,7 +217,7 @@ class MainActivity : AppCompatActivity() {
         viewModel.showSetAccountDisclaimer()
 
         // start in app update
-        //startInAppUpdate()
+        startInAppUpdate()
 
     }
 
@@ -229,7 +235,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-       // checkIfUpdateInProcess()
+       checkIfUpdateInProcess()
 
     }
 
@@ -271,14 +277,9 @@ class MainActivity : AppCompatActivity() {
             //navigationIcon = resources.getDrawable(R.drawable.ic_back_black, null)
             elevation=(4 * resources.displayMetrics.density)
             title=resources.getString(R.string.app_name)
-            //subtitle=resources.getString(R.string.empty_string)
             Log.i(MY_TAG, "setDialPadFragmentUI()")
         }
 
-        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-            window.decorView.systemUiVisibility= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-            window.statusBarColor= Color.TRANSPARENT
-        }*/
     }
 
     private fun setDetailContactFragmentUI(){
@@ -388,7 +389,7 @@ class MainActivity : AppCompatActivity() {
         var currentFragment=
             MAIN_FRAGMENT
         when (navController.currentDestination?.id) {
-            R.id.mainFragment->{}
+            R.id.mainFragment->currentFragment= MAIN_FRAGMENT
             R.id.dialPadFragment->currentFragment= DIAL_PAD_FRAGMENT
             R.id.detailContact->currentFragment= DETAIL_FRAGMENT
             R.id.setEmailAndPasswordFragment->currentFragment= SET_ACCOUNT_EMAIL_PASS_FRAGMENT

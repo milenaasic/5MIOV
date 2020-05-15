@@ -39,6 +39,7 @@ import com.vertial.fivemiov.ui.main_activity.MainActivityViewModel
 import com.vertial.fivemiov.utils.EMPTY_EMAIL
 import com.vertial.fivemiov.utils.EMPTY_NAME
 import com.vertial.fivemiov.utils.isOnline
+import kotlinx.android.synthetic.main.activity_main.*
 
 private val MYTAG="MY_MAIN_FRAGMENT"
 
@@ -230,6 +231,7 @@ class MainFragment : Fragment(){
         super.onStart()
         getE1Prenumber()
         Log.i(MYTAG, "ON START")
+
     }
 
 
