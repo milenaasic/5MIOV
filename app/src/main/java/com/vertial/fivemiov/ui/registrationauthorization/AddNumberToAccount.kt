@@ -2,7 +2,10 @@ package com.vertial.fivemiov.ui.registrationauthorization
 
 
 import android.app.Activity
+import android.content.DialogInterface
+import android.os.Build
 import android.os.Bundle
+import android.text.Layout
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -10,7 +13,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
+import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.core.text.HtmlCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -41,16 +47,22 @@ class AddNumberToAccount : Fragment() {
         binding.addNmbPhoneEditText.setText(PLUS_NIGERIAN_PREFIX)
 
         binding.addphoneButton.setOnClickListener {
-            it.isEnabled=false
+
+            //it.isEnabled=false
             binding.rootAddNumberConstrLayout.requestFocus()
             hidekeyboard()
             if(allEnteredFieldsAreValid()){
-                showProgressBar(true)
+                showTermsOfUseDailog(
+                                    (binding.addNmbPhoneEditText.text.toString()).removePlus(),
+                                    binding.addNmbEmailEditText.text.toString(),
+                                    binding.addNmbPassEditText.text.toString()
+                )
+                /*showProgressBar(true)
                 activityViewModel?.addNumberToAccountButtonClicked(
                     (binding.addNmbPhoneEditText.text.toString()).removePlus(),
                     binding.addNmbEmailEditText.text.toString(),
                     binding.addNmbPassEditText.text.toString()
-                    )
+                    )*/
             }else{
                 it.isEnabled=true
             }
@@ -196,6 +208,57 @@ class AddNumberToAccount : Fragment() {
     private fun showToast(message: String) {
         Toast.makeText(requireActivity(),message, Toast.LENGTH_LONG).show()
     }
+
+    private fun startAddNumberToAccount(phone: String,email: String,password: String) {
+            binding.addphoneButton.isEnabled=false
+            showProgressBar(true)
+            activityViewModel?.addNumberToAccountButtonClicked(
+                phoneNumber = phone,
+                email = email,
+                password = password
+            )
+
+
+    }
+
+    private fun showTermsOfUseDailog(phone: String,email:String,password:String) {
+        Log.i(MY_TAG, "showTermsOfUseDailog")
+        val alertDialog: AlertDialog? = activity?.let {
+
+            val builder = AlertDialog.Builder(it)
+            val inflater = it.layoutInflater
+
+            builder.setView(inflater.inflate(R.layout.terms_of_use_dialog, null))
+            // Add action buttons
+            builder
+                .setPositiveButton(resources.getString(R.string.terms_of_use_accept),
+                    DialogInterface.OnClickListener { dialog, id ->
+                        // sign in the user ...
+                        startAddNumberToAccount(phone,email,password)
+                    })
+                .setNegativeButton(resources.getString(R.string.terms_of_use_cancel),
+                    DialogInterface.OnClickListener { dialog, id ->
+                        dialog.cancel()
+                        //binding.registerButton.isEnabled = true
+                    })
+
+            builder.create()
+
+        }
+        alertDialog?.setOnShowListener {
+            alertDialog.findViewById<TextView>(R.id.termsofusetextView)?.apply {
+                text = HtmlCompat.fromHtml(TERMS_OF_USE, HtmlCompat.FROM_HTML_MODE_LEGACY)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    this.justificationMode = Layout.JUSTIFICATION_MODE_INTER_WORD
+                }
+            }
+        }
+
+        alertDialog?.show()
+
+
+    }
+
 
 
 

@@ -5,10 +5,13 @@ import android.content.Context
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.*
@@ -158,9 +161,9 @@ object MyAPI {
 
      // posalji gresku na server
 
-     @POST("api/mobileLog")
+     @PUT("api/mobileLog")
      fun sendErrorToServer(
          @Header("Authorization") authorization:String="Basic $coded",
-         @Query("process") process:String, @Query("message") errorMsg:String):Deferred<String>
+         @Query("process") process:String, @Query("message") errorMsg:String):Deferred<Response<Unit>>
 }
 

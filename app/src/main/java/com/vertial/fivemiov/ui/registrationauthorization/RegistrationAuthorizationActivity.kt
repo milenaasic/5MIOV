@@ -180,7 +180,7 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         unregisterReceiver(smsBroadcastReceiver)
-        super.onDestroy()
+         super.onDestroy()
         Log.i(MYTAG,"On Destroy")
 
     }

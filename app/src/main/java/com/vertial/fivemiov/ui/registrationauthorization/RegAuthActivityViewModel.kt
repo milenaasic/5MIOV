@@ -19,6 +19,7 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
     var enteredPassword:String?=null
     var signInParameter:Boolean?=null
 
+
     val userData=myRepository.getUserData()
 
 

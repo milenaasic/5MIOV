@@ -2,6 +2,7 @@ package com.vertial.fivemiov.ui.registrationauthorization
 
 
 import android.app.Activity
+import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -9,7 +10,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
+import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.core.text.HtmlCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -17,6 +21,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
 import com.vertial.fivemiov.R
 import com.vertial.fivemiov.databinding.FragmentAuthorizationBinding
+import com.vertial.fivemiov.utils.TERMS_OF_USE
 import com.vertial.fivemiov.utils.afterTextChanged
 import com.vertial.fivemiov.utils.isOnline
 import com.vertial.fivemiov.utils.removePlus
@@ -41,8 +46,8 @@ class AuthorizationFragment : Fragment() {
         binding.authPhoneTextView.text=String.format(resources.getString(R.string.add_plus_before_phone,activityViewModel.enteredPhoneNumber))
 
         binding.submitButton.setOnClickListener {
-
             hidekeyboard()
+
             binding.authorizationRootLayout.requestFocus()
             if(!isOnline(requireActivity().application)) {
                 showSnackBar(resources.getString(R.string.no_internet))
@@ -50,13 +55,15 @@ class AuthorizationFragment : Fragment() {
 
 
             if(binding.tokenEditText.text.toString().isBlank()){
-                        binding.tokenTextInputLayout.setError(resources.getString(R.string.enter_token))
+                binding.tokenTextInputLayout.setError(resources.getString(R.string.enter_token))
 
             } else {
-                    enableDisableButtons(false)
-                    showProgressBar(true)
-                    activityViewModel.submitButtonClicked(binding.tokenEditText.text.toString())
+                enableDisableButtons(false)
+                showProgressBar(true)
+                activityViewModel.submitButtonClicked(binding.tokenEditText.text.toString())
             }
+
+
         }
 
         binding.tokenEditText.setOnEditorActionListener { view, action, keyEvent ->
@@ -174,6 +181,27 @@ class AuthorizationFragment : Fragment() {
 
     }
 
+    /*private fun submitButtonClicked(){
+        hidekeyboard()
+
+        binding.authorizationRootLayout.requestFocus()
+        if(!isOnline(requireActivity().application)) {
+            showSnackBar(resources.getString(R.string.no_internet))
+            return}
+
+
+        if(binding.tokenEditText.text.toString().isBlank()){
+            binding.tokenTextInputLayout.setError(resources.getString(R.string.enter_token))
+
+        } else {
+            enableDisableButtons(false)
+            showProgressBar(true)
+            activityViewModel.submitButtonClicked(binding.tokenEditText.text.toString())
+        }
+
+
+    }*/
+
 
 
     private fun showSnackBar(message: String) {
@@ -217,6 +245,37 @@ class AuthorizationFragment : Fragment() {
          }
 
     }
+
+    /*private fun showTermsOfUseDailog() {
+        val alertDialog: AlertDialog? = activity?.let {
+            val builder = AlertDialog.Builder(it)
+            val inflater = requireActivity().layoutInflater;
+
+            builder.setView(inflater.inflate(R.layout.terms_of_use_dialog, null))
+            // Add action buttons
+            builder
+                .setPositiveButton("I ACCEPT",
+                    DialogInterface.OnClickListener { dialog, id ->
+                       activityViewModel.areTermsOfServiceAccepted=true
+                       submitButtonClicked()
+                    })
+                .setNegativeButton("CANCEL",
+                    DialogInterface.OnClickListener { dialog, id ->
+                        dialog.cancel()
+                    })
+
+            builder.create()
+
+        }
+        alertDialog?.setOnShowListener {
+            alertDialog.findViewById<TextView>(R.id.termsofusetextView)?.text= HtmlCompat.fromHtml(
+                TERMS_OF_USE, HtmlCompat.FROM_HTML_MODE_LEGACY)
+        }
+
+        alertDialog?.show()
+
+
+    }*/
 
     private fun networkResenSMSSuccessOrError(){
         showProgressBar(false)
