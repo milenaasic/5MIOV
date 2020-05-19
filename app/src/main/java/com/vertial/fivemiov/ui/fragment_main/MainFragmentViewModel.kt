@@ -41,15 +41,6 @@ class MainFragmentViewModel(val repoContacts: RepoContacts,application: Applicat
 
 
 
-    /*fun cancelOngoingJob(){
-        try {
-           jobInProgress.cancel()
-            Log.i(MYTAG,"canceled jobs")
-        }catch (e:Throwable){
-            Log.i(MYTAG,"canceling jobs ${e.message}")
-        }
-
-    }*/
 
     fun populateContactList(searchString:String?) {
 
@@ -126,5 +117,8 @@ class MainFragmentViewModel(val repoContacts: RepoContacts,application: Applicat
 
 
     }
+
+
+
 
 }

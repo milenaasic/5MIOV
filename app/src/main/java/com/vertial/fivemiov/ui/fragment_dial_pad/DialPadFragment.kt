@@ -12,11 +12,13 @@ import android.os.Bundle
 import android.telephony.PhoneNumberFormattingTextWatcher
 import android.telephony.PhoneNumberUtils
 import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.util.TypedValue
 import android.view.*
 import android.view.accessibility.AccessibilityEvent
 import android.widget.Button
+import androidx.core.widget.addTextChangedListener
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentContainerView
@@ -30,10 +32,7 @@ import com.vertial.fivemiov.api.MyAPI
 import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentDialPadBinding
-import com.vertial.fivemiov.utils.EMPTY_EMAIL
-import com.vertial.fivemiov.utils.isOnline
-import com.vertial.fivemiov.utils.isVOIPsupported
-import com.vertial.fivemiov.utils.isValidPhoneNumber
+import com.vertial.fivemiov.utils.*
 
 
 private val MYTAG="MY_DialPadFragment"
@@ -51,6 +50,7 @@ class DialPadFragment : Fragment() {
         val MY_PERMISSIONS_REQUEST_MAKE_CALL_and_SIP_and_AUDIO_DIALPAD=11
         val FORMATTING_COUNTRY_CODE="US"
         val NOTHING=""
+        val MAX_CHARS_ALLOWED_IN_LAYOUT=25
 
     }
 
@@ -128,25 +128,28 @@ class DialPadFragment : Fragment() {
          binding.editTextEnterNumber.apply {
              setShowSoftInputOnFocus(false)
              addTextChangedListener(PhoneNumberFormattingTextWatcher(FORMATTING_COUNTRY_CODE))
-             accessibilityDelegate=object : View.AccessibilityDelegate() {
-                 override fun sendAccessibilityEvent(host: View?, eventType: Int) {
-                     super.sendAccessibilityEvent(host, eventType)
-                     if(eventType==AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED){
-                       val start=binding.editTextEnterNumber.selectionStart
-                       val end=binding.editTextEnterNumber.selectionEnd
-                       if(start==end)
-                         Log.i(MYTAG, " accessibility event TYPE_VIEW_TEXT_SELECTION_CHANGED, start $start, end $end")
-                         currentCursorPosition=start
-
-                     }
-                 }
-             }
+             addTextChangedListener { afterTextChanged {
+                 val start=binding.editTextEnterNumber.selectionStart
+                 val end=binding.editTextEnterNumber.selectionEnd
+                 if(start==end)
+                     Log.i(MYTAG, " after text changed, start $start, end $end")
+                 currentCursorPosition=start
+              } }
 
           }
 
           binding.editTextEnterNumber.setOnClickListener {
               Log.i(MYTAG, "duzina u edit tekstu je ${binding.editTextEnterNumber.length()} ")
-              if(binding.editTextEnterNumber.length()!=0) binding.editTextEnterNumber.isCursorVisible=true
+              if(binding.editTextEnterNumber.length()!=0) {
+                                    binding.editTextEnterNumber.isCursorVisible=true
+                  val start=binding.editTextEnterNumber.selectionStart
+                  val end=binding.editTextEnterNumber.selectionEnd
+                  if(start==end)
+                      Log.i(MYTAG, " onclicklistener, start $start, end $end")
+                  currentCursorPosition=start
+              }
+
+
            }
 
         binding.setEmailAndPassButton.setOnClickListener{
@@ -251,8 +254,8 @@ class DialPadFragment : Fragment() {
     private fun deleteDigit(){
 
         val charCount:Int = binding.editTextEnterNumber.length()
-        Log.i(MYTAG, " char count je $charCount")
-        Log.i(MYTAG, " pozicija je $currentCursorPosition")
+        Log.i(MYTAG, " char count: $charCount")
+        Log.i(MYTAG, " position: $currentCursorPosition")
         when (charCount){
             0->{}
             1->{ binding.editTextEnterNumber.text.delete(charCount - 1, charCount)
@@ -335,11 +338,16 @@ class DialPadFragment : Fragment() {
         val item = clipboard.primaryClip?.getItemAt(0)
         val pasteData:CharSequence? = item?.text
         Log.i(MYTAG," paste na klipu je $pasteData")
-        if(pasteData!=null &&(pasteData.toString().isValidPhoneNumber())){
-            binding.editTextEnterNumber.apply {
-                text=Editable.Factory.getInstance().newEditable(pasteData)
-                setSelection(pasteData.lastIndex+1)
 
+        if(!pasteData.isNullOrEmpty() && pasteData.isNotBlank() && pasteData.length<= MAX_CHARS_ALLOWED_IN_LAYOUT){
+            val pasteDataNormalized=PhoneNumberUtils.normalizeNumber(pasteData.toString())
+
+            if(pasteDataNormalized.isValidPhoneNumber()){
+                binding.editTextEnterNumber.apply {
+                    text=Editable.Factory.getInstance().newEditable(pasteData)
+                    currentCursorPosition=pasteData.lastIndex+1
+                    setSelection(pasteData.lastIndex+1)
+                }
             }
 
         } else showSnackBar(resources.getString(R.string.clipboard_invalid_data_type))
