@@ -33,7 +33,7 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRegistrationAuthorizationBinding
     private lateinit var viewModel: RegAuthActivityViewModel
     private lateinit var smsBroadcastReceiver: SMSAuthorizationBroadcastReceiver
-
+    private val SPLASH_SCREEN_DURATION_IN_MILLIS=2000L
 
     companion object{
         const val ENTERED_PHONE_NUMBER = "entered_phone_number"
@@ -97,10 +97,10 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
             if(user!=null) {
                 if (user.userPhone != EMPTY_PHONE_NUMBER && !user.userPhone.isNullOrEmpty() && user.userToken!= EMPTY_TOKEN && !user.userToken.isNullOrEmpty()) {
-                    //zastoj na 5 sec da se vidi splash screen
+                    //zastoj na 2 sec da se vidi splash screen
                      Handler().postDelayed(Runnable {
                         gotoMainActivity()
-                    }, 2000)
+                    }, SPLASH_SCREEN_DURATION_IN_MILLIS)
 
 
                 } else {
