@@ -349,6 +349,30 @@ class MainActivity : AppCompatActivity() {
                                     startActivity(Intent(this, WebViewActivity::class.java))
                                     return true
             }
+            R.id.menu_item_share->{
+                    val share = Intent.createChooser(Intent().apply {
+                        action = Intent.ACTION_SEND
+                        putExtra(Intent.EXTRA_TEXT, "https://http://www.5mtelecom.com/")
+
+                        // (Optional) Here we're setting the title of the content
+                        //putExtra(Intent.EXTRA_TITLE, "Make cheap international calls")
+                        type="text/plain"
+
+                        }, "5MIOV -Make cheap international calls")
+                        startActivity(share)
+                        return true
+
+                /*val sendIntent= Intent().apply{
+                    action=Intent.ACTION_SEND
+                    putExtra(Intent.EXTRA_TEXT,mydetailNews.newsurl?: URL_SSESSMENTS_HOME)
+                    putExtra(Intent.EXTRA_TITLE,mydetailNews.title)
+                    type="text/plain"
+                }
+                val shareIntent=Intent.createChooser(sendIntent,null)
+                startActivity(shareIntent)*/
+
+
+            }
             else->return item.onNavDestinationSelected(navController) || super.onOptionsItemSelected(item)
 
         }

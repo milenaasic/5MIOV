@@ -2,10 +2,11 @@ package com.vertial.fivemiov.ui.registrationauthorization
 
 import android.content.Intent
 import android.content.IntentFilter
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -19,8 +20,8 @@ import com.vertial.fivemiov.data.Repo
 import com.vertial.fivemiov.data.RepoSIPE1
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.ActivityRegistrationAuthorizationBinding
-import com.vertial.fivemiov.ui.main_activity.MainActivity
 import com.vertial.fivemiov.ui.emty_logo_fragment.EmptyLogoFragmentDirections
+import com.vertial.fivemiov.ui.main_activity.MainActivity
 import com.vertial.fivemiov.utils.EMPTY_PHONE_NUMBER
 import com.vertial.fivemiov.utils.EMPTY_TOKEN
 import com.vertial.fivemiov.utils.isOnline
@@ -96,8 +97,11 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
             if(user!=null) {
                 if (user.userPhone != EMPTY_PHONE_NUMBER && !user.userPhone.isNullOrEmpty() && user.userToken!= EMPTY_TOKEN && !user.userToken.isNullOrEmpty()) {
-                    startActivity(Intent(this, MainActivity::class.java))
-                    finish()
+                    //zastoj na 5 sec da se vidi splash screen
+                     Handler().postDelayed(Runnable {
+                        gotoMainActivity()
+                    }, 2000)
+
 
                 } else {
                     //Ukoliko ima sacuvano stanje nije u emptyLogoFragment-u nego u fragmentu u kom je bila app kda je unistena
@@ -135,6 +139,11 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
                 }
           })
 
+    }
+
+    private fun gotoMainActivity() {
+        startActivity(Intent(this, MainActivity::class.java))
+        finish()
     }
 
 

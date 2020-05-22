@@ -152,7 +152,7 @@ class MainFragment : Fragment(){
          })
 
         viewModel.numberOfSelectedContacts.observe(viewLifecycleOwner, Observer {
-            if(it!=null) binding.nbOfContactsTextView.text=String.format(resources.getString(R.string.nb_of_contacts_found,it-1))
+            if(it!=null) binding.nbOfContactsTextView.text=String.format(resources.getString(R.string.nb_of_contacts_found,it))
 
          })
 
@@ -231,6 +231,8 @@ class MainFragment : Fragment(){
         super.onStart()
         getE1Prenumber()
         Log.i(MYTAG, "ON START")
+        //proba rasinog querry-ja
+        //viewModel.getContactsWithInternationalNumbers()
 
     }
 

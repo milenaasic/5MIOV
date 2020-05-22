@@ -165,8 +165,8 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
             }
 
         Log.i(MY_TAG, "convert cursor u listu $list")
-        //prazan kontakt na kraj da se vidi iza button-a set email and pass
-        list.add(EMPTY_CONTACT_ITEM)
+
+
             return list
         }
 
@@ -284,6 +284,68 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
         }
 
     }
+
+    //proba sa rasinim upitom
+    /*${ContactsContract.CommonDataKinds.Phone.LOOKUP_KEY} = ? AND (${ContactsContract.CommonDataKinds.Phone.NUMBER} != '') AND
+    (${ContactsContract.CommonDataKinds.Phone.NUMBER} NOT LIKE '+234%')
+    AND (${ContactsContract.CommonDataKinds.Phone.NUMBER} NOT LIKE '234%') AND (${ContactsContract.CommonDataKinds.Phone.NUMBER} NOT LIKE '0%')"*/
+    //lookupkey=0r2-423A4032442A
+    fun getInternationalPhoneNumbersForContact(lookUpKey:String):List<PhoneItem>{
+
+        val CURSOR_ID=0
+        val CURSOR_PHONE=1
+        val CURSOR_PHONE_TYPE=2
+        val CURSOR_PHOTO_URI=3
+        val CURSOR_PHOTO_FILE_ID=4
+
+        val PROJECTION: Array<out String> = arrayOf(
+            ContactsContract.CommonDataKinds.Phone._ID,
+            ContactsContract.CommonDataKinds.Phone.NUMBER,
+            ContactsContract.CommonDataKinds.Phone.TYPE,
+            ContactsContract.CommonDataKinds.Photo.PHOTO_URI,
+            ContactsContract.CommonDataKinds.Photo.PHOTO_FILE_ID
+        )
+
+        val SELECTION: String = "${ContactsContract.CommonDataKinds.Phone.LOOKUP_KEY} = ? AND (${ContactsContract.CommonDataKinds.Phone.NUMBER} != '') AND" +
+                "(${ContactsContract.CommonDataKinds.Phone.NUMBER} NOT LIKE '+234%') " +
+                "AND (${ContactsContract.CommonDataKinds.Phone.NUMBER} NOT LIKE '234%') AND (${ContactsContract.CommonDataKinds.Phone.NUMBER} NOT LIKE '0%') "
+
+        val selectionArguments=arrayOf<String>(lookUpKey)
+
+        val cursor = contentResolver.query(
+            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+            PROJECTION,
+            SELECTION,
+            selectionArguments,
+            null
+        )
+
+        if (cursor == null) return emptyList()
+
+        val list = mutableListOf<PhoneItem>()
+
+        try {
+            while (cursor.moveToNext()) {
+                list.add(
+                    PhoneItem(
+                        cursor.getString(CURSOR_PHONE),
+                        cursor.getInt(CURSOR_PHONE_TYPE),
+                        cursor.getString(CURSOR_PHOTO_URI),
+                        cursor.getString(CURSOR_PHOTO_FILE_ID)
+                    )
+
+                )
+            }
+
+        } finally {
+            cursor.close();
+        }
+        Log.i(MY_TAG,"convert cursor u listu $list")
+
+        return list
+
+    }
+
 
 
 }
