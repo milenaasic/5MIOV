@@ -11,16 +11,15 @@ import com.vertial.fivemiov.api.NetRequest_ExportPhonebook
 import com.vertial.fivemiov.api.NetRequest_GetCurrentCredit
 import com.vertial.fivemiov.api.NetResponse_GetCurrentCredit
 import com.vertial.fivemiov.database.MyDatabaseDao
-import com.vertial.fivemiov.model.PhoneBookItem
-import com.vertial.fivemiov.model.PhoneItem
-import com.vertial.fivemiov.model.ContactItem
-import com.vertial.fivemiov.model.User
+import com.vertial.fivemiov.model.*
 import com.vertial.fivemiov.utils.EMPTY_CONTACT_ITEM
 import com.vertial.fivemiov.utils.EMPTY_EMAIL
 import com.vertial.fivemiov.utils.EMPTY_PHONE_NUMBER
 import com.vertial.fivemiov.utils.EMPTY_TOKEN
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
+import org.conscrypt.OpenSSLCipherRSA
+import java.util.*
 
 private const val MY_TAG="MY_ContactsRepository"
 class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDatabaseDao, val myAPIService: MyAPIService) {
@@ -50,16 +49,6 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
     private val _exportPhoneBookWebViewNetworkSuccess = MutableLiveData<Boolean>()
     val exportPhoneBookWebViewNetworkSuccess: LiveData<Boolean>
         get() = _exportPhoneBookWebViewNetworkSuccess
-
-    /*suspend fun logout(){
-        coroutineScope {
-            logoutAll(myDatabaseDao = myDatabaseDao)
-         }
-
-
-    }*/
-
-
 
 
 
@@ -164,7 +153,7 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
                 cursor.close();
             }
 
-        Log.i(MY_TAG, "convert cursor u listu $list")
+        Log.i(MY_TAG, "convert cursor u listu contacts $list")
 
 
             return list
@@ -173,7 +162,7 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
     }
 
 
-    fun getPhoneNumbersForContact(lookUpKey:String):List<PhoneItem>{
+     fun getPhoneNumbersForContact(lookUpKey:String):List<PhoneItem>{
 
         val CURSOR_ID=0
         val CURSOR_PHONE=1
@@ -201,7 +190,7 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
             null
         )
 
-        if (cursor == null) return emptyList()
+       if (cursor == null) return emptyList()
 
         val list = mutableListOf<PhoneItem>()
 
@@ -221,7 +210,7 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
         } finally {
             cursor.close();
         }
-        Log.i(MY_TAG,"convert cursor u listu $list")
+        Log.i(MY_TAG,"convert cursor u listu get phones $list")
 
         return list
 
@@ -285,12 +274,8 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
 
     }
 
-    //proba sa rasinim upitom
-    /*${ContactsContract.CommonDataKinds.Phone.LOOKUP_KEY} = ? AND (${ContactsContract.CommonDataKinds.Phone.NUMBER} != '') AND
-    (${ContactsContract.CommonDataKinds.Phone.NUMBER} NOT LIKE '+234%')
-    AND (${ContactsContract.CommonDataKinds.Phone.NUMBER} NOT LIKE '234%') AND (${ContactsContract.CommonDataKinds.Phone.NUMBER} NOT LIKE '0%')"*/
-    //lookupkey=0r2-423A4032442A
-    fun getInternationalPhoneNumbersForContact(lookUpKey:String):List<PhoneItem>{
+    // ovo mi treba za detail fragment
+     fun getInternationalPhoneNumbersForContact(lookUpKey:String):List<PhoneItem>{
 
         val CURSOR_ID=0
         val CURSOR_PHONE=1
@@ -340,13 +325,79 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
         } finally {
             cursor.close();
         }
-        Log.i(MY_TAG,"convert cursor u listu $list")
+        Log.i(MY_TAG,"convert cursor u listu international phones $list")
 
         return list
 
     }
 
+    //povlaci sve kontakte koji imaju interncionalni broj
+    fun getAllRawContactWithInternPhoneNumber():List<ContactItem>{
 
+        var resultList= mutableListOf<ContactItem>()
+
+        val CURSOR_ID=0
+        val CURSOR_DISPLAY_NAME_PRIMARY=1
+        val CURSOR_LOOKUP_KEY=2
+        val CURSOR_NUMBER=3
+        val CURSOR_NORMALIZED_NUMBER=4
+        val CURSOR_PHOTO_THUMBNAIL_URI=5
+
+        val PROJECTION: Array<out String> = arrayOf(
+            ContactsContract.CommonDataKinds.Phone._ID,
+            ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME_PRIMARY,
+            ContactsContract.CommonDataKinds.Phone.LOOKUP_KEY,
+            ContactsContract.CommonDataKinds.Phone.NUMBER,
+            ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER,
+            ContactsContract.CommonDataKinds.Photo.PHOTO_THUMBNAIL_URI
+
+        )
+
+        val SELECTION: String = "(${ContactsContract.CommonDataKinds.Phone.NUMBER} != '') AND (${ContactsContract.CommonDataKinds.Phone.NUMBER} NOT LIKE '+234%') " +
+                "AND (${ContactsContract.CommonDataKinds.Phone.NUMBER} NOT LIKE '234%') AND (${ContactsContract.CommonDataKinds.Phone.NUMBER} NOT LIKE '0%') "
+
+
+        val cursor = contentResolver.query(
+            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+            PROJECTION,
+            SELECTION,
+            null,
+            null
+        )
+
+        try {
+            if(cursor!=null) {
+                while (cursor.moveToNext()) {
+
+                    resultList.add(
+                                    ContactItem(
+                                            name=cursor.getString(CURSOR_DISPLAY_NAME_PRIMARY),
+                                            lookUpKey = cursor.getString(CURSOR_LOOKUP_KEY),
+                                            photoThumbUri = cursor.getString(CURSOR_PHOTO_THUMBNAIL_URI)
+                                            )
+                    )
+                    Log.i(
+                        MY_TAG,
+                        "svi telefoni u phone redovima, id je ${cursor.getString(0)}, name ${cursor.getString(
+                            1
+                        )}, key ${cursor.getString(2)}, number ${cursor.getString(3)}, " +
+                                " normalizes number ${cursor.getString(4)}, photo ${cursor.getString(
+                                    5
+                                )}"
+                    )
+
+                }
+            }
+
+        } finally {
+            cursor?.close();
+        }
+        Log.i(MY_TAG," broj raw kontakata pre prebacivanja u set je ${resultList.size}, a posle je ${resultList.toSet().toList().size}")
+        Log.i(MY_TAG, "result lista je ${resultList}")
+        val noDuplicatesList=resultList.toSet().toList()
+        Collections.sort(noDuplicatesList,Comparator { t, t2 -> t.name.toLowerCase().compareTo(t2.name.toLowerCase()) })
+        return noDuplicatesList
+    }
 
 }
 

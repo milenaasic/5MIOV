@@ -2,6 +2,7 @@ package com.vertial.fivemiov.ui.main_activity
 
 import android.app.Application
 import android.content.Context
+import android.net.Uri
 import android.provider.ContactsContract
 import android.telephony.PhoneNumberUtils
 import android.util.Log
@@ -12,11 +13,14 @@ import androidx.lifecycle.viewModelScope
 import com.vertial.fivemiov.model.PhoneBookItem
 import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.model.ContactItem
+import com.vertial.fivemiov.model.ContactItemWithInternationalNumbers
 import com.vertial.fivemiov.model.PhoneItem
 import com.vertial.fivemiov.utils.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import java.lang.Exception
+import java.util.*
+import kotlin.Comparator
 
 
 private const val MY_TAG="MY_MainActivViewModel"
@@ -33,6 +37,11 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
     val shouldShowSetAccountDisclaimer: LiveData<Boolean>
         get() = _shouldShowSetAccountDisclaimer
 
+    //setAccountDisclaimer
+    private val _fullContactListWithInternationalNumbers = MutableLiveData<List<ContactItemWithInternationalNumbers>>()
+    val  fullContactListWithInternationalNumbers: LiveData<List<ContactItemWithInternationalNumbers>>
+        get() = _fullContactListWithInternationalNumbers
+
 
     //phonebook
     private val _phoneBook = MutableLiveData<List<PhoneBookItem>>()
@@ -46,13 +55,6 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
 
     }
 
-    /*fun logout(){
-        viewModelScope.launch {
-            withContext(Dispatchers.IO){
-                myRepository.logout()
-            }
-        }
-    }*/
 
     fun showSetAccountDisclaimer(){
         viewModelScope.launch {
@@ -97,7 +99,7 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
               if (!phoneBookContactsList.isNullOrEmpty()) {
                 Log.i(MY_TAG," lista nije prazna ni nije null ali je $phoneBookContactsList")
                 //izbaci poslednji prazan kontakt
-                  val resultList= removeEmptyContactItem(phoneBookContactsList)
+                  val resultList= phoneBookContactsList
                   // pokupi telefone za svaki kontakt
                   if (resultList.isNotEmpty()) {
 
@@ -169,5 +171,77 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
 
         return wasShown
     }
+
+    fun getContactsWithInternationalNumbers(uri: Uri) {
+
+        val contactListWithInternationalNumbers =
+            mutableListOf<ContactItemWithInternationalNumbers>()
+
+        viewModelScope.launch {
+            var allContacts = listOf<ContactItem>()
+            val defAllContacts = async(IO) {
+                myRepository.getAllContacts(uri)
+            }
+            try {
+                allContacts = defAllContacts.await()
+            } catch (t: Throwable) {
+                Log.i(MY_TAG, " all Contacts error ${t.message}")
+            }
+
+            if (allContacts.isNotEmpty()) {
+
+                val defferedPhones = (allContacts.indices).map {
+                    viewModelScope.async(IO) {
+                        val internationalPhonesList =
+                            myRepository.getInternationalPhoneNumbersForContact(allContacts[it].lookUpKey)
+
+                        /*contactListWithInternationalNumbers.add(
+                            ContactItemWithInternationalNumbers(
+                                lookUpKey = allContacts[it].lookUpKey,
+                                name = allContacts[it].name,
+                                photoThumbUri = allContacts[it].photoThumbUri,
+                                internationalNumbers = internationalPhonesList
+                            )
+                        )*/
+                    }
+                }
+
+                try {
+                    val resultSuccessList = defferedPhones.map { it.await() }
+                    Log.i(MY_TAG, "lista svih kontakata sa internacionalnim brojevima ${resultSuccessList}")
+                    Log.i(MY_TAG,"lista internacionalnih brojeva je $contactListWithInternationalNumbers")
+                    if (!contactListWithInternationalNumbers.isNullOrEmpty()) {
+
+                        val listOfContactsWithPhones = removeContactsWithNoPhones(contactListWithInternationalNumbers)
+                        Log.i(MY_TAG,"posle izbacivanja praznih brojeva je $listOfContactsWithPhones")
+                        //sortiranje liste
+                        Collections.sort(listOfContactsWithPhones, Comparator { t, t2 -> t.name.toLowerCase().compareTo(t2.name.toLowerCase()) })
+                        _fullContactListWithInternationalNumbers.value= listOfContactsWithPhones
+
+                    }
+
+                } catch (t: Throwable) {
+                    Log.i(MY_TAG, t.message ?: "no message")
+                }
+
+            }else {
+                _fullContactListWithInternationalNumbers.value= emptyList()
+
+            }
+
+        }
+    }
+
+    private fun removeContactsWithNoPhones(list:List<ContactItemWithInternationalNumbers>):List<ContactItemWithInternationalNumbers>{
+        var resultList= mutableListOf<ContactItemWithInternationalNumbers>()
+
+        for(item in list){
+            if(item.internationalNumbers.isNotEmpty())  resultList.add(item)
+        }
+        Log.i(MY_TAG,"removeContactsWithNoPhones ulazna lista je $list, posle izbacivanja result je $resultList")
+
+        return resultList
+    }
+
 
 }

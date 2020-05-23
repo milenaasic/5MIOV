@@ -7,6 +7,7 @@ import android.graphics.Color
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.ContactsContract
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -524,6 +525,11 @@ class MainActivity : AppCompatActivity() {
         //provera za bug
         //TODO ukloni proveru kada vise ne bude trebala
         Toast.makeText(this, "User in DB Main:${viewModel.userData.value}",Toast.LENGTH_LONG).show()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        //viewModel.getContactsWithInternationalNumbers(ContactsContract.Contacts.CONTENT_URI)
     }
 
 

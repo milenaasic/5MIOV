@@ -1,6 +1,7 @@
 package com.vertial.fivemiov.ui.fragment_detail_contact
 
 import android.app.Application
+import android.provider.ContactsContract
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -8,9 +9,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.model.PhoneItem
+import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
 import java.lang.Exception
 
 private val MYTAG="MY_DetailContViewModel"
@@ -24,21 +24,28 @@ class DetailContactViewModel(val contactLookUp:String,val myRepository: RepoCont
     val prefixNumber=myRepository.getPremunber()
 
     init {
+
         getContactPhoneNumbers()
+
 
     }
 
-    private fun getContactPhoneNumbers() {
+    fun getContactPhoneNumbers() {
+
+        Log.i(MYTAG, "getPhoneNumberFor Kontakt")
         viewModelScope.launch {
-            val deferredList=async(IO) {
-                myRepository.getInternationalPhoneNumbersForContact(contactLookUp)
-            }
-           try {
-               val resultPhoneList=deferredList.await()
-               _phoneList.value=resultPhoneList
-           }catch (e:Exception){
-                Log.i(MYTAG,e.message?:"no message")
-           }
+
+                try {
+                    val defList = viewModelScope.async(IO) {
+                        myRepository.getInternationalPhoneNumbersForContact(contactLookUp)
+                    }
+                    val list=defList.await()
+                    _phoneList.value=list
+
+                }catch (e: Exception) {
+                    Log.i(MYTAG, e.message ?: "no message")
+                }
+
         }
     }
 

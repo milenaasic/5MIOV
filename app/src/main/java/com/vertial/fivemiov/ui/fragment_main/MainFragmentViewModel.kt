@@ -11,10 +11,12 @@ import androidx.lifecycle.viewModelScope
 import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.model.ContactItem
 import com.vertial.fivemiov.model.ContactItemWithInternationalNumbers
+import com.vertial.fivemiov.model.RawContactWithoutNumber
 import com.vertial.fivemiov.utils.did24HoursPass
-import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
-import java.lang.Exception
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.*
 import kotlin.Comparator
 
@@ -22,58 +24,54 @@ private val MYTAG="MY_MAINFRAGM_VIEWMODEL"
 
 class MainFragmentViewModel(val repoContacts: RepoContacts,application: Application) :AndroidViewModel(application) {
 
-    //private lateinit var jobInProgress:Deferred<List<ContactItem>>
 
     //live data from database
     val userData=repoContacts.getUserData()
+    var fullContactListWithInternationalNumbers:List<ContactItem>?=null
 
     private val _contactList = MutableLiveData<List<ContactItem>>()
     val contactList: LiveData<List<ContactItem>>
         get() = _contactList
 
+
     private val _numberOfSelectedContacts = MutableLiveData<Int>()
     val numberOfSelectedContacts: LiveData<Int>
         get() = _numberOfSelectedContacts
 
-    private val _currentSearchString = MutableLiveData<String>()
+    /*private val _currentSearchString = MutableLiveData<String>()
     val currentSearchString: LiveData<String>
-        get() = _currentSearchString
+        get() = _currentSearchString*/
 
 
 
-
-    fun populateContactList(searchString:String?) {
-
+    fun populateContactList() {
         viewModelScope.launch {
-            Log.i(MYTAG, " search string je $searchString")
-            when {
-                searchString.isNullOrEmpty() -> getContactsWithInternationalNumbers(ContactsContract.Contacts.CONTENT_URI)
-                else -> getContactsWithInternationalNumbers(Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_FILTER_URI, Uri.encode(searchString)))
-            }
-            _currentSearchString.value = searchString
-
+           getAllRawContacts()
         }
     }
 
-    private fun getContacts(uri: Uri){
 
-        viewModelScope.launch {
+    fun querryContactList(query:String?){
+        val fullList=fullContactListWithInternationalNumbers
 
-             val defContactList=async (IO) {
-                repoContacts.getAllContacts(uri)
-            }
-            try {
-                val resultList=defContactList.await()
-                _contactList.value=resultList
-                _numberOfSelectedContacts.value=resultList.size
-                Log.i(MYTAG,"result je setovan")
-            }catch (e:Exception){
-                Log.i(MYTAG,e.message?:"no message")
+        if(!fullList.isNullOrEmpty()){
+            if(query!=null) {
+                val lowerCaseQuery: String = query.toLowerCase()
+
+                val filteredContactsList: MutableList<ContactItem> = ArrayList()
+                for (item in fullList) {
+                    if (item.name.toLowerCase().contains(lowerCaseQuery)) {
+                        filteredContactsList.add(item)
+                    }
+                }
+                _contactList.value=filteredContactsList
+                _numberOfSelectedContacts.value=filteredContactsList.size
             }
         }
 
 
     }
+
 
     fun getE1PrenumberIf24hPassed(){
     //uzmi timestamp iz baze i proveri da li je proslo 24h
@@ -115,92 +113,25 @@ class MainFragmentViewModel(val repoContacts: RepoContacts,application: Applicat
             }
         }
 
-
     }
 
-
-    fun getContactsWithInternationalNumbers(uri: Uri) {
-        var allContacts = listOf<ContactItem>()
-        val contactListWithInternationalNumbers =
-            mutableListOf<ContactItemWithInternationalNumbers>()
-
+   private fun  getAllRawContacts(){
         viewModelScope.launch {
-            var allContacts = listOf<ContactItem>()
-            val defAllContacts = async(IO) {
-                repoContacts.getAllContacts(uri)
+
+            val defResultLIst= async(IO) {
+                repoContacts.getAllRawContactWithInternPhoneNumber()
             }
             try {
-                allContacts = defAllContacts.await()
-            } catch (t: Throwable) {
-                Log.i(MYTAG, " all Contacts error ${t.message}")
-            }
+                val resultList=defResultLIst.await()
+                fullContactListWithInternationalNumbers=resultList
+                _contactList.value=resultList
+                _numberOfSelectedContacts.value=resultList.size
 
-            if (allContacts.isNotEmpty()) {
-
-                val defferedPhones = (allContacts.indices).map {
-                    viewModelScope.async(IO) {
-                        val internationalPhonesList =
-                            repoContacts.getInternationalPhoneNumbersForContact(allContacts[it].lookUpKey)
-
-
-                        contactListWithInternationalNumbers.add(
-                            ContactItemWithInternationalNumbers(
-                                lookUpKey = allContacts[it].lookUpKey,
-                                name = allContacts[it].name,
-                                photoThumbUri = allContacts[it].photoThumbUri,
-                                internationalNumbers = internationalPhonesList
-                            )
-                        )
-                    }
-                }
-                try {
-                    val resultSuccessList = defferedPhones.map { it.await() }
-                    Log.i(MYTAG, "lista svih kontakata sa internacionalnim brojevima ${resultSuccessList}")
-                    if (!contactListWithInternationalNumbers.isNullOrEmpty()) {
-                        val listOfContactsWithPhones = removeContactsWithNoPhones(contactListWithInternationalNumbers)
-                        val listOfContactItem=convertListWithPhonesToContactItemList(listOfContactsWithPhones)
-                        //sortiranje liste
-                         Collections.sort(listOfContactItem, Comparator { t, t2 -> t.name.toLowerCase().compareTo(t2.name.toLowerCase()) })
-                        _contactList.value=listOfContactItem
-                        _numberOfSelectedContacts.value=listOfContactItem.size
-                    }
-
-                } catch (t: Throwable) {
-                    Log.i(MYTAG, t.message ?: "no message")
-                }
-
-            }else {
-                _contactList.value= emptyList()
-                _numberOfSelectedContacts.value=0
+            }catch (t:Throwable){
+                Log.i(MYTAG, " getAllRawContacts error ${t.message}")
 
             }
-
         }
     }
-
-
-    private fun removeContactsWithNoPhones(list:List<ContactItemWithInternationalNumbers>):List<ContactItemWithInternationalNumbers>{
-        var resultList= mutableListOf<ContactItemWithInternationalNumbers>()
-
-        for(item in list){
-                if(item.internationalNumbers.isNotEmpty())  resultList.add(item)
-        }
-        Log.i(MYTAG,"removeContactsWithNoPhones ulazna lista je $list, posle izbacivanja result je $resultList")
-
-        return resultList
-    }
-
-    private fun convertListWithPhonesToContactItemList(list:List<ContactItemWithInternationalNumbers>):List<ContactItem>{
-        var resultList= mutableListOf<ContactItem>()
-
-        for (item in list){
-            resultList.add(ContactItem(lookUpKey = item.lookUpKey, name = item.name, photoThumbUri = item.photoThumbUri))
-
-        }
-        return resultList
-
-    }
-
-
 
 }

@@ -19,6 +19,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.loader.app.LoaderManager
 import androidx.loader.content.CursorLoader
@@ -32,6 +33,7 @@ import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentMainLinLayoutBinding
 import com.vertial.fivemiov.model.ContactItem
+import com.vertial.fivemiov.model.ContactItemWithInternationalNumbers
 import com.vertial.fivemiov.ui.main_activity.MainActivity
 import com.vertial.fivemiov.ui.main_activity.MainActivity.Companion.MAIN_ACTIVITY_SHARED_PREF_NAME
 import com.vertial.fivemiov.ui.main_activity.MainActivity.Companion.PHONEBOOK_IS_EXPORTED
@@ -49,8 +51,10 @@ class MainFragment : Fragment(){
 
     private lateinit var binding: FragmentMainLinLayoutBinding
     private lateinit var viewModel:MainFragmentViewModel
+    private lateinit var activityViewModel:MainActivityViewModel
     private lateinit var contactsAdapter:MainFragmentAdapter
     private lateinit var searchViewActionBar: SearchView
+
 
 
     companion object{
@@ -74,12 +78,13 @@ class MainFragment : Fragment(){
         val apiService= MyAPI.retrofitService
         val repo=RepoContacts(requireActivity().contentResolver,database,apiService)
 
-        /*val myApp=requireActivity().application as MyApplication
-        val myAppContanier=myApp.myAppContainer*/
 
         viewModel = ViewModelProvider(this, MainFragmentViewModelFactory(repo,requireActivity().application))
             .get(MainFragmentViewModel::class.java)
 
+        activityViewModel = requireActivity().run {
+            ViewModelProvider(this)[MainActivityViewModel::class.java]
+        }
 
         if(checkForPermissions()) {
                initalizeAdapter()
@@ -115,35 +120,30 @@ class MainFragment : Fragment(){
     private fun initalizeAdapter(){
 
         contactsAdapter=MainFragmentAdapter(ContactItemClickListener {
-            if(it.name== EMPTY_NAME){
-            }else{
-                val action=MainFragmentDirections.actionMainFragmentToDetailContact(it.lookUpKey,it.name)
-                findNavController().navigate(action)}
-        },getColorForHighlightLetters().toString())
+                           val action=MainFragmentDirections.actionMainFragmentToDetailContact(it.lookUpKey,it.name)
+                             findNavController().navigate(action)
+                            },getColorForHighlightLetters().toString())
 
 
         binding.mainFregmRecViewLinLayout.setHasFixedSize(true)
         binding.mainFregmRecViewLinLayout.adapter=contactsAdapter
 
-       // val list= createFakeContactList()
-        //contactsAdapter.dataList= list
 
-        //inicijalizacija liste
-        viewModel.populateContactList("")
+        //inicijalizacija liste u onSTART
+
     }
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        /*viewModel.userData.observe(viewLifecycleOwner, Observer {user->
-            if(user!=null) {
-                Log.i(MYTAG, " user je $user")
-                if (user.userEmail == EMPTY_EMAIL) binding.setEmailAndPassButton.visibility =
-                    View.VISIBLE
-                else binding.setEmailAndPassButton.visibility = View.GONE
-            }
-        })*/
+       activityViewModel.fullContactListWithInternationalNumbers.observe(viewLifecycleOwner,Observer{
+        if(it!=null){
+            contactsAdapter.dataList=convertListWithPhonesToContactItemList(it)
+        }
+       }
+
+       )
 
         viewModel.contactList.observe(viewLifecycleOwner, Observer {list->
 
@@ -156,10 +156,10 @@ class MainFragment : Fragment(){
 
          })
 
-        viewModel.currentSearchString.observe(viewLifecycleOwner, Observer {
+        /*viewModel.currentSearchString.observe(viewLifecycleOwner, Observer {
             if(it!=null) contactsAdapter.stringToColor=it
 
-        })
+        })*/
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -167,7 +167,7 @@ class MainFragment : Fragment(){
         inflater.inflate(R.menu.main_fragment_menu,menu)
         val mitem=menu.findItem(R.id.menu_item_search)
         val itemMyAccount= menu.findItem(R.id.menu_item_myaccount)
-        //val itemDialPad=menu.findItem(R.id.dialPadFragment)
+        val itemShare=menu.findItem(R.id.menu_item_share)
         val itemAboutFragment=menu.findItem(R.id.aboutFragment)
         searchViewActionBar=menu.findItem(R.id.menu_item_search).actionView as SearchView
         searchViewActionBar.setQueryHint(getString(R.string.search_hint))
@@ -177,7 +177,7 @@ class MainFragment : Fragment(){
             override fun onMenuItemActionExpand(p0: MenuItem?): Boolean {
                 Log.i(MYTAG,"on search expand listener")
                 itemMyAccount.isVisible=false
-               // itemDialPad.isVisible=false
+                itemShare.isVisible=false
                 itemAboutFragment.isVisible=false
                 searchViewActionBar.isIconified=false
                 return true
@@ -186,7 +186,7 @@ class MainFragment : Fragment(){
                 Log.i(MYTAG,"on search collapse listener")
                 searchViewActionBar.isIconified=true
                 itemMyAccount.isVisible=true
-               // itemDialPad.isVisible=true
+                itemShare.isVisible=true
                 itemAboutFragment.isVisible=true
                 searchViewActionBar.clearFocus()
                 return true
@@ -198,14 +198,21 @@ class MainFragment : Fragment(){
 
             override fun onQueryTextSubmit(p0: String?): Boolean {
                 Log.i(MYTAG,"on qerry text submit $p0")
-                if(!p0.isNullOrBlank()) viewModel.populateContactList(p0?:"")
+                /*if(!p0.isNullOrBlank()) {
+                            // u ranijoj varijanti sam slala na ViewMOdel, ali sada treba da ide ne RecyclerView i njegov Filter
+                            //viewModel.populateContactList(p0?:"")
+
+                    }*/
                 return true
             }
 
             override fun onQueryTextChange(p0: String?): Boolean {
                 Log.i(MYTAG,"on qerry text change $p0")
-                //viewModel.cancelOngoingJob()
-                viewModel.populateContactList(p0)
+                // u ranijoj varijanti sam slala na ViewMOdel, ali sada treba da ide ne RecyclerView i njegov Filter
+                //viewModel.populateContactList(p0)
+                //TODO querry u Filter RecVIew-a
+                contactsAdapter.stringToColor=p0
+                viewModel.querryContactList(p0)
                 return true
             }
 
@@ -229,10 +236,11 @@ class MainFragment : Fragment(){
 
     override fun onStart() {
         super.onStart()
+        viewModel.populateContactList()
         getE1Prenumber()
         Log.i(MYTAG, "ON START")
-        //proba rasinog querry-ja
-        //viewModel.getContactsWithInternationalNumbers()
+
+
 
     }
 
@@ -315,6 +323,17 @@ class MainFragment : Fragment(){
     override fun onStop() {
         super.onStop()
         hidekeyboard()
+    }
+
+    private fun convertListWithPhonesToContactItemList(list:List<ContactItemWithInternationalNumbers>):List<ContactItem>{
+        var resultList= mutableListOf<ContactItem>()
+
+        for (item in list){
+            resultList.add(ContactItem(lookUpKey = item.lookUpKey, name = item.name, photoThumbUri = item.photoThumbUri))
+
+        }
+        return resultList
+
     }
 
 
