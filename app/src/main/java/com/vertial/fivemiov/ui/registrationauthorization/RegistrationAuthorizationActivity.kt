@@ -33,7 +33,7 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRegistrationAuthorizationBinding
     private lateinit var viewModel: RegAuthActivityViewModel
     private lateinit var smsBroadcastReceiver: SMSAuthorizationBroadcastReceiver
-    private val SPLASH_SCREEN_DURATION_IN_MILLIS=2000L
+    private val SPLASH_SCREEN_DURATION_IN_MILLIS=1000L
 
     companion object{
         const val ENTERED_PHONE_NUMBER = "entered_phone_number"

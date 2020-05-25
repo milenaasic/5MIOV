@@ -278,7 +278,12 @@ class MainActivity : AppCompatActivity() {
             //navigationIcon = resources.getDrawable(R.drawable.ic_back_black, null)
             elevation=(4 * resources.displayMetrics.density)
             title=resources.getString(R.string.app_name)
-            Log.i(MY_TAG, "setDialPadFragmentUI()")
+
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            window.decorView.systemUiVisibility= 0
+            window.statusBarColor= resources.getColor(R.color.colorPrimaryDark, null)
         }
 
     }
@@ -527,10 +532,7 @@ class MainActivity : AppCompatActivity() {
         Toast.makeText(this, "User in DB Main:${viewModel.userData.value}",Toast.LENGTH_LONG).show()
     }
 
-    override fun onStart() {
-        super.onStart()
-        //viewModel.getContactsWithInternationalNumbers(ContactsContract.Contacts.CONTENT_URI)
-    }
+
 
 
 }

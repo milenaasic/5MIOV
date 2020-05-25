@@ -17,7 +17,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingEnd="8dp"
-                android:text="@string/_0_contacts"
+                android:text="@string/empty_string"
                 android:textAlignment="viewEnd" />
 
             <androidx.recyclerview.widget.RecyclerView

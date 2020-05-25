@@ -3,6 +3,7 @@ package com.vertial.fivemiov.data
 import android.content.ContentResolver
 import android.net.Uri
 import android.provider.ContactsContract
+import android.telephony.PhoneNumberUtils
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -200,8 +201,7 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
                     PhoneItem(
                         cursor.getString(CURSOR_PHONE),
                         cursor.getInt(CURSOR_PHONE_TYPE),
-                        cursor.getString(CURSOR_PHOTO_URI),
-                        cursor.getString(CURSOR_PHOTO_FILE_ID)
+                        cursor.getString(CURSOR_PHOTO_URI)
                     )
 
                 )
@@ -281,14 +281,14 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
         val CURSOR_PHONE=1
         val CURSOR_PHONE_TYPE=2
         val CURSOR_PHOTO_URI=3
-        val CURSOR_PHOTO_FILE_ID=4
+        val CURSOR_NORMALIZED_PHONE=4
 
         val PROJECTION: Array<out String> = arrayOf(
             ContactsContract.CommonDataKinds.Phone._ID,
             ContactsContract.CommonDataKinds.Phone.NUMBER,
             ContactsContract.CommonDataKinds.Phone.TYPE,
             ContactsContract.CommonDataKinds.Photo.PHOTO_URI,
-            ContactsContract.CommonDataKinds.Photo.PHOTO_FILE_ID
+            ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER
         )
 
         val SELECTION: String = "${ContactsContract.CommonDataKinds.Phone.LOOKUP_KEY} = ? AND (${ContactsContract.CommonDataKinds.Phone.NUMBER} != '') AND" +
@@ -313,10 +313,9 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
             while (cursor.moveToNext()) {
                 list.add(
                     PhoneItem(
-                        cursor.getString(CURSOR_PHONE),
+                        PhoneNumberUtils.normalizeNumber(cursor.getString(CURSOR_PHONE)),
                         cursor.getInt(CURSOR_PHONE_TYPE),
-                        cursor.getString(CURSOR_PHOTO_URI),
-                        cursor.getString(CURSOR_PHOTO_FILE_ID)
+                        cursor.getString(CURSOR_PHOTO_URI)
                     )
 
                 )
@@ -327,7 +326,7 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
         }
         Log.i(MY_TAG,"convert cursor u listu international phones $list")
 
-        return list
+        return list.distinctBy {it.phoneNumber}
 
     }
 
@@ -356,13 +355,14 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
         val SELECTION: String = "(${ContactsContract.CommonDataKinds.Phone.NUMBER} != '') AND (${ContactsContract.CommonDataKinds.Phone.NUMBER} NOT LIKE '+234%') " +
                 "AND (${ContactsContract.CommonDataKinds.Phone.NUMBER} NOT LIKE '234%') AND (${ContactsContract.CommonDataKinds.Phone.NUMBER} NOT LIKE '0%') "
 
+        val sortOrder = "${ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME_PRIMARY} ASC"
 
         val cursor = contentResolver.query(
             ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
             PROJECTION,
             SELECTION,
             null,
-            null
+            sortOrder
         )
 
         try {
@@ -395,9 +395,109 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
         Log.i(MY_TAG," broj raw kontakata pre prebacivanja u set je ${resultList.size}, a posle je ${resultList.toSet().toList().size}")
         Log.i(MY_TAG, "result lista je ${resultList}")
         val noDuplicatesList=resultList.toSet().toList()
-        Collections.sort(noDuplicatesList,Comparator { t, t2 -> t.name.toLowerCase().compareTo(t2.name.toLowerCase()) })
+        Log.i(MY_TAG, "no duplicates lista je ${noDuplicatesList}")
         return noDuplicatesList
     }
+
+
+    //povlaci sve kontakte koji imaju interncionalni broj
+    suspend fun getRawContactsPhonebook():List<PhoneBookItem>{
+
+        var resultList= listOf<PhoneBookItem>()
+        val rawListOfContactItemWithNumber= mutableListOf<ContactItemWithNumber>()
+
+        val CURSOR_ID=0
+        val CURSOR_DISPLAY_NAME_PRIMARY=1
+        val CURSOR_LOOKUP_KEY=2
+        val CURSOR_NORMALIZED_NUMBER=3
+        val CURSOR_NUMBER=4
+
+        val PROJECTION: Array<out String> = arrayOf(
+            ContactsContract.CommonDataKinds.Phone._ID,
+            ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME_PRIMARY,
+            ContactsContract.CommonDataKinds.Phone.LOOKUP_KEY,
+            ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER,
+            ContactsContract.CommonDataKinds.Phone.NUMBER
+        )
+
+        val SELECTION: String = "(${ContactsContract.CommonDataKinds.Phone.NUMBER} != '') AND (${ContactsContract.CommonDataKinds.Phone.NUMBER} NOT LIKE '+234%') " +
+                "AND (${ContactsContract.CommonDataKinds.Phone.NUMBER} NOT LIKE '234%') AND (${ContactsContract.CommonDataKinds.Phone.NUMBER} NOT LIKE '0%') "
+
+        val sortOrder = "${ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME_PRIMARY} ASC"
+
+        val cursor = contentResolver.query(
+            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+            PROJECTION,
+            SELECTION,
+            null,
+            sortOrder
+        )
+
+        try {
+            if(cursor!=null) {
+                while (cursor.moveToNext()) {
+                    //
+                    rawListOfContactItemWithNumber.add(
+                        ContactItemWithNumber(
+                            name=cursor.getString(CURSOR_DISPLAY_NAME_PRIMARY),
+                            lookUpKey = cursor.getString(CURSOR_LOOKUP_KEY),
+                            normalizedInternationalNumber =cursor.getString(CURSOR_NORMALIZED_NUMBER)?: PhoneNumberUtils.normalizeNumber(cursor.getString(CURSOR_NUMBER))
+                        )
+                    )
+                    Log.i(
+                        MY_TAG,
+                        "za phonebook raw contact  name ${cursor.getString(1)}, key ${cursor.getString(2)}, " +
+                                "normalized number ${(cursor.getString(CURSOR_NORMALIZED_NUMBER))}"
+                    )
+
+                }
+                Log.i(
+                    MY_TAG,
+                    "za phonebook raw contact list je $rawListOfContactItemWithNumber}"
+                )
+                if (!rawListOfContactItemWithNumber.isNullOrEmpty()) resultList=createPhoneBookList(rawListOfContactItemWithNumber.toSet().toList())
+
+            }
+
+        } finally {
+            cursor?.close();
+        }
+
+        return resultList
+    }
+
+    private fun createPhoneBookList(rawList:List<ContactItemWithNumber>): List<PhoneBookItem> {
+
+        val phoneBookItemsList= mutableListOf<PhoneBookItem>()
+
+        for(element in rawList){
+            val lookUpKey:String=element.lookUpKey
+            val phoneList=rawList.filter {
+                    it.lookUpKey==lookUpKey }
+                    Log.i(MY_TAG," lista telefona za ${element.name} je $phoneList")
+                    phoneBookItemsList.add(
+                                PhoneBookItem(
+                                element.name,
+                                makePhoneArrayForSameContact(phoneList))
+            )
+        }
+
+        Log.i(MY_TAG," lista phonebook telefona pre izbacivanja duuplih za ${phoneBookItemsList}")
+        Log.i(MY_TAG," lista phonebook telefona POSLE izbacivanja duuplih za ${phoneBookItemsList.distinctBy { it.name }}")
+        return phoneBookItemsList.distinctBy { it.name }
+    }
+
+    private fun makePhoneArrayForSameContact(list:List<ContactItemWithNumber>):Array<String>{
+        val resultList= mutableListOf<String>()
+        for(item in list){
+                resultList.add(item.normalizedInternationalNumber)
+        }
+        return resultList.toTypedArray()
+
+    }
+
+
+
 
 }
 

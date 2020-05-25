@@ -47,6 +47,7 @@ class MainFragmentViewModel(val repoContacts: RepoContacts,application: Applicat
     fun populateContactList() {
         viewModelScope.launch {
            getAllRawContacts()
+           getPhoneBook()
         }
     }
 
@@ -126,6 +127,22 @@ class MainFragmentViewModel(val repoContacts: RepoContacts,application: Applicat
                 fullContactListWithInternationalNumbers=resultList
                 _contactList.value=resultList
                 _numberOfSelectedContacts.value=resultList.size
+
+            }catch (t:Throwable){
+                Log.i(MYTAG, " getAllRawContacts error ${t.message}")
+
+            }
+        }
+    }
+
+    private fun  getPhoneBook(){
+        viewModelScope.launch {
+
+            val defResultLIst= async(IO) {
+                repoContacts.getRawContactsPhonebook()
+            }
+            try {
+                val resultList=defResultLIst.await()
 
             }catch (t:Throwable){
                 Log.i(MYTAG, " getAllRawContacts error ${t.message}")

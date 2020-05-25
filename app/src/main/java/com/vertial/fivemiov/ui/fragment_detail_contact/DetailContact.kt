@@ -38,10 +38,13 @@ import com.vertial.fivemiov.data.Repo
 import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentDetailContactBinding
+import com.vertial.fivemiov.model.PhoneItem
 import com.vertial.fivemiov.ui.fragment_dial_pad.DialPadFragment
 import com.vertial.fivemiov.ui.fragment_main.MainFragment
 import com.vertial.fivemiov.utils.isVOIPsupported
 import com.vertial.fivemiov.utils.isValidPhoneNumber
+import java.util.*
+import java.util.Locale.US
 
 private val MYTAG="MY_DetailContact"
 
@@ -81,8 +84,6 @@ class DetailContact : Fragment() {
         val repo= RepoContacts(requireActivity().contentResolver,database,apiService)
 
         viewModel=ViewModelProvider(this,DetailContactViewModelFactory(args.contactLookUpKey,repo,requireActivity().application)).get(DetailContactViewModel::class.java)
-        //val sipManager=SipManager.newInstance(requireContext())
-        //if(!isVOIPsupported(requireContext()))showSnackBar(resources.getString(R.string.VOIP_not_supported)+", SipManager is $sipManager")
 
 
         phoneAdapter= DetailContactAdapter(
@@ -146,9 +147,20 @@ class DetailContact : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.phoneList.observe(viewLifecycleOwner, Observer {
-                if(it!=null){
-                    phoneAdapter.dataList=it.toSet().toList()
+        viewModel.phoneList.observe(viewLifecycleOwner, Observer {list->
+                if(list!=null){
+                    val formatedNumbersList= mutableListOf<PhoneItem>()
+                    for (item in list) {
+                        formatedNumbersList.add (
+                                PhoneItem(
+                                    (PhoneNumberUtils.formatNumber(item.phoneNumber, US.toString())),
+                                    item.phoneType,
+                                    item.photoUri
+                                    )
+                        )
+                    }
+
+                    phoneAdapter.dataList=formatedNumbersList
                 }
 
          })
