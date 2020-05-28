@@ -12,9 +12,9 @@
 
     <item
         android:id="@+id/menuItemRecentCalls"
-        android:icon="@drawable/ic_call_history"
-        android:title="Recent"
+        android:icon="@drawable/ic_call_made_black"
         android:orderInCategory="1"
+        android:title="Recent"
         app:showAsAction="always" />
 
 

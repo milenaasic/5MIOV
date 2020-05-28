@@ -6,11 +6,10 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.vertial.fivemiov.data.Repo
 import com.vertial.fivemiov.data.RepoContacts
-import kotlinx.coroutines.Dispatchers
+import com.vertial.fivemiov.model.RecentCall
+import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import javax.xml.transform.sax.TemplatesHandler
 
 private val MYTAG="MY_DialPadVIewMOdel"
 class DialpadFragmViewModel(val myRepository: RepoContacts, application: Application) : AndroidViewModel(application) {
@@ -20,6 +19,8 @@ class DialpadFragmViewModel(val myRepository: RepoContacts, application: Applica
 
     //live data from database
     val userData=myRepository.getUserData()
+
+    val recentCallList=myRepository.getAllRecentCalls()
 
 
     val getCreditNetSuccess=myRepository.getCredit_NetSuccess
@@ -64,5 +65,16 @@ class DialpadFragmViewModel(val myRepository: RepoContacts, application: Applica
     fun resetGetCreditNetErrorr(){
         myRepository.resetGetCreditNetError()
     }
+
+    fun insertCallIntoDB(call: RecentCall){
+        GlobalScope.launch {
+            withContext(Dispatchers.IO){
+                myRepository.insertRecentCall(call)
+            }
+        }
+
+
+    }
+
 
 }

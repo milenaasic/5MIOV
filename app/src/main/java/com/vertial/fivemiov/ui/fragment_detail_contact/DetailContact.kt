@@ -39,6 +39,7 @@ import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentDetailContactBinding
 import com.vertial.fivemiov.model.PhoneItem
+import com.vertial.fivemiov.model.RecentCall
 import com.vertial.fivemiov.ui.fragment_dial_pad.DialPadFragment
 import com.vertial.fivemiov.ui.fragment_main.MainFragment
 import com.vertial.fivemiov.utils.isVOIPsupported
@@ -90,7 +91,9 @@ class DetailContact : Fragment() {
                 SipItemClickListener{
 
                     if(isVOIPsupported(requireContext())){
-                        if(checkForPermissions())findNavController().navigate(DetailContactDirections.actionDetailContactToSipFragment(args.displayName,it))
+                        if(checkForPermissions()){
+                            viewModel.insertCallIntoDB(RecentCall(recentCallName = args.displayName,recentCallPhone = it,recentCallTime = System.currentTimeMillis()))
+                            findNavController().navigate(DetailContactDirections.actionDetailContactToSipFragment(args.displayName,it))}
                     }
                     else  showSnackBar(resources.getString(R.string.VOIP_not_supported))
                 },
@@ -135,6 +138,7 @@ class DetailContact : Fragment() {
            }
 
            if (intentToCall.resolveActivity(requireActivity().packageManager) != null) {
+                viewModel.insertCallIntoDB(RecentCall(recentCallName = args.displayName,recentCallPhone = myphone,recentCallTime = System.currentTimeMillis()))
                startActivity(intentToCall)
            } else showSnackBar(resources.getString(R.string.unable_to_make_call))
 
@@ -149,17 +153,18 @@ class DetailContact : Fragment() {
 
         viewModel.phoneList.observe(viewLifecycleOwner, Observer {list->
                 if(list!=null){
+                Log.i(MYTAG," phone lista je $list")
                     val formatedNumbersList= mutableListOf<PhoneItem>()
                     for (item in list) {
                         formatedNumbersList.add (
                                 PhoneItem(
-                                    (PhoneNumberUtils.formatNumber(item.phoneNumber, US.toString())),
+                                    (PhoneNumberUtils.formatNumber(item.phoneNumber, US.toString()))?:item.phoneNumber,
                                     item.phoneType,
                                     item.photoUri
                                     )
                         )
                     }
-
+                    Log.i(MYTAG," phone lista je $formatedNumbersList")
                     phoneAdapter.dataList=formatedNumbersList
                 }
 
@@ -170,6 +175,14 @@ class DetailContact : Fragment() {
           })
     }
 
+    override fun onStart() {
+        super.onStart()
+        val number="9000"
+
+        val resultPhoneNumber=PhoneNumberUtils.normalizeNumber(number)
+        Log.i(MYTAG, "normalizacija broja 9000 je $resultPhoneNumber")
+
+    }
 
     override fun onResume() {
         super.onResume()

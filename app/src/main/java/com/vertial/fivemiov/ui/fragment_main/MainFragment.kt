@@ -86,15 +86,11 @@ class MainFragment : Fragment(){
             ViewModelProvider(this)[MainActivityViewModel::class.java]
         }
 
+        initalizeAdapter()
+
         if(checkForPermissions()) {
-               initalizeAdapter()
-               if(shouldExportPhoneBook()) (requireActivity() as MainActivity).exportPhoneBook()
-
+                if(shouldExportPhoneBook()) (requireActivity() as MainActivity).exportPhoneBook()
         }
-
-        /*binding.setEmailAndPassButton.setOnClickListener{
-            findNavController().navigate(MainFragmentDirections.actionMainFragmentToSetEmailAndPasswordFragment())
-        }*/
 
         return binding.root
     }
@@ -127,9 +123,6 @@ class MainFragment : Fragment(){
 
         binding.mainFregmRecViewLinLayout.setHasFixedSize(true)
         binding.mainFregmRecViewLinLayout.adapter=contactsAdapter
-
-
-        //inicijalizacija liste u onSTART
 
     }
 
@@ -208,9 +201,7 @@ class MainFragment : Fragment(){
 
             override fun onQueryTextChange(p0: String?): Boolean {
                 Log.i(MYTAG,"on qerry text change $p0")
-                // u ranijoj varijanti sam slala na ViewMOdel, ali sada treba da ide ne RecyclerView i njegov Filter
-                //viewModel.populateContactList(p0)
-                //TODO querry u Filter RecVIew-a
+
                 contactsAdapter.stringToColor=p0
                 viewModel.querryContactList(p0)
                 return true
@@ -236,7 +227,7 @@ class MainFragment : Fragment(){
 
     override fun onStart() {
         super.onStart()
-        viewModel.populateContactList()
+        if(checkForPermissions())viewModel.populateContactList()
         getE1Prenumber()
         Log.i(MYTAG, "ON START")
 
@@ -295,7 +286,7 @@ class MainFragment : Fragment(){
             MY_PERMISSIONS_REQUEST_READ_CONTACTS -> {
                 // If request is cancelled, the result arrays are empty.
                 if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                   initalizeAdapter()
+                    viewModel.populateContactList()
                     if(shouldExportPhoneBook()) (requireActivity() as MainActivity).exportPhoneBook()
                 } else {
                     showSnackBar(resources.getString(R.string.no_permission_read_contacts))
@@ -311,7 +302,7 @@ class MainFragment : Fragment(){
     }
 
     private fun showSnackBar(s:String) {
-        Snackbar.make(binding.root,s,Snackbar.LENGTH_LONG).show()
+        Snackbar.make(binding.root,s,Snackbar.LENGTH_INDEFINITE).setAction("OK") {}.show()
     }
 
     private fun hidekeyboard(){

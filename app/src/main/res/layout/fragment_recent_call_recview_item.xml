@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+<data>
+    <variable name="clickListener" type="com.vertial.fivemiov.ui.fragment_recent_calls.RecentCallClickListener"/>
+    <variable name="recentCallItem" type="com.vertial.fivemiov.model.RecentCall" />
+
+</data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/recentCallsRecView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="@{() -> clickListener.onClick(recentCallItem.recentCallPhone)}">
+
+        <ImageView
+            android:id="@+id/outgoingCallimageView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_call_made_black"
+            tools:ignore="ContentDescription" />
+
+        <TextView
+            android:id="@+id/recentCallNametextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:text="@{recentCallItem.recentCallName}"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
+            app:layout_constraintStart_toEndOf="@+id/outgoingCallimageView"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Milena" />
+
+        <TextView
+            android:id="@+id/recentCallNumbertextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="8dp"
+           app:setPhoneNumber="@{recentCallItem}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/recentCallNametextView"
+            app:layout_constraintTop_toBottomOf="@+id/recentCallNametextView"
+            tools:text="+1 56 11 222 333" />
+
+        <TextView
+            android:id="@+id/recentCallsDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.99"
+            app:layout_constraintStart_toEndOf="@+id/recentCallNametextView"
+            app:layout_constraintTop_toTopOf="parent"
+            app:setRecentCallDate="@{recentCallItem}"
+            tools:text="25 May 2020" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

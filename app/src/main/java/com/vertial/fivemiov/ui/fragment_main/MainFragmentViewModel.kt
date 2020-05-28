@@ -47,7 +47,6 @@ class MainFragmentViewModel(val repoContacts: RepoContacts,application: Applicat
     fun populateContactList() {
         viewModelScope.launch {
            getAllRawContacts()
-           getPhoneBook()
         }
     }
 
@@ -135,7 +134,7 @@ class MainFragmentViewModel(val repoContacts: RepoContacts,application: Applicat
         }
     }
 
-    private fun  getPhoneBook(){
+    /*private fun  getPhoneBook(){
         viewModelScope.launch {
 
             val defResultLIst= async(IO) {
@@ -149,6 +148,6 @@ class MainFragmentViewModel(val repoContacts: RepoContacts,application: Applicat
 
             }
         }
-    }
+    }*/
 
 }

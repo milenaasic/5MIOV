@@ -1,6 +1,5 @@
 package com.vertial.fivemiov.utils
 
-import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.net.ConnectivityManager
@@ -14,6 +13,9 @@ import android.util.Patterns
 import android.widget.EditText
 import com.vertial.fivemiov.model.ContactItem
 import com.vertial.fivemiov.model.PhoneItem
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.*
 
 private val MYTAG="MY_helpers"
 
@@ -137,4 +139,14 @@ fun removeEmptyContactItem(inputlist:List<ContactItem>):List<ContactItem>{
     Log.i(MYTAG,"poslednji element je ${list.last()}")
     if(list.last().name== EMPTY_NAME) list.removeAt(list.size-1)
     return list
+}
+
+fun formatDateFromMillis(timeInMillis:Long):String{
+    val df = DateFormat.getDateInstance(DateFormat.LONG, Locale.US)
+    val calendar = Calendar.getInstance().apply {
+        this.timeInMillis=timeInMillis
+     }
+
+    return df.format(calendar.time)
+
 }

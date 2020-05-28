@@ -17,7 +17,7 @@ import com.vertial.fivemiov.utils.*
 
 private const val NAME="MY_Database"
 
-@Database(entities = [User::class, E1Prenumber::class,SipAccount::class,WebApiVersion::class,UsersSipCallerIDs::class],version = 1,exportSchema = true)
+@Database(entities = [User::class, E1Prenumber::class,SipAccount::class,WebApiVersion::class,UsersSipCallerIDs::class,RecentCall::class],version = 1,exportSchema = true)
 abstract class MyDatabase:RoomDatabase(){
 
     abstract val myDatabaseDao:MyDatabaseDao
@@ -39,9 +39,14 @@ abstract class MyDatabase:RoomDatabase(){
                         NAME
                     ).fallbackToDestructiveMigration()
                         .addCallback (object:Callback(){
+
                             override fun onCreate(db: SupportSQLiteDatabase) {
                                 super.onCreate(db)
                                 Log.i(NAME,"DB on create")
+
+                                /*db.execSQL("CREATE TRIGGER delete_2_callbacks BEFORE INSERT ON recent_calls_table WHEN (select count(*) from recent_calls_table)>5" +
+                                                " BEGIN  DELETE FROM recent_calls_table WHERE id IN  (SELECT id FROM user ORDER BY id limit (select count(*) -9 from user)); END ")*/
+
                                val myvalues=ContentValues().apply {
                                     put("user_phone", EMPTY_PHONE_NUMBER)
                                     put("token", EMPTY_TOKEN)

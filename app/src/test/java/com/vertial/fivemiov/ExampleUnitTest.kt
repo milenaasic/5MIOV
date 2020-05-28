@@ -32,4 +32,14 @@ class ExampleUnitTest {
         println(resultPhoneNumber)
         assertEquals("238564564", resultPhoneNumber)
     }
+
+    @Test
+    fun checkNormalization() {
+
+        val number="9000"
+
+        val resultPhoneNumber=PhoneNumberUtils.normalizeNumber(number)
+        println(resultPhoneNumber)
+        //assertEquals("null", resultPhoneNumber)
+    }
 }

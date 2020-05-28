@@ -32,7 +32,9 @@ import com.vertial.fivemiov.api.MyAPI
 import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentDialPadBinding
+import com.vertial.fivemiov.model.RecentCall
 import com.vertial.fivemiov.utils.*
+import kotlin.math.roundToInt
 
 
 private val MYTAG="MY_DialPadFragment"
@@ -41,6 +43,7 @@ class DialPadFragment : Fragment() {
     private lateinit var binding: FragmentDialPadBinding
     private lateinit var viewModel: DialpadFragmViewModel
     private lateinit var myPrenumber:String
+    private lateinit var myRecentCallList:List<RecentCall>
     private lateinit var clipboard:ClipboardManager
     private var currentCursorPosition=0
 
@@ -69,9 +72,6 @@ class DialPadFragment : Fragment() {
         val database=MyDatabase.getInstance(requireContext()).myDatabaseDao
         val apiService=MyAPI.retrofitService
         val repo=RepoContacts(requireActivity().contentResolver,database,apiService)
-
-        /*val myApp=requireActivity().application as MyApplication
-        val myAppContanier=myApp.myAppContainer*/
 
 
         viewModel = ViewModelProvider(this, DialpadFragmentViewModelFactory(repo,requireActivity().application))
@@ -110,8 +110,10 @@ class DialPadFragment : Fragment() {
                         val phoneNumber=binding.editTextEnterNumber.text.toString()
                         val normPhoneNumber=PhoneNumberUtils.normalizeNumber(phoneNumber)
                         if(checkForPermissions()) {
-                            if(normPhoneNumber.isValidPhoneNumber()) findNavController().
-                                navigate(DialPadFragmentDirections.actionDialPadFragmentToSipFragment(normPhoneNumber,normPhoneNumber))
+                            if(normPhoneNumber.isValidPhoneNumber()) {
+                                viewModel.insertCallIntoDB(RecentCall(recentCallName = phoneNumber,recentCallPhone = phoneNumber,recentCallTime = System.currentTimeMillis()))
+                                findNavController().navigate(DialPadFragmentDirections.actionDialPadFragmentToSipFragment(normPhoneNumber,normPhoneNumber))
+                            }
                             else {
                                 showSnackBar(resources.getString(R.string.not_valid_phone_number))
                                 enableCallButtons(true)
@@ -149,7 +151,6 @@ class DialPadFragment : Fragment() {
                   currentCursorPosition=start
               }
 
-
            }
 
         binding.setEmailAndPassButton.setOnClickListener{
@@ -160,9 +161,11 @@ class DialPadFragment : Fragment() {
 
         requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-        //configureBottomSlidePanel()
+        configureBottomSlidePanel()
 
+        setRecentCallsFragmentHeight()
 
+       binding.dialpadConstrLayout.requestFocus()
         return binding.root
     }
 
@@ -170,24 +173,14 @@ class DialPadFragment : Fragment() {
         Log.i(MYTAG," usao u backdrop fragment ")
 
         bsb=BottomSheetBehavior.from(binding.recentcallsFragment)
-        bsb.state = BottomSheetBehavior.STATE_EXPANDED
-        //Log.i(MYTAG," state na pocetku je ${bsb.state.toString()}")
-        //Log.i(MYTAG," peak na pocetku je ${bsb.peekHeight.toString()}")
-        //peek height je u pikselima
-       val dip = 50f
+        bsb.state = BottomSheetBehavior.STATE_HIDDEN
+       /*val dip = 50f
         val px = TypedValue.applyDimension(
             TypedValue.COMPLEX_UNIT_DIP,
             dip,
             resources.getDisplayMetrics()
         )
-        Log.i(MYTAG,"24 dipa u pikseliam je ${px.toInt()}")
-
-        bsb.peekHeight=px.toInt()
-        Log.i(MYTAG," peek height je ${bsb.peekHeight}")
-
-        //Log.i(MYTAG," state je ${bsb.state.toString()}")
-        bsb.state = BottomSheetBehavior.STATE_COLLAPSED
-
+        Log.i(MYTAG,"24 dipa u pikseliam je ${px.toInt()}")*/
 
     }
 
@@ -207,6 +200,11 @@ class DialPadFragment : Fragment() {
            }
        })
 
+        viewModel.recentCallList.observe(viewLifecycleOwner, Observer {
+            if(it!=null) myRecentCallList=it
+        })
+
+
         viewModel.getCreditNetSuccess.observe(viewLifecycleOwner, Observer {response->
 
              if(response!=null){
@@ -221,7 +219,7 @@ class DialPadFragment : Fragment() {
          })
 
          viewModel.getCreditNetworkError.observe(viewLifecycleOwner, Observer {
-            if(it!=null) viewModel.resetGetCreditNetSuccess()
+            if(it!=null) viewModel.resetGetCreditNetErrorr()
 
           })
 
@@ -230,7 +228,7 @@ class DialPadFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         clipboard= requireActivity().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        //configureBottomSlidePanel()
+
     }
 
     override fun onStart() {
@@ -238,15 +236,13 @@ class DialPadFragment : Fragment() {
         Log.i(MYTAG, " onSTart")
         if(isOnline(requireActivity().application)) viewModel.getCredit()
         else binding.creditTextView.text="No internet"
-        //requireActivity().actionBar?.setBackgroundDrawable(resources.getDrawable(android.R.color.transparent,null))
-        //configureBottomSlidePanel()
+
     }
 
     private fun appendDigit(char:CharSequence){
         binding.editTextEnterNumber.apply {
 
             text.insert(this.getSelectionStart(), char)
-            //text.append(char)
             isCursorVisible=true
          }
     }
@@ -266,11 +262,6 @@ class DialPadFragment : Fragment() {
 
         }
 
-       /* if (charCount == 1) {
-            binding.editTextEnterNumber.text.delete(charCount - 1, charCount)
-            binding.editTextEnterNumber.isCursorVisible=false
-        }
-        if(charCount>1) binding.editTextEnterNumber.text.delete(charCount - 1, charCount)*/
     }
 
     private fun enableCallButtons(b:Boolean){
@@ -286,17 +277,8 @@ class DialPadFragment : Fragment() {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.dial_pad_menu,menu)
-        menu.findItem(R.id.menuItemRecentCalls).isVisible=false
+        //menu.findItem(R.id.menuItemRecentCalls).isVisible=false
 
-
-        //da li je Paste item visible
-       /* menu.findItem(R.id.menu_item_paste).isEnabled=
-                // This disables the paste menu item, since the clipboard has data but it is not plain text
-            when {
-            !clipboard.hasPrimaryClip() -> false
-            !(clipboard.primaryClipDescription?.hasMimeType(MIMETYPE_TEXT_PLAIN))!! -> false
-            else -> true
-        }*/
     }
 
     override fun onCreateContextMenu(
@@ -314,7 +296,8 @@ class DialPadFragment : Fragment() {
 
         return when (item.itemId) {
             R.id.menuPaste -> {
-                pastePhoneNumber()
+                val item = clipboard.primaryClip?.getItemAt(0)
+                pastePhoneNumber(item?.text.toString())
                 true
             }
 
@@ -326,19 +309,19 @@ class DialPadFragment : Fragment() {
 
         when (item.itemId){
             R.id.menuItemRecentCalls->{
-                if(bsb.state==BottomSheetBehavior.STATE_COLLAPSED)  bsb.state = BottomSheetBehavior.STATE_EXPANDED
-                else bsb.state = BottomSheetBehavior.STATE_COLLAPSED
+                if(!myRecentCallList.isNullOrEmpty()) {
+                        if(bsb.state==BottomSheetBehavior.STATE_HIDDEN)  bsb.state = BottomSheetBehavior.STATE_EXPANDED
+                        else bsb.state = BottomSheetBehavior.STATE_HIDDEN
+                }else showSnackBar(resources.getString(R.string.no_recent_calls))
                 return true
             }
         else->return super.onOptionsItemSelected(item)
         }
     }
 
-    private fun pastePhoneNumber() {
-        val item = clipboard.primaryClip?.getItemAt(0)
-        val pasteData:CharSequence? = item?.text
+    fun pastePhoneNumber(pasteData:String) {
         Log.i(MYTAG," paste na klipu je $pasteData")
-
+        bsb.state = BottomSheetBehavior.STATE_HIDDEN
         if(!pasteData.isNullOrEmpty() && pasteData.isNotBlank() && pasteData.length<= MAX_CHARS_ALLOWED_IN_LAYOUT){
             val pasteDataNormalized=PhoneNumberUtils.normalizeNumber(pasteData.toString())
 
@@ -411,16 +394,18 @@ class DialPadFragment : Fragment() {
 
 
     private fun makePhoneCall() {
-
-        val phone = PhoneNumberUtils.normalizeNumber(binding.editTextEnterNumber.text.toString())
+        val enteredPhone=binding.editTextEnterNumber.text.toString()
+        val phone = PhoneNumberUtils.normalizeNumber(enteredPhone)
         Log.i(MYTAG, "normalizovan broj je $phone")
         if (phone.isValidPhoneNumber()) {
+
             val intentToCall = Intent(Intent.ACTION_CALL).apply {
                 setData(Uri.parse(resources.getString(R.string.prenumber_call,myPrenumber,phone)))
                 Log.i(MYTAG, "uri je tel:$myPrenumber,$phone ")
             }
 
             if (intentToCall.resolveActivity(requireActivity().packageManager) != null) {
+                viewModel.insertCallIntoDB(RecentCall(recentCallName = enteredPhone,recentCallPhone = enteredPhone,recentCallTime = System.currentTimeMillis()))
                 startActivity(intentToCall)
             } else showSnackBar(resources.getString(R.string.unable_to_make_call))
 
@@ -428,6 +413,43 @@ class DialPadFragment : Fragment() {
 
     }
 
+    private fun setRecentCallsFragmentHeight(){
+        val dialPadHeight=binding.dialNumbersLayout.layoutParams.height
+        Log.i(MYTAG," dialpad height je $dialPadHeight, screenDensity je ${resources.displayMetrics.density}")
+        val params=binding.recentcallsFragment.layoutParams
+        params.height=calculateRecentCallsFragmentHeight()
+        binding.recentcallsFragment.layoutParams=params
+
+    }
+
+
+
+    fun calculateRecentCallsFragmentHeight():Int{
+
+        val guidelinePositionInLayout=0.7
+       val screenHeight=resources.displayMetrics.heightPixels
+       Log.i(MYTAG, "screen height je $screenHeight")
+        var actionBarHeight = 56*resources.displayMetrics.density.toInt()
+        val statusBarHeightDP = 30
+        val typedValue = TypedValue()
+        if (requireActivity().theme.resolveAttribute(
+                android.R.attr.actionBarSize,
+                typedValue,
+                true
+            )
+        ) {
+            actionBarHeight =
+                TypedValue.complexToDimensionPixelSize(typedValue.data, resources.displayMetrics)
+        }
+
+        Log.i(MYTAG,"density je ${resources.displayMetrics.density}, a actionbar je $actionBarHeight")
+
+        val dialPadFragHeight=screenHeight-actionBarHeight-statusBarHeightDP*resources.displayMetrics.density
+        Log.i(MYTAG," dialpadFragm height je $dialPadFragHeight")
+        val percentOfReturnHeight=guidelinePositionInLayout*dialPadFragHeight
+        Log.i(MYTAG," percent of 0,7 height je $percentOfReturnHeight, a to Int je ${percentOfReturnHeight.toInt()}")
+        return percentOfReturnHeight.roundToInt()
+    }
 
 
     private fun showSnackBar(s:String) {

@@ -9,6 +9,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.model.PhoneItem
+import com.vertial.fivemiov.model.RecentCall
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import java.lang.Exception
@@ -47,6 +48,16 @@ class DetailContactViewModel(val contactLookUp:String,val myRepository: RepoCont
                 }
 
         }
+    }
+
+    fun insertCallIntoDB(call: RecentCall){
+        GlobalScope.launch {
+            withContext(Dispatchers.IO){
+                myRepository.insertRecentCall(call)
+            }
+        }
+
+
     }
 
 

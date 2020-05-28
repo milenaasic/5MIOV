@@ -441,7 +441,8 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
                         ContactItemWithNumber(
                             name=cursor.getString(CURSOR_DISPLAY_NAME_PRIMARY),
                             lookUpKey = cursor.getString(CURSOR_LOOKUP_KEY),
-                            normalizedInternationalNumber =cursor.getString(CURSOR_NORMALIZED_NUMBER)?: PhoneNumberUtils.normalizeNumber(cursor.getString(CURSOR_NUMBER))
+                            internationalNumber = cursor.getString(CURSOR_NUMBER),
+                            normalizedInternationalNumber =cursor.getString(CURSOR_NORMALIZED_NUMBER)?:""
                         )
                     )
                     Log.i(
@@ -490,14 +491,17 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
     private fun makePhoneArrayForSameContact(list:List<ContactItemWithNumber>):Array<String>{
         val resultList= mutableListOf<String>()
         for(item in list){
-                resultList.add(item.normalizedInternationalNumber)
+            if(item.normalizedInternationalNumber.isEmpty()) resultList.add(item.internationalNumber)
+            else resultList.add(item.normalizedInternationalNumber)
         }
         return resultList.toTypedArray()
 
     }
 
+    //Recent calls
+    fun getAllRecentCalls()=myDatabaseDao.getAllRecentCalls()
 
-
+    fun insertRecentCall(call:RecentCall)=myDatabaseDao.insertRecentCall(call)
 
 }
 

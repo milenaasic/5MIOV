@@ -132,12 +132,6 @@ class MainActivity : AppCompatActivity() {
 
             when (savedInstanceState.get(CURRENT_FRAGMENT)) {
                 MAIN_FRAGMENT -> {
-
-
-
-
-
-
                     setMainFragmentUI()
                 }
                 DIAL_PAD_FRAGMENT -> {
@@ -160,7 +154,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-        }
+        }else setDialPadFragmentUI()
 
 
 
@@ -279,12 +273,26 @@ class MainActivity : AppCompatActivity() {
             elevation=(4 * resources.displayMetrics.density)
             title=resources.getString(R.string.app_name)
 
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                window.decorView.systemUiVisibility= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                window.statusBarColor= Color.TRANSPARENT
+            }
+
+            /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                window.decorView.systemUiVisibility= 0
+                setBackgroundColor(resources.getColor(android.R.color.background_light,null))
+                window.statusBarColor= resources.getColor(R.color.colorPrimaryDark,null)
+            }else{
+                setBackgroundColor(resources.getColor(android.R.color.background_light))
+                window.statusBarColor= resources.getColor(R.color.colorPrimaryDark)
+            }*/
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             window.decorView.systemUiVisibility= 0
             window.statusBarColor= resources.getColor(R.color.colorPrimaryDark, null)
-        }
+        }*/
 
     }
 
@@ -292,6 +300,7 @@ class MainActivity : AppCompatActivity() {
         binding.toolbarMain.apply {
             elevation = 0f
             navigationIcon = resources.getDrawable(R.drawable.ic_back_white, null)
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 setBackgroundColor(resources.getColor(R.color.colorPrimaryDark, null))
                 window.decorView.systemUiVisibility = 0
@@ -338,7 +347,18 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun setAboutFragmentUI(){
-        //binding.toolbarMain.elevation = 2f
+        binding.toolbarMain.apply {
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+                    window.decorView.systemUiVisibility = 0
+                    setBackgroundColor(resources.getColor(android.R.color.background_light, null))
+                    window.statusBarColor = resources.getColor(R.color.colorPrimaryDark, null)
+            }else{
+                    setBackgroundColor(resources.getColor(android.R.color.background_light))
+                    window.statusBarColor = resources.getColor(R.color.colorPrimaryDark)
+            }
+            }
     }
 
 

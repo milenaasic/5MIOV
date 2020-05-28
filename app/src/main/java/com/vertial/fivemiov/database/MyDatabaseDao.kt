@@ -1,12 +1,8 @@
 package com.vertial.fivemiov.database
 
 import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Query
-import com.vertial.fivemiov.model.E1Prenumber
-import com.vertial.fivemiov.model.SipAccount
-import com.vertial.fivemiov.model.User
-import com.vertial.fivemiov.model.WebApiVersion
+import androidx.room.*
+import com.vertial.fivemiov.model.*
 import com.vertial.fivemiov.utils.*
 
 @Dao
@@ -83,5 +79,16 @@ interface MyDatabaseDao {
 
     @Query("SELECT * FROM webapi_version_table")
     fun getAllWebAppVer(): List<WebApiVersion>
+
+
+    //RECENT CALLS TABLE
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertRecentCall(vararg recentCall: RecentCall)
+
+    @Delete
+    fun deleteRecentCalls(vararg recentCall: RecentCall)
+
+    @Query("SELECT * FROM recent_calls_table")
+    fun getAllRecentCalls(): LiveData<List<RecentCall>>
 
 }

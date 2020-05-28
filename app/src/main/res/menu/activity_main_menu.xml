@@ -8,17 +8,19 @@
         android:icon="@drawable/ic_share"
         android:title="Share"
         android:orderInCategory="10"
-        app:showAsAction="always" />
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/menu_item_myaccount"
         android:icon="@drawable/ic_account"
         android:title="@string/my_account"
-        app:showAsAction="never" />
+        android:orderInCategory="5"
+        app:showAsAction="always" />
 
     <item
         android:id="@+id/aboutFragment"
         android:icon="@drawable/ic_about_help"
         android:title="@string/about"
+        android:orderInCategory="15"
         app:showAsAction="never" />
 
 
