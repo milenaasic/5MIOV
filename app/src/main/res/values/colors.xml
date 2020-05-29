@@ -9,7 +9,7 @@
     <color name="errorrRed20alpha">#33B00020</color>
     <color name="errorrRed5alpha">#0DB00020</color>
     <color name="errorrRed60alpha">#99B00020</color>
-
+    <color name="primaryTransparent0">#3373C5FB</color>
     <color name="gray_disabled">#E0E0E0</color>
     <color name="transparent_black">#0D000000</color>
 

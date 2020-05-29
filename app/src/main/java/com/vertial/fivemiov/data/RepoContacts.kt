@@ -106,7 +106,7 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
 
 
 
-    fun getAllContacts(uri: Uri):List<ContactItem>{
+    /*fun getAllContacts(uri: Uri):List<ContactItem>{
 
         val CURSOR_ID = 0
         val CURSOR_LOOKUP_KEY = 1
@@ -160,10 +160,10 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
             return list
         }
 
-    }
+    }*/
 
 
-     fun getPhoneNumbersForContact(lookUpKey:String):List<PhoneItem>{
+     /*fun getPhoneNumbersForContact(lookUpKey:String):List<PhoneItem>{
 
         val CURSOR_ID=0
         val CURSOR_PHONE=1
@@ -214,7 +214,7 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
 
         return list
 
-    }
+    }*/
 
     suspend fun exportPhoneBook(token:String, phoneNumber:String,phoneBook:List<PhoneBookItem>,initialExport:Boolean=false){
         Log.i(MY_TAG, "EXPORTING PHONEBOOK")

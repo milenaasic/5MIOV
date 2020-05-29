@@ -11,7 +11,6 @@ import android.text.TextWatcher
 import android.util.Log
 import android.util.Patterns
 import android.widget.EditText
-import com.vertial.fivemiov.model.ContactItem
 import com.vertial.fivemiov.model.PhoneItem
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -57,8 +56,12 @@ fun String.isPhoneNumberValid():Boolean{
 }
 
 fun String.isPasswordValid():Boolean{
-    val passwordPattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&+-=])(?=\\S+$).{8,32}$"
-    val passwordMatcher = Regex(passwordPattern)
+    //val passwordPattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&+-=])(?=\\S+$).{8,32}$"
+    //^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{4,}$
+    val passPattern="^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[*.!@$%^&(){}:;<>,?/~_+-=|]).{8,32}$"
+
+    //"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,10}$"
+    val passwordMatcher = Regex(passPattern)
     return passwordMatcher.find(this) !=null
 
 }
@@ -133,20 +136,28 @@ fun EditText.afterTextChanged(afterTextChanged: (String) -> Unit) {
 
 //obrada kontakt liste
 
-fun removeEmptyContactItem(inputlist:List<ContactItem>):List<ContactItem>{
+/*fun removeEmptyContactItem(inputlist:List<ContactItem>):List<ContactItem>{
 
     val list= inputlist.toMutableList()
     Log.i(MYTAG,"poslednji element je ${list.last()}")
     if(list.last().name== EMPTY_NAME) list.removeAt(list.size-1)
     return list
-}
+}*/
 
 fun formatDateFromMillis(timeInMillis:Long):String{
-    val df = DateFormat.getDateInstance(DateFormat.LONG, Locale.US)
+    val df = DateFormat.getDateInstance(DateFormat.MEDIUM)
     val calendar = Calendar.getInstance().apply {
         this.timeInMillis=timeInMillis
      }
 
     return df.format(calendar.time)
 
+}
+
+fun formatTimeFromMillis(time: Long): String {
+    val df = DateFormat.getTimeInstance(DateFormat.SHORT)
+    val calendar = Calendar.getInstance().apply {
+        this.timeInMillis=timeInMillis
+    }
+    return df.format(calendar.time)
 }

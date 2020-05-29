@@ -88,9 +88,10 @@ class MainFragment : Fragment(){
 
         initalizeAdapter()
 
-        if(checkForPermissions()) {
+        //ovo radim i onstart
+        /*if(checkForPermissions()) {
                 if(shouldExportPhoneBook()) (requireActivity() as MainActivity).exportPhoneBook()
-        }
+        }*/
 
         return binding.root
     }
@@ -227,11 +228,12 @@ class MainFragment : Fragment(){
 
     override fun onStart() {
         super.onStart()
-        if(checkForPermissions())viewModel.populateContactList()
+        if(checkForPermissions()){
+                    viewModel.populateContactList()
+                    if(shouldExportPhoneBook()) (requireActivity() as MainActivity).exportPhoneBook()
+        }
         getE1Prenumber()
         Log.i(MYTAG, "ON START")
-
-
 
     }
 

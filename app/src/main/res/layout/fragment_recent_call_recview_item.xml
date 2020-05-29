@@ -45,10 +45,10 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:layout_marginBottom="8dp"
-           app:setPhoneNumber="@{recentCallItem}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="@+id/recentCallNametextView"
             app:layout_constraintTop_toBottomOf="@+id/recentCallNametextView"
+            app:setPhoneNumber="@{recentCallItem}"
             tools:text="+1 56 11 222 333" />
 
         <TextView
