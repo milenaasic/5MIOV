@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
 import android.os.Handler
+import android.util.Base64
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -139,6 +140,7 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
                 }
           })
 
+
     }
 
     private fun gotoMainActivity() {
@@ -182,6 +184,7 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
             Log.i(MYTAG,"  SMS  retriever failure, ${it.message}")
             // Failed to start retriever, inspect Exception for more details
         }
+
 
 
     }

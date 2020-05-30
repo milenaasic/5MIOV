@@ -92,7 +92,10 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
     // Registration fragment
     suspend fun sendRegistationToServer(phone:String,smsResend:Boolean){
         Log.i(MY_TAG,"send registration $phone")
-        val defResponse=myAPI.sendRegistrationToServer(request = NetRequest_Registration(phoneNumber = phone ))
+        val defResponse=myAPI.sendRegistrationToServer(
+                phoneNumber = phone,
+                request = NetRequest_Registration(phoneNumber = phone )
+                )
         try{
 
             val result:NetResponse_Registration=defResponse.await()
@@ -105,7 +108,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
             val errorMessage:String?=e.message
             GlobalScope.launch {
                 withContext(IO){
-                    SendErrorrToServer(myAPI,"sendRegistationToServer,$phone,smsResend_$smsResend",e.message.toString()).sendError()
+                    SendErrorrToServer(myAPI,phone,"sendRegistationToServer,$phone,smsResend_$smsResend",e.message.toString()).sendError()
                 } }
             if(smsResend) _smsResendNetworkError.value=e.message
             else _registrationNetworkError.value=e.toString()
@@ -132,7 +135,9 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
 
         Log.i(MY_TAG,"add number to account $phone,$email,$password")
 
-        val defResponse=myAPI.sendAddNumberToAccount(request = NetRequest_AddNumberToAccount(phoneNumber = phone,email = email,password = password ))
+        val defResponse=myAPI.sendAddNumberToAccount(
+                phoneNumber = phone,
+                request = NetRequest_AddNumberToAccount(phoneNumber = phone,email = email,password = password ))
         try{
             val result=defResponse.await()
             Log.i(MY_TAG,"uspesno dodavanje telefona $result")
@@ -145,7 +150,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
             val errorMessage:String?=e.message
             GlobalScope.launch {
                 withContext(IO){
-                    SendErrorrToServer(myAPI,"assignPhoneNumberToAccount $phone, $email,$password smsResend $smsResend",e.message.toString()).sendError()
+                    SendErrorrToServer(myAPI,phone,"assignPhoneNumberToAccount $phone, $email,$password smsResend $smsResend",e.message.toString()).sendError()
                 } }
             if(smsResend)_smsResendNetworkError.value=errorMessage
             else _addNumberToAccountNetworkError.value=errorMessage
@@ -167,7 +172,10 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
     //NUMBER EXISTS IN DB  fragment
     suspend fun numberExistsInDBVerifyAccount(enteredPhoneNumber:String, email:String, password:String,smsResend: Boolean=false){
 
-        val defResult=myAPI.numberExistsInDBVerifyAccount(request = NetRequest_NmbExistsInDB_UserHasAccount(enteredPhoneNumber,email, password))
+        val defResult=myAPI.numberExistsInDBVerifyAccount(
+                phoneNumber = enteredPhoneNumber,
+                request = NetRequest_NmbExistsInDB_UserHasAccount(enteredPhoneNumber,email, password)
+                )
         try{
             val result=defResult.await()
             Log.i(MY_TAG,"nmb exists in DB user has account $result")
@@ -179,7 +187,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
             val errorMessage:String?=e.message
             GlobalScope.launch {
                 withContext(IO){
-                    SendErrorrToServer(myAPI,"numberExistsInDBVerifyAccount $enteredPhoneNumber $email,$password smsResend $smsResend",e.message.toString()).sendError()
+                    SendErrorrToServer(myAPI,enteredPhoneNumber,"numberExistsInDBVerifyAccount $enteredPhoneNumber $email,$password smsResend $smsResend",e.message.toString()).sendError()
                 } }
             if(smsResend) _smsResendNetworkError.value=e.message
             else _nmbExistsInDBUserHasAccountError.value=errorMessage
@@ -190,7 +198,10 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
 
     suspend fun numberExistsInDB_NOAccount(enteredPhoneNumber:String,smsResend: Boolean=false){
 
-        val defResult=myAPI.numberExistsInDB_NOAccount(request = NetRequest_NmbExistsInDB_NoAccount(phoneNumber = enteredPhoneNumber))
+        val defResult=myAPI.numberExistsInDB_NOAccount(
+                phoneNumber = enteredPhoneNumber,
+                request = NetRequest_NmbExistsInDB_NoAccount(phoneNumber = enteredPhoneNumber)
+                )
         try{
             val result=defResult.await()
             Log.i(MY_TAG,"nmb exists in DB no account $result")
@@ -202,7 +213,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
             val errorMessage:String?=e.message
             GlobalScope.launch {
                 withContext(IO){
-                    SendErrorrToServer(myAPI,"numberExistsInDB_NOAccount $enteredPhoneNumber, smsResend $smsResend",e.message.toString()).sendError()
+                    SendErrorrToServer(myAPI,enteredPhoneNumber,"numberExistsInDB_NOAccount $enteredPhoneNumber, smsResend $smsResend",e.message.toString()).sendError()
                 } }
             _nmbExistsInDB_NoAccountError.value=errorMessage
             Log.i(MY_TAG,"greska nmb exists in DB no account $e")
@@ -233,7 +244,10 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
     suspend fun authorizeThisUser(phone:String,smsToken:String,email: String,password: String){
 
         Log.i(MY_TAG,"send authorization $phone i $smsToken")
-        val defResponse=myAPI.authorizeUser(request = NetRequest_Authorization(phoneNumber = phone,smstoken = smsToken,email = email,password = password ))
+        val defResponse=myAPI.authorizeUser(
+                phoneNumber = phone,
+                request = NetRequest_Authorization(phoneNumber = phone,smstoken = smsToken,email = email,password = password )
+                )
         try{
             val result=defResponse.await()
             Log.i(MY_TAG,"uspesna autorizacija $result")
@@ -271,7 +285,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
             val errorMessage:String?=e.message
             GlobalScope.launch {
                 withContext(IO){
-                    SendErrorrToServer(myAPI,"authorizeThisUser,$phone,$smsToken,$email,$password",e.message.toString()).sendError()
+                    SendErrorrToServer(myAPI,phone,"authorizeThisUser,$phone,$smsToken,$email,$password",e.message.toString()).sendError()
                 } }
             _authorizationNetworkError.value=errorMessage
             Log.i(MY_TAG,"greska je $e")
@@ -297,29 +311,15 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
     }
 
 
-    /*suspend fun resendSMS(phone: String){
-        val defResponse=myAPI.sendRegistrationToServer(request = NetRequest_Registration(phoneNumber = phone ))
-        try{
-            val result=defResponse.await()
-            _smsResendSuccess.value=result.message
-        } catch (e:Throwable){
-            val errorMessage:String?=e.message
-            _smsResendNetworkError.value=e.message
-            Log.i(MY_TAG,"greska $errorMessage, a cela gresak je $e")
-        }
-
-    }*/
-
-
-
-
-
     // glavni deo app-a, SetAccountAndEmail Fragment
     suspend fun  setAccountEmailAndPasswordForUser(phoneNumber:String,token: String,email: String,password: String){
         Log.i(MY_TAG,"setcredentials $phoneNumber,$token,$email,$password")
 
-        val defResult=myAPI.setAccountEmailAndPasswordForUser(request = NetRequest_SetAccountEmailAndPass(
-            phoneNumber=phoneNumber,authToken= token,email = email,password = password))
+        val defResult=myAPI.setAccountEmailAndPasswordForUser(
+            phoneNumber = phoneNumber,
+            request = NetRequest_SetAccountEmailAndPass(
+                            phoneNumber=phoneNumber,authToken= token,email = email,password = password)
+        )
         try {
             val result = defResult.await()
             Log.i(MY_TAG, "uspesno setovanje accounta $result")
@@ -357,7 +357,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
             val errorMessage:String?=e.message
             GlobalScope.launch {
                 withContext(IO){
-                    SendErrorrToServer(myAPI,"setAccountEmailAndPasswordForUser $phoneNumber, $token, $email, $password",e.message.toString()).sendError()
+                    SendErrorrToServer(myAPI,phoneNumber,"setAccountEmailAndPasswordForUser $phoneNumber, $token, $email, $password",e.message.toString()).sendError()
                 } }
             _setAccountEmailAndPassError.value=errorMessage
             Log.i(MY_TAG,"greska $e")
@@ -467,7 +467,10 @@ class UncancelableJob(
         authToken: String
     ) {
         Log.i(MY_TAG,"usao u resetSipAccess")
-        val defResult= myAPI.resetSipAccess(request = NetRequest_ResetSipAccess(authToken=authToken,phoneNumber = phone))
+        val defResult= myAPI.resetSipAccess(
+                phoneNumber = phone,
+                request = NetRequest_ResetSipAccess(authToken=authToken,phoneNumber = phone)
+                )
         try {
             val result=defResult.await()
             if(result.authTokenMismatch==true) logoutAll(myDatabaseDao)
@@ -480,9 +483,10 @@ class UncancelableJob(
         Log.i(MY_TAG, "usao u callSetNewE1")
 
         val defResult = myAPI.setNewE1(
+            phoneNumber = phone,
             request = NetRequest_SetE1Prenumber(
-                authToken = token,
-                phoneNumber = phone
+                    authToken = token,
+                    phoneNumber = phone
             )
         )
         try {

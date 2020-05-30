@@ -11,10 +11,7 @@ import android.provider.ContactsContract
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
-import android.webkit.WebResourceRequest
-import android.webkit.WebResourceResponse
-import android.webkit.WebView
-import android.webkit.WebViewClient
+import android.webkit.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
@@ -30,6 +27,7 @@ import com.vertial.fivemiov.databinding.ActivityWebViewBinding
 import com.vertial.fivemiov.model.PhoneBookItem
 import com.vertial.fivemiov.model.User
 import com.vertial.fivemiov.ui.main_activity.MainActivity
+import kotlinx.android.synthetic.main.fragment_detail_contact.*
 
 
 private const val MY_TAG="MY_WebVIewActivity"
@@ -39,8 +37,8 @@ class WebViewActivity : AppCompatActivity() {
     private lateinit var viewModel: WebViewViewModel
 
     companion object{
-         const val HEADER_AUTH_TOKEN_KEY="wvtk"
-         const val HEADER_AUTH_PHONE_KEY="phone"
+         const val HEADER_AUTH_TOKEN_KEY="X-Wvtk"
+         const val HEADER_AUTH_PHONE_KEY="X-Phone-Number"
          const val DASHBOARD_URL= BASE_URL+"dashboard"
     }
 
@@ -152,7 +150,7 @@ class WebViewActivity : AppCompatActivity() {
 
     inner class MyWebWievClient() : WebViewClient() {
 
-        override fun shouldOverrideUrlLoading(
+        /*override fun shouldOverrideUrlLoading(
             view: WebView?,
             request: WebResourceRequest?
         ): Boolean {
@@ -161,7 +159,7 @@ class WebViewActivity : AppCompatActivity() {
             )
             return super.shouldOverrideUrlLoading(view, request)
 
-        }
+        }*/
 
 
         override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
@@ -176,8 +174,17 @@ class WebViewActivity : AppCompatActivity() {
             Log.i(MY_TAG, "web view client onPage finished")
             binding.webViewLinLayout.visibility= View.GONE
 
-
         }
+
+        override fun onReceivedError(
+            view: WebView?,
+            request: WebResourceRequest?,
+            error: WebResourceError?
+        ) {
+            Log.i(MY_TAG," webview greska $error, $detail_contact_rec_view, $request")
+            super.onReceivedError(view, request, error)
+        }
+
 
     }
 }

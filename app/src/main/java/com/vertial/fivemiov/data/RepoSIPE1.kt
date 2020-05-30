@@ -36,22 +36,14 @@ class RepoSIPE1 (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIService){
 
     }
 
-    /*suspend fun setNewE1(phoneNumber: String,token: String){
-
-        val defResponse=myAPI.setNewE1(request = NetRequest_SetE1Prenumber(authToken = token,phoneNumber = phoneNumber))
-        try {
-            val response=defResponse.await()
-        }catch (e:Throwable){
-            Log.i(MYTAG," ruta setNewE1, greska ${e.message}")
-
-        }
-
-    }*/
 
     suspend fun getUserNoLiveData()=myDatabaseDao.getUserNoLiveData()
 
     suspend fun getSipAccessCredentials(token: String,phone: String){
-        val defResponse=myAPI.getSipAccess(request = NetRequest_GetSipAccessCredentials(authToken = token,phoneNumber = phone))
+        val defResponse=myAPI.getSipAccess(
+                phoneNumber = phone,
+                request = NetRequest_GetSipAccessCredentials(authToken = token,phoneNumber = phone)
+                )
         try {
             val response=defResponse.await()
             if(response.authTokenMismatch==true) logoutAll(myDatabaseDao)
@@ -59,6 +51,11 @@ class RepoSIPE1 (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIService){
 
         }catch (e:Throwable){
             Log.i(MYTAG," getSipAccess greska ${e.message}")
+            GlobalScope.launch {
+                withContext(Dispatchers.IO){
+                    SendErrorrToServer(myAPI,phone,"getSipAccessCredentials $phone, $token",e.message.toString()).sendError()
+                } }
+
             _getSipAccessCredentialsNetError.value=e.message
 
         }
@@ -90,6 +87,7 @@ class UncancelableJobSip(val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIServic
 
         } catch (e: Exception) {
             Log.i(MY_TAG, "db greska reset sip credentials ${e.message}")
+
         }
 
     }
@@ -100,12 +98,19 @@ class UncancelableJobSip(val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIServic
         phone: String
     ) {
         Log.i(MY_TAG, "usao u resetSipAccess")
-        val defResult = myAPI.resetSipAccess(request = NetRequest_ResetSipAccess(authToken=authToken,phoneNumber = phone))
+        val defResult = myAPI.resetSipAccess(
+                phoneNumber = phone,
+                request = NetRequest_ResetSipAccess(authToken=authToken,phoneNumber = phone)
+                )
         try {
             val result = defResult.await()
             if(result.authTokenMismatch==true) logoutAll(myDatabaseDao)
         } catch (e: Throwable) {
             Log.i(MY_TAG, "greska resetSipAccess ${e.message}")
+            GlobalScope.launch {
+                withContext(Dispatchers.IO){
+                    SendErrorrToServer(myAPI,phone,"resetSipAccess $phone, $authToken",e.message.toString()).sendError()
+                } }
         }
     }
 
