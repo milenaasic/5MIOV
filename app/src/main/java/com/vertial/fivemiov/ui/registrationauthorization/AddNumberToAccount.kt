@@ -44,7 +44,9 @@ class AddNumberToAccount : Fragment() {
             ViewModelProvider(this)[RegAuthActivityViewModel::class.java]
         }
 
-        binding.addNmbPhoneEditText.setText(PLUS_NIGERIAN_PREFIX)
+        if(!activityViewModel?.enteredPhoneNumber.isNullOrBlank() && !activityViewModel?.enteredPhoneNumber.isNullOrEmpty()) {
+            binding.addNmbPhoneEditText.setText(activityViewModel?.enteredPhoneNumber)
+        }else binding.addNmbPhoneEditText.setText(PLUS_NIGERIAN_PREFIX)
 
         binding.addphoneButton.setOnClickListener {
 

@@ -114,6 +114,7 @@
 	<string name="terms_of_use_cancel">CANCEL</string>
 	<string name="terms_of_use_title">TERMS OF SERVICE</string>
     <string name="no_recent_calls">No recent calls.</string>
+    <string name="end_to_end_encrypted">end-to-end encrypted</string>
 
 
 </resources>

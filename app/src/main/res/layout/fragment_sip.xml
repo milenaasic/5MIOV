@@ -29,13 +29,49 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintGuide_percent="0.2"
+            app:layout_constraintGuide_percent="0.25"
             app:layout_constraintTop_toBottomOf="@+id/statustextView" />
+
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/encryptedLayout"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:gravity="center_horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/encryptedImage"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:tint="@color/colorPrimaryDark"
+                app:layout_constraintBottom_toBottomOf="@+id/encryptedText"
+                app:layout_constraintEnd_toStartOf="@+id/encryptedText"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/encryptedText"
+                app:srcCompat="@drawable/ic_security" />
+
+            <TextView
+                android:id="@+id/encryptedText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/end_to_end_encrypted"
+                android:textColor="@color/colorPrimaryDark"
+                android:textSize="12sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/encryptedImage"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <TextView
             android:id="@+id/nametextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:text="@string/_5miov"
             android:textAppearance="@style/TextAppearance.AppCompat.Display1"
             android:textColor="@color/colorPrimaryDark"
@@ -43,7 +79,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/encryptedLayout" />
 
         <TextView
             android:id="@+id/statustextView"
@@ -75,13 +111,13 @@
             android:id="@+id/sipnumbertextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            tools:text="+3811155123"
             android:textColor="@color/colorPrimaryDark"
             app:layout_constraintBottom_toTopOf="@+id/statustextView"
             app:layout_constraintEnd_toEndOf="@+id/nametextView"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="@+id/nametextView"
-            app:layout_constraintTop_toBottomOf="@+id/nametextView" />
+            app:layout_constraintTop_toBottomOf="@+id/nametextView"
+            tools:text="+3811155123" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/sip_mic_Button"
@@ -109,7 +145,7 @@
             android:layout_width="80dp"
             android:layout_height="80dp"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="32dp"
 
             android:elevation="1dp"
             android:scaleType="center"
@@ -126,6 +162,8 @@
             app:maxImageSize="40dp"
             app:rippleColor="@color/colorPrimary"
             app:srcCompat="@drawable/ic_volume_off" />
+
+
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

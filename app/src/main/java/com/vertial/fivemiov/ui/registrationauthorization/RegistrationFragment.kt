@@ -81,6 +81,9 @@ class RegistrationFragment : Fragment() {
         }
 
         binding.addNumToAccountButton.setOnClickListener {
+            if(!binding.phoneNumberEditText.text.isNullOrBlank() && !binding.phoneNumberEditText.text.isNullOrEmpty() ) {
+                    activityViewModel.enteredPhoneNumber=binding.phoneNumberEditText.text.toString()
+            }
             findNavController().navigate(RegistrationFragmentDirections.actionRegistrationFragmentToAddNumberToAccount())
         }
 

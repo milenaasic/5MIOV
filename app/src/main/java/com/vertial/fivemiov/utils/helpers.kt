@@ -154,10 +154,10 @@ fun formatDateFromMillis(timeInMillis:Long):String{
 
 }
 
-fun formatTimeFromMillis(time: Long): String {
+fun formatTimeFromMillis(mytimeInMillis: Long): String {
     val df = DateFormat.getTimeInstance(DateFormat.SHORT)
     val calendar = Calendar.getInstance().apply {
-        this.timeInMillis=timeInMillis
+        this.timeInMillis=mytimeInMillis
     }
     return df.format(calendar.time)
 }

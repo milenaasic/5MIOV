@@ -44,8 +44,8 @@ abstract class MyDatabase:RoomDatabase(){
                                 super.onCreate(db)
                                 Log.i(NAME,"DB on create")
 
-                                //db.execSQL("CREATE TRIGGER delete_2_callbacks BEFORE INSERT ON recent_calls_table WHEN (select count(*) from recent_calls_table)>4" +
-                                               // " BEGIN  DELETE FROM recent_calls_table WHERE id IN  (SELECT id FROM recent_calls_table ORDER BY id limit (select count(*) -2 from recent_calls_table)); END ")
+                                db.execSQL("CREATE TRIGGER delete_2_callbacks BEFORE INSERT ON recent_calls_table WHEN (select count(*) from recent_calls_table)>4" +
+                                                " BEGIN  DELETE FROM recent_calls_table WHERE id IN  (SELECT id FROM recent_calls_table ORDER BY id limit (select count(*) -2 from recent_calls_table)); END ")
 
                                val myvalues=ContentValues().apply {
                                     put("user_phone", EMPTY_PHONE_NUMBER)
