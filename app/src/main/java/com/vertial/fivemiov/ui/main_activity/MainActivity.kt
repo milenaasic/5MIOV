@@ -1,5 +1,6 @@
 package com.vertial.fivemiov.ui.main_activity
 
+import android.app.Application
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
@@ -31,11 +32,10 @@ import com.vertial.fivemiov.api.MyAPI
 import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.ActivityMainBinding
+import com.vertial.fivemiov.ui.initializeSharedPrefToFalse
 import com.vertial.fivemiov.ui.registrationauthorization.RegistrationAuthorizationActivity
 import com.vertial.fivemiov.ui.webView.WebViewActivity
-import com.vertial.fivemiov.utils.EMPTY_EMAIL
-import com.vertial.fivemiov.utils.EMPTY_PHONE_NUMBER
-import com.vertial.fivemiov.utils.EMPTY_TOKEN
+import com.vertial.fivemiov.utils.*
 
 
 private const val MY_TAG="MY_MainActivity"
@@ -62,8 +62,7 @@ class MainActivity : AppCompatActivity() {
         const val ABOUT_FRAGMENT=5
 
         const val MAIN_ACTIVITY_SHARED_PREF_NAME = "MainActivitySharedPref"
-        const val PHONEBOOK_IS_EXPORTED = "phone_book_is_exported"
-        const val DISCLAIMER_WAS_SHOWN="disclaimer_was_shown"
+
 
     }
 
@@ -181,7 +180,7 @@ class MainActivity : AppCompatActivity() {
             if (it) {
                 viewModel.phoneBookExportFinished()
                 val sharedPreferences =
-                    getSharedPreferences(MAIN_ACTIVITY_SHARED_PREF_NAME, Context.MODE_PRIVATE)
+                    application.getSharedPreferences(DEFAULT_SHARED_PREFERENCES, Context.MODE_PRIVATE)
                 if (sharedPreferences.contains(PHONEBOOK_IS_EXPORTED)) {
                     val isExported = sharedPreferences.getBoolean(PHONEBOOK_IS_EXPORTED, false)
                     Log.i(
@@ -189,13 +188,13 @@ class MainActivity : AppCompatActivity() {
                         " usao u ima phoneBookIsExported promenljiva i vrednost je $isExported"
                     )
                     sharedPreferences.edit().putBoolean(PHONEBOOK_IS_EXPORTED, true).apply()
-                    Log.i(MY_TAG, "  phoneBookIsExported promenljiva posle promene $isExported")
 
                 }
             }
         }
 
         })
+
 
         viewModel.shouldShowSetAccountDisclaimer.observe(this, Observer {
             Log.i(MY_TAG,"observera za setAccount Disclaimer je $it")
@@ -208,6 +207,19 @@ class MainActivity : AppCompatActivity() {
                 }
             }
          })
+
+        viewModel.loggingOut.observe(this, Observer {
+
+            if(it!=null){
+                if(it) {
+                        initializeSharedPrefToFalse(application)
+                        viewModel.resetLoggingOutToFalse()
+                }
+
+            }
+
+         })
+
 
         viewModel.showSetAccountDisclaimer()
 
@@ -388,16 +400,6 @@ class MainActivity : AppCompatActivity() {
                         startActivity(share)
                         return true
 
-                /*val sendIntent= Intent().apply{
-                    action=Intent.ACTION_SEND
-                    putExtra(Intent.EXTRA_TEXT,mydetailNews.newsurl?: URL_SSESSMENTS_HOME)
-                    putExtra(Intent.EXTRA_TITLE,mydetailNews.title)
-                    type="text/plain"
-                }
-                val shareIntent=Intent.createChooser(sendIntent,null)
-                startActivity(shareIntent)*/
-
-
             }
             else->return item.onNavDestinationSelected(navController) || super.onOptionsItemSelected(item)
 
@@ -405,33 +407,6 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    /*private fun handleLogOut() {
-       if(userHasEmailAndPass) logout()
-        else showAlertDialog()
-
-    }*/
-
-    /*private fun logout() {
-        Log.i(MY_TAG,"   log out funkcija")
-        viewModel.logout()
-    }*/
-
-    /*private fun showAlertDialog(){
-        val alertDialog=AlertDialog.Builder(this)
-            .setMessage(getString(R.string.log_out_warning))
-            .setPositiveButton("LOG OUT ANYWAY",object:DialogInterface.OnClickListener {
-                override fun onClick(p0: DialogInterface?, p1: Int) {
-                    logout()
-                }
-            })
-            .setNeutralButton("CANCEL",object :DialogInterface.OnClickListener{
-                override fun onClick(p0: DialogInterface?, p1: Int) {
-                    p0?.dismiss()}
-                })
-
-        alertDialog.show()
-
-    }*/
 
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -476,7 +451,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setSharedPrefDisclaimerShownValueToTrue() {
         val sharedPreferences =
-            getSharedPreferences(MAIN_ACTIVITY_SHARED_PREF_NAME, Context.MODE_PRIVATE)
+            application.getSharedPreferences(DEFAULT_SHARED_PREFERENCES, Context.MODE_PRIVATE)
 
         if (sharedPreferences.contains(DISCLAIMER_WAS_SHOWN)) {
             Log.i(
@@ -552,7 +527,6 @@ class MainActivity : AppCompatActivity() {
         Toast.makeText(this, "User in DB Main:${viewModel.userData.value}",Toast.LENGTH_LONG).show()
     }
 
-
-
-
 }
+
+

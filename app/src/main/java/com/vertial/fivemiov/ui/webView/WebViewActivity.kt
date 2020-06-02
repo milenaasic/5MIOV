@@ -22,11 +22,15 @@ import com.vertial.fivemiov.R
 import com.vertial.fivemiov.api.BASE_URL
 import com.vertial.fivemiov.api.MyAPI
 import com.vertial.fivemiov.data.RepoContacts
+import com.vertial.fivemiov.data.produceJWtToken
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.ActivityWebViewBinding
 import com.vertial.fivemiov.model.PhoneBookItem
 import com.vertial.fivemiov.model.User
+import com.vertial.fivemiov.ui.initializeSharedPrefToFalse
 import com.vertial.fivemiov.ui.main_activity.MainActivity
+import com.vertial.fivemiov.utils.DEFAULT_SHARED_PREFERENCES
+import com.vertial.fivemiov.utils.PHONEBOOK_IS_EXPORTED
 import kotlinx.android.synthetic.main.fragment_detail_contact.*
 
 
@@ -39,6 +43,7 @@ class WebViewActivity : AppCompatActivity() {
     companion object{
          const val HEADER_AUTH_TOKEN_KEY="X-Wvtk"
          const val HEADER_AUTH_PHONE_KEY="X-Phone-Number"
+         const val HEADER_SIGNATURE="Sign"
          const val DASHBOARD_URL= BASE_URL+"dashboard"
     }
 
@@ -98,50 +103,48 @@ class WebViewActivity : AppCompatActivity() {
 
                 viewModel.phoneBookExportFinished()
 
-                val sharedPreferences = getSharedPreferences(
-                    MainActivity.MAIN_ACTIVITY_SHARED_PREF_NAME,
+                val sharedPreferences = application.getSharedPreferences(
+                    DEFAULT_SHARED_PREFERENCES,
                     Context.MODE_PRIVATE
                 )
-                if (sharedPreferences.contains(MainActivity.PHONEBOOK_IS_EXPORTED)) {
+                if (sharedPreferences.contains(PHONEBOOK_IS_EXPORTED)) {
                     val isExported =
-                        sharedPreferences.getBoolean(MainActivity.PHONEBOOK_IS_EXPORTED, false)
+                        sharedPreferences.getBoolean(PHONEBOOK_IS_EXPORTED, false)
                     Log.i(
                         MY_TAG,
                         " usao u ima phoneBookIsExported promenljiva i vrednost je $isExported"
                     )
-                    sharedPreferences.edit().putBoolean(MainActivity.PHONEBOOK_IS_EXPORTED, true)
+                    sharedPreferences.edit().putBoolean(PHONEBOOK_IS_EXPORTED, true)
                         .apply()
                     Log.i(MY_TAG, "  phoneBookIsExported promenljiva posle promene $isExported")
                 }
             }
         })
 
-      // viewModel.loadloadDashboard()
+        viewModel.loggingOut.observe(this, Observer {
+            if(it!=null){
+                if(it) {
+                    initializeSharedPrefToFalse(application)
+                    viewModel.resetLoggingOutToFalse()
+                }
+
+            }
+        })
+
+
     }
 
 
-    /*override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        Log.i(MY_TAG, "  on key down $keyCode, event je $event")
-
-        if (event?.action == KeyEvent.ACTION_DOWN) {
-            when (keyCode) {
-                KeyEvent.KEYCODE_BACK -> {
-                    if (binding.myWebView.canGoBack()) {
-                        binding.myWebView.goBack()
-                    } else {
-                        finish()
-                    }
-                    return true
-                }
-            }
-        }
-        return super.onKeyDown(keyCode, event)
-    }*/
 
     fun getCustomHeaders(token:String, phone:String): Map<String, String> {
         val map = mutableMapOf<String, String>()
         map.put(HEADER_AUTH_TOKEN_KEY, token)
         map.put(HEADER_AUTH_PHONE_KEY,phone)
+        map.put(HEADER_SIGNATURE, produceJWtToken(
+                                                Pair(HEADER_AUTH_TOKEN_KEY,token),
+                                                Pair(HEADER_AUTH_PHONE_KEY,phone)
+                                )
+        )
         return map
     }
 

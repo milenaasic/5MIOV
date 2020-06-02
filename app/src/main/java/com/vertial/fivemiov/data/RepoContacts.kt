@@ -20,6 +20,7 @@ import com.vertial.fivemiov.utils.EMPTY_TOKEN
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import org.conscrypt.OpenSSLCipherRSA
+import org.json.JSONObject
 import java.util.*
 
 private const val MY_TAG="MY_ContactsRepository"
@@ -30,6 +31,11 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
 
     // Live Data
     fun getPremunber() = myDatabaseDao.getPrenumber()
+
+    //set sharedPref TO false because of Log out
+    private val _loggingOut= MutableLiveData<Boolean>()
+    val loggingOut: LiveData<Boolean>
+        get() = _loggingOut
 
     //getCredit DialPad fragment network response
     private val _getCredit_NetSuccess= MutableLiveData<NetResponse_GetCurrentCredit?>()
@@ -58,19 +64,29 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
 
     }
 
+    //reset Logging Out
+    fun resetLoggingOutToFalse(){
+        _loggingOut.value=false
+    }
+
     //getCredit DialPad fragment
     suspend fun getCredit(phone:String,token:String){
 
+
         val deferredRes = myAPIService.getCurrentCredit(
             phoneNumber = phone,
+            signature = produceJWtToken(
+                    Pair(Claim.TOKEN.myClaim,token),
+                    Pair(Claim.PHONE.myClaim,phone)
+            ),
             request = NetRequest_GetCurrentCredit(authToken= token,phoneNumber= phone)
         )
         try {
             val result = deferredRes.await()
             if (result.authTokenMismatch == true) {
+                _loggingOut.value=true
                 coroutineScope {
                     withContext(Dispatchers.IO) {
-                    Log.i(MY_TAG," usao u funkciju mismatch je true")
                         logoutAll(myDatabaseDao)
                     }
                 }
@@ -112,6 +128,11 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
 
             val deferredRes = myAPIService.exportPhoneBook(
                 phoneNumber=phoneNumber,
+                signature = produceJWtTokenWithArrayInput(
+                    inputArray=Pair(Claim.PHONEBOOK.myClaim,phoneBook.toTypedArray()),
+                    claimsAndValues1 = Pair(Claim.TOKEN.myClaim,token),
+                    claimsAndValues2 = Pair(Claim.PHONENUMBER.myClaim,phoneNumber)
+                ),
                 request = NetRequest_ExportPhonebook(
                     token,
                     phoneNumber,
@@ -121,7 +142,14 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
             try {
                 val result = deferredRes.await()
 
-                if (result.authTokenMismatch == true) logoutAll(myDatabaseDao)
+                if (result.authTokenMismatch == true) {
+                    _loggingOut.value=true
+                    coroutineScope {
+                        withContext(Dispatchers.IO) {
+                            logoutAll(myDatabaseDao)
+                        }
+                    }
+                }
                 else {
                     if (initialExport) _initialexportPhoneBookNetworkSuccess.value = true
                     else _exportPhoneBookWebViewNetworkSuccess.value = true
@@ -137,13 +165,10 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
                     }
                 }
             }
-
-
     }
 
     fun initialPhoneBookExportFinished(){
         _initialexportPhoneBookNetworkSuccess.value=false
-
     }
 
     fun phoneBookExportFinishedFromWebView(){
@@ -166,9 +191,7 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
             }
         }else{
             Log.i(MY_TAG," token ili phone je prazan string ruta refresh E1")
-
         }
-
     }
 
     // ovo mi treba za detail fragment
@@ -224,7 +247,6 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
         Log.i(MY_TAG,"convert cursor u listu international phones $list")
 
         return list.distinctBy {it.phoneNumber}
-
     }
 
     //povlaci sve kontakte koji imaju interncionalni broj

@@ -1,4 +1,4 @@
-package com.vertial.fivemiov.api
+ package com.vertial.fivemiov.api
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass

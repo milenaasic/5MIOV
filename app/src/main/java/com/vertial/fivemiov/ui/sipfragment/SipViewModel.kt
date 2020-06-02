@@ -36,6 +36,12 @@ class SipViewModel(val mySipRepo: RepoSIPE1, val myRepository: Repo, application
     val getSipCredentialsNetSuccess=mySipRepo.getSipAccessCredentialsNetSuccess
     val getSipAccessCredentialsNetError=mySipRepo.getSipAccessCredentialsNetError
 
+    //logging out zbog token mismatch
+    val loggingOut=mySipRepo.loggingOut
+    fun resetLoggingOutToFalse(){
+        mySipRepo.resetLoggingOutToFalse()
+    }
+
     // trazi nove sip credentials
     fun getSipAccountCredentials(){
 

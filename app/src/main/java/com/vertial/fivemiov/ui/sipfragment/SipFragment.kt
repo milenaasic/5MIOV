@@ -22,6 +22,7 @@ import com.vertial.fivemiov.data.Repo
 import com.vertial.fivemiov.data.RepoSIPE1
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentSipBinding
+import com.vertial.fivemiov.ui.initializeSharedPrefToFalse
 import kotlinx.android.synthetic.main.fragment_sip.*
 
 
@@ -179,6 +180,17 @@ class SipFragment : Fragment() {
             }
 
           })
+
+        viewModel.loggingOut.observe(viewLifecycleOwner, Observer {
+            if(it!=null){
+                if(it) {
+                    initializeSharedPrefToFalse(requireActivity().application)
+                    viewModel.resetLoggingOutToFalse()
+                }
+
+            }
+        })
+
 
     }
 

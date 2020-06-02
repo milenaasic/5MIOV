@@ -34,13 +34,12 @@ import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentMainLinLayoutBinding
 import com.vertial.fivemiov.model.ContactItem
 import com.vertial.fivemiov.model.ContactItemWithInternationalNumbers
+import com.vertial.fivemiov.ui.initializeSharedPrefToFalse
 import com.vertial.fivemiov.ui.main_activity.MainActivity
-import com.vertial.fivemiov.ui.main_activity.MainActivity.Companion.MAIN_ACTIVITY_SHARED_PREF_NAME
-import com.vertial.fivemiov.ui.main_activity.MainActivity.Companion.PHONEBOOK_IS_EXPORTED
 import com.vertial.fivemiov.ui.main_activity.MainActivityViewModel
-import com.vertial.fivemiov.utils.EMPTY_EMAIL
-import com.vertial.fivemiov.utils.EMPTY_NAME
-import com.vertial.fivemiov.utils.isOnline
+import com.vertial.fivemiov.utils.*
+import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.SignatureAlgorithm
 import kotlinx.android.synthetic.main.activity_main.*
 
 private val MYTAG="MY_MAIN_FRAGMENT"
@@ -93,12 +92,14 @@ class MainFragment : Fragment(){
                 if(shouldExportPhoneBook()) (requireActivity() as MainActivity).exportPhoneBook()
         }*/
 
+
         return binding.root
     }
 
 
     private fun shouldExportPhoneBook(): Boolean {
-       val sharedPreferences= requireActivity().getSharedPreferences(MAIN_ACTIVITY_SHARED_PREF_NAME,Context.MODE_PRIVATE)
+       val sharedPreferences= requireActivity().application.getSharedPreferences(
+           DEFAULT_SHARED_PREFERENCES,Context.MODE_PRIVATE)
 
        if(sharedPreferences.contains(PHONEBOOK_IS_EXPORTED)){
             val isExported=sharedPreferences.getBoolean(PHONEBOOK_IS_EXPORTED,false)
@@ -150,10 +151,15 @@ class MainFragment : Fragment(){
 
          })
 
-        /*viewModel.currentSearchString.observe(viewLifecycleOwner, Observer {
-            if(it!=null) contactsAdapter.stringToColor=it
+        viewModel.loggingOut.observe(viewLifecycleOwner, Observer {
+            if(it!=null){
+                if(it) {
+                    initializeSharedPrefToFalse(requireActivity().application)
+                    viewModel.resetLoggingOutToFalse()
+                }
 
-        })*/
+            }
+        })
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -161,8 +167,12 @@ class MainFragment : Fragment(){
         inflater.inflate(R.menu.main_fragment_menu,menu)
         val mitem=menu.findItem(R.id.menu_item_search)
         val itemMyAccount= menu.findItem(R.id.menu_item_myaccount)
-        val itemShare=menu.findItem(R.id.menu_item_share)
-        val itemAboutFragment=menu.findItem(R.id.aboutFragment)
+        val itemShare=menu.findItem(R.id.menu_item_share).apply {
+            isVisible=false
+        }
+        val itemAboutFragment=menu.findItem(R.id.aboutFragment).apply {
+            isVisible=false
+         }
         searchViewActionBar=menu.findItem(R.id.menu_item_search).actionView as SearchView
         searchViewActionBar.setQueryHint(getString(R.string.search_hint))
 
@@ -171,8 +181,8 @@ class MainFragment : Fragment(){
             override fun onMenuItemActionExpand(p0: MenuItem?): Boolean {
                 Log.i(MYTAG,"on search expand listener")
                 itemMyAccount.isVisible=false
-                itemShare.isVisible=false
-                itemAboutFragment.isVisible=false
+                //itemShare.isVisible=false
+                //itemAboutFragment.isVisible=false
                 searchViewActionBar.isIconified=false
                 return true
             }
@@ -180,8 +190,8 @@ class MainFragment : Fragment(){
                 Log.i(MYTAG,"on search collapse listener")
                 searchViewActionBar.isIconified=true
                 itemMyAccount.isVisible=true
-                itemShare.isVisible=true
-                itemAboutFragment.isVisible=true
+                //itemShare.isVisible=true
+                //itemAboutFragment.isVisible=true
                 searchViewActionBar.clearFocus()
                 return true
             }
@@ -232,7 +242,7 @@ class MainFragment : Fragment(){
                     viewModel.populateContactList()
                     if(shouldExportPhoneBook()) (requireActivity() as MainActivity).exportPhoneBook()
         }
-        getE1Prenumber()
+        //getE1Prenumber()
         Log.i(MYTAG, "ON START")
 
     }

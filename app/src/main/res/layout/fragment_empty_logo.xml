@@ -9,8 +9,8 @@
 
     <ImageView
         android:id="@+id/logo_imageView"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
+        android:layout_width="68dp"
+        android:layout_height="68dp"
         android:contentDescription="logo"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.467"

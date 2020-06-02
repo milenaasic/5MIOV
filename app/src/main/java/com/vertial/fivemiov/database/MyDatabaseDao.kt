@@ -91,4 +91,7 @@ interface MyDatabaseDao {
     @Query("SELECT * FROM recent_calls_table")
     fun getAllRecentCalls(): LiveData<List<RecentCall>>
 
+    @Query("DELETE FROM recent_calls_table")
+    fun logoutRecentCalls()
+
 }

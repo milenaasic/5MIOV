@@ -38,9 +38,11 @@ class MainFragmentViewModel(val repoContacts: RepoContacts,application: Applicat
     val numberOfSelectedContacts: LiveData<Int>
         get() = _numberOfSelectedContacts
 
-    /*private val _currentSearchString = MutableLiveData<String>()
-    val currentSearchString: LiveData<String>
-        get() = _currentSearchString*/
+    //logging out zbog token mismatch
+    val loggingOut=repoContacts.loggingOut
+    fun resetLoggingOutToFalse(){
+        repoContacts.resetLoggingOutToFalse()
+    }
 
 
 

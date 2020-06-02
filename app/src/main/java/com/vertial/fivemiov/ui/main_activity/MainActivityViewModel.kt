@@ -37,7 +37,7 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
     val shouldShowSetAccountDisclaimer: LiveData<Boolean>
         get() = _shouldShowSetAccountDisclaimer
 
-    //setAccountDisclaimer
+
     private val _fullContactListWithInternationalNumbers = MutableLiveData<List<ContactItemWithInternationalNumbers>>()
     val  fullContactListWithInternationalNumbers: LiveData<List<ContactItemWithInternationalNumbers>>
         get() = _fullContactListWithInternationalNumbers
@@ -50,11 +50,18 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
 
     val phoneBookExported=myRepository.initialexportPhoneBookNetworkSuccess
 
+    //logging out zbog token mismatch
+    val loggingOut=myRepository.loggingOut
+
+
     init {
         Log.i(MY_TAG,("init"))
 
     }
 
+    fun resetLoggingOutToFalse(){
+        myRepository.resetLoggingOutToFalse()
+    }
 
     fun showSetAccountDisclaimer(){
         viewModelScope.launch {
@@ -117,14 +124,15 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
 
     private fun checkForSharedPrefDisclamerShownValue():Boolean{
 
-        val sharedPreferences = getApplication<Application>().getSharedPreferences(MainActivity.MAIN_ACTIVITY_SHARED_PREF_NAME, Context.MODE_PRIVATE)
+        val sharedPreferences = getApplication<Application>().getSharedPreferences(
+            DEFAULT_SHARED_PREFERENCES, Context.MODE_PRIVATE)
         var wasShown=false
 
-        if(sharedPreferences.contains(MainActivity.DISCLAIMER_WAS_SHOWN)){
-            wasShown=sharedPreferences.getBoolean(MainActivity.DISCLAIMER_WAS_SHOWN,false)
+        if(sharedPreferences.contains(DISCLAIMER_WAS_SHOWN)){
+            wasShown=sharedPreferences.getBoolean(DISCLAIMER_WAS_SHOWN,false)
             Log.i(MY_TAG," usao u ima disclaimer promenljiva i vrednost je $wasShown")
         }else{
-            sharedPreferences.edit().putBoolean(MainActivity.DISCLAIMER_WAS_SHOWN,false).apply()
+            sharedPreferences.edit().putBoolean(DISCLAIMER_WAS_SHOWN,false).apply()
         }
 
         return wasShown

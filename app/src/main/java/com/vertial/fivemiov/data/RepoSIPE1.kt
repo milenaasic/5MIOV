@@ -23,7 +23,16 @@ class RepoSIPE1 (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIService){
     val getSipAccessCredentialsNetError: LiveData<String?>
         get() = _getSipAccessCredentialsNetError
 
+    //set sharedPref TO false because of Log out
+    private val _loggingOut= MutableLiveData<Boolean>()
+    val loggingOut: LiveData<Boolean>
+        get() = _loggingOut
 
+
+    //reset Logging Out
+    fun resetLoggingOutToFalse(){
+        _loggingOut.value=false
+    }
 
     fun resetSipAccessInBackGround(){
         val myJobSip=UncancelableJobSip(myDatabaseDao,myAPI)
@@ -42,11 +51,22 @@ class RepoSIPE1 (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIService){
     suspend fun getSipAccessCredentials(token: String,phone: String){
         val defResponse=myAPI.getSipAccess(
                 phoneNumber = phone,
+                signature = produceJWtToken(
+                    Pair(Claim.TOKEN.myClaim,token),
+                    Pair(Claim.PHONE.myClaim,phone)
+                ),
                 request = NetRequest_GetSipAccessCredentials(authToken = token,phoneNumber = phone)
                 )
         try {
             val response=defResponse.await()
-            if(response.authTokenMismatch==true) logoutAll(myDatabaseDao)
+            if(response.authTokenMismatch==true) {
+                _loggingOut.value=true
+                coroutineScope {
+                    withContext(Dispatchers.IO) {
+                        logoutAll(myDatabaseDao)
+                    }
+                }
+            }
             else _getSipAccessCredentialsNetSuccess.value=response
 
         }catch (e:Throwable){
@@ -100,11 +120,16 @@ class UncancelableJobSip(val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIServic
         Log.i(MY_TAG, "usao u resetSipAccess")
         val defResult = myAPI.resetSipAccess(
                 phoneNumber = phone,
+                signature = produceJWtToken(
+                    Pair(Claim.TOKEN.myClaim,authToken),
+                    Pair(Claim.PHONE.myClaim,phone),
+                    Pair(Claim.FORCE_RESET.myClaim, CLAIM_VALUE_1)
+                ),
                 request = NetRequest_ResetSipAccess(authToken=authToken,phoneNumber = phone)
                 )
         try {
             val result = defResult.await()
-            if(result.authTokenMismatch==true) logoutAll(myDatabaseDao)
+
         } catch (e: Throwable) {
             Log.i(MY_TAG, "greska resetSipAccess ${e.message}")
             GlobalScope.launch {

@@ -94,6 +94,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
         Log.i(MY_TAG,"send registration $phone")
         val defResponse=myAPI.sendRegistrationToServer(
                 phoneNumber = phone,
+                signature = produceJWtToken(Pair(Claim.NUMBER.myClaim,phone)),
                 request = NetRequest_Registration(phoneNumber = phone )
                 )
         try{
@@ -137,7 +138,15 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
 
         val defResponse=myAPI.sendAddNumberToAccount(
                 phoneNumber = phone,
-                request = NetRequest_AddNumberToAccount(phoneNumber = phone,email = email,password = password ))
+                signature = produceJWtToken(
+                                Pair(Claim.NUMBER.myClaim,phone),
+                                Pair(Claim.EMAIL.myClaim,email),
+                                Pair(Claim.PASSWORD.myClaim,password)
+                                ),
+                request = NetRequest_AddNumberToAccount(
+                        phoneNumber = phone,
+                        email = email,
+                        password = password ))
         try{
             val result=defResponse.await()
             Log.i(MY_TAG,"uspesno dodavanje telefona $result")
@@ -174,6 +183,11 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
 
         val defResult=myAPI.numberExistsInDBVerifyAccount(
                 phoneNumber = enteredPhoneNumber,
+                signature = produceJWtToken(Pair(Claim.NUMBER.myClaim,enteredPhoneNumber),
+                                            Pair(Claim.EMAIL.myClaim,email),
+                                            Pair(Claim.PASSWORD.myClaim,password),
+                                            Pair(Claim.SIGN_IN.myClaim, CLAIM_VALUE_TRUE)
+                ),
                 request = NetRequest_NmbExistsInDB_UserHasAccount(enteredPhoneNumber,email, password)
                 )
         try{
@@ -200,6 +214,8 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
 
         val defResult=myAPI.numberExistsInDB_NOAccount(
                 phoneNumber = enteredPhoneNumber,
+                signature = produceJWtToken(Pair(Claim.NUMBER.myClaim,enteredPhoneNumber),
+                                            Pair(Claim.SIGN_IN.myClaim, CLAIM_VALUE_FALSE)),
                 request = NetRequest_NmbExistsInDB_NoAccount(phoneNumber = enteredPhoneNumber)
                 )
         try{
@@ -246,6 +262,12 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
         Log.i(MY_TAG,"send authorization $phone i $smsToken")
         val defResponse=myAPI.authorizeUser(
                 phoneNumber = phone,
+                signature = produceJWtToken(
+                                Pair(Claim.NUMBER.myClaim,phone),
+                                Pair(Claim.TOKEN.myClaim,smsToken),
+                                Pair(Claim.EMAIL.myClaim,email),
+                                Pair(Claim.PASSWORD.myClaim,password)
+                            ),
                 request = NetRequest_Authorization(phoneNumber = phone,smstoken = smsToken,email = email,password = password )
                 )
         try{
@@ -317,6 +339,12 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
 
         val defResult=myAPI.setAccountEmailAndPasswordForUser(
             phoneNumber = phoneNumber,
+            signature = produceJWtToken(
+                Pair(Claim.NUMBER.myClaim,phoneNumber),
+                Pair(Claim.AUTH_TOKEN.myClaim,token),
+                Pair(Claim.EMAIL.myClaim,email),
+                Pair(Claim.PASSWORD.myClaim,password)
+            ),
             request = NetRequest_SetAccountEmailAndPass(
                             phoneNumber=phoneNumber,authToken= token,email = email,password = password)
         )
@@ -469,11 +497,15 @@ class UncancelableJob(
         Log.i(MY_TAG,"usao u resetSipAccess")
         val defResult= myAPI.resetSipAccess(
                 phoneNumber = phone,
+                signature = produceJWtToken(
+                    Pair(Claim.TOKEN.myClaim,authToken),
+                    Pair(Claim.PHONE.myClaim,phone),
+                    Pair(Claim.FORCE_RESET.myClaim, CLAIM_VALUE_1)
+                ),
                 request = NetRequest_ResetSipAccess(authToken=authToken,phoneNumber = phone)
                 )
         try {
             val result=defResult.await()
-            if(result.authTokenMismatch==true) logoutAll(myDatabaseDao)
         }catch (e:Throwable){
             Log.i(MY_TAG,"greska resetSipAccess ${e.message}")
         }
@@ -484,6 +516,10 @@ class UncancelableJob(
 
         val defResult = myAPI.setNewE1(
             phoneNumber = phone,
+            signature = produceJWtToken(
+                Pair(Claim.TOKEN.myClaim,token),
+                Pair(Claim.PHONE.myClaim,phone)
+            ),
             request = NetRequest_SetE1Prenumber(
                     authToken = token,
                     phoneNumber = phone
@@ -492,16 +528,14 @@ class UncancelableJob(
         try {
             val result = defResult.await()
 
-            if (result.authTokenMismatch == true) logoutAll(myDatabaseDao)
-            else{
-                    if (!result.e1prenumber.isNullOrEmpty() && !result.e1prenumber.isNullOrBlank()) {
-                        myDatabaseDao.updatePrenumber(result.e1prenumber, System.currentTimeMillis())
-                    }
-
-                    if (!result.appVersion.isNullOrEmpty() && !result.appVersion.isNullOrBlank()) {
-                        myDatabaseDao.updateWebApiVersion(result.appVersion)
-                    }
+            if (!result.e1prenumber.isNullOrEmpty() && !result.e1prenumber.isNullOrBlank()) {
+                myDatabaseDao.updatePrenumber(result.e1prenumber, System.currentTimeMillis())
             }
+
+            if (!result.appVersion.isNullOrEmpty() && !result.appVersion.isNullOrBlank()) {
+                myDatabaseDao.updateWebApiVersion(result.appVersion)
+            }
+
         }catch (e:Throwable){
             Log.i(MY_TAG,"greska callSetNEw E1 ${e.message}")
         }

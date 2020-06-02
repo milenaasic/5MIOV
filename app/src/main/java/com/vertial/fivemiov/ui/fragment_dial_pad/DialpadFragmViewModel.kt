@@ -26,6 +26,11 @@ class DialpadFragmViewModel(val myRepository: RepoContacts, application: Applica
     val getCreditNetSuccess=myRepository.getCredit_NetSuccess
     val getCreditNetworkError=myRepository.getCredit_NetError
 
+    //logging out zbog token mismatch
+    val loggingOut=myRepository.loggingOut
+    fun resetLoggingOutToFalse(){
+        myRepository.resetLoggingOutToFalse()
+    }
 
     fun getCredit() {
         Log.i(MYTAG, "get Credit ")

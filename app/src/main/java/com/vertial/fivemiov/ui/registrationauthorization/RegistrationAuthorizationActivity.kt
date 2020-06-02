@@ -1,5 +1,6 @@
 package com.vertial.fivemiov.ui.registrationauthorization
 
+import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
@@ -23,9 +24,7 @@ import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.ActivityRegistrationAuthorizationBinding
 import com.vertial.fivemiov.ui.emty_logo_fragment.EmptyLogoFragmentDirections
 import com.vertial.fivemiov.ui.main_activity.MainActivity
-import com.vertial.fivemiov.utils.EMPTY_PHONE_NUMBER
-import com.vertial.fivemiov.utils.EMPTY_TOKEN
-import com.vertial.fivemiov.utils.isOnline
+import com.vertial.fivemiov.utils.*
 
 private val MYTAG="MY_RegAuthActivity"
 
@@ -98,7 +97,7 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
             if(user!=null) {
                 if (user.userPhone != EMPTY_PHONE_NUMBER && !user.userPhone.isNullOrEmpty() && user.userToken!= EMPTY_TOKEN && !user.userToken.isNullOrEmpty()) {
-                    //zastoj na 2 sec da se vidi splash screen
+                    //zastoj na 1 sec da se vidi splash screen
                      Handler().postDelayed(Runnable {
                         gotoMainActivity()
                     }, SPLASH_SCREEN_DURATION_IN_MILLIS)
@@ -107,9 +106,12 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
                 } else {
                     //Ukoliko ima sacuvano stanje nije u emptyLogoFragment-u nego u fragmentu u kom je bila app kda je unistena
                     if(savedInstanceState==null) {
-                        findNavController(R.id.registration_navhost_fragment).navigate(
-                            EmptyLogoFragmentDirections.actionEmptyLogoFragmentToRegistrationFragment()
-                        )
+                        Handler().postDelayed(Runnable {
+                            findNavController(R.id.registration_navhost_fragment).navigate(
+                                EmptyLogoFragmentDirections.actionEmptyLogoFragmentToRegistrationFragment()
+                            )
+                        }, SPLASH_SCREEN_DURATION_IN_MILLIS)
+
                     }else {Log.i(MYTAG, "observeUserData i saved instance state nije null")}
 
                 }
@@ -142,6 +144,8 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
 
     }
+
+
 
     private fun gotoMainActivity() {
         startActivity(Intent(this, MainActivity::class.java))
@@ -185,9 +189,9 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
             // Failed to start retriever, inspect Exception for more details
         }
 
-
-
     }
+
+
 
 
     override fun onDestroy() {

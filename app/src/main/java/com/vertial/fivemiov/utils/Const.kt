@@ -2,6 +2,9 @@ package com.vertial.fivemiov.utils
 
 import com.vertial.fivemiov.model.ContactItem
 
+const val DEFAULT_SHARED_PREFERENCES="default_shared_pref"
+const val PHONEBOOK_IS_EXPORTED = "phone_book_is_exported"
+const val DISCLAIMER_WAS_SHOWN="disclaimer_was_shown"
 
 const val EMPTY_TOKEN="empty_token"
 const val EMPTY_PHONE_NUMBER="empty_phone_number"

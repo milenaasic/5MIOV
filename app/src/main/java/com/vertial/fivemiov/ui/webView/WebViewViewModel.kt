@@ -38,6 +38,12 @@ class WebViewViewModel(val myRepository: RepoContacts, application: Application)
 
     val phoneBookExported=myRepository.exportPhoneBookWebViewNetworkSuccess
 
+    //logging out zbog token mismatch
+    val loggingOut=myRepository.loggingOut
+    fun resetLoggingOutToFalse(){
+        myRepository.resetLoggingOutToFalse()
+    }
+
     init {
         startGetingPhoneBook()
     }

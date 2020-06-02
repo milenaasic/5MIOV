@@ -33,6 +33,7 @@ import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentDialPadBinding
 import com.vertial.fivemiov.model.RecentCall
+import com.vertial.fivemiov.ui.initializeSharedPrefToFalse
 import com.vertial.fivemiov.utils.*
 import kotlin.math.roundToInt
 
@@ -222,6 +223,16 @@ class DialPadFragment : Fragment() {
             if(it!=null) viewModel.resetGetCreditNetErrorr()
 
           })
+
+          viewModel.loggingOut.observe(viewLifecycleOwner, Observer {
+              if(it!=null){
+                  if(it) {
+                      initializeSharedPrefToFalse(requireActivity().application)
+                      viewModel.resetLoggingOutToFalse()
+                  }
+
+              }
+           })
 
     }
 
