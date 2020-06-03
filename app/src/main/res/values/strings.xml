@@ -103,7 +103,7 @@
     <string name="regular_call_button_name">SIM call</string>
 
     <!-- ABOUT FRAGMENT-->
-    <string name="about_how_to_use_app">If you have good internet connection use iOV NET button for cheaper calls, otherwise use 5MiOV button.</string>
+    <string name="about_how_to_use_app">If you have good internet connection use iOV NET button for cheaper calls, otherwise use SIM call button.</string>
     <string name="web_api_version">WebApi version  %1$s</string>
     <string name="mobile_app_version">Mobile App version  %1$s</string>
     <string name="no_audio_permission">No audio permission</string>
