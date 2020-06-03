@@ -1,10 +1,12 @@
 package com.vertial.fivemiov.data
 
+import android.util.Base64
 import android.util.Log
 import com.vertial.fivemiov.database.MyDatabaseDao
 import com.vertial.fivemiov.model.PhoneBookItem
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
+import io.jsonwebtoken.impl.TextCodec
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -69,24 +71,20 @@ fun produceJWtToken(vararg claimsAndValues:Pair<String,Any>):String{
 
     val myJWT=myJwtBuilder.signWith(SignatureAlgorithm.HS256, getMyWord().toByteArray()).compact()
 
-    /*.claim("name","5MIOV").claim("password","tester")
-        .signWith(SignatureAlgorithm.HS256, "secret".toByteArray())
-        .compact()*/
-
     return myJWT
 }
 
 fun produceJWtTokenWithArrayInput(inputArray:Pair<String,Array<PhoneBookItem>>, claimsAndValues1:Pair<String,String>,claimsAndValues2:Pair<String,String>):String{
-    val myJwtBuilder = Jwts.builder()
+    val myJwtBuilder2 = Jwts.builder()
 
-    myJwtBuilder.claim(claimsAndValues1.first,claimsAndValues1.second)
+    myJwtBuilder2.claim(claimsAndValues1.first,claimsAndValues1.second)
         .claim(claimsAndValues2.first,claimsAndValues2.second)
 
-    myJwtBuilder.claim(inputArray.first,inputArray.second)
+    myJwtBuilder2.claim(inputArray.first,inputArray.second)
 
-    val myJWT=myJwtBuilder.signWith(SignatureAlgorithm.HS256, getMyWord().toByteArray()).compact()
+    val myJWT2=myJwtBuilder2.signWith(SignatureAlgorithm.HS256, getMyWord().toByteArray()).compact()
 
-    return myJWT
+    return myJWT2
 }
 
 private fun getMyWord():String{
