@@ -160,7 +160,7 @@ class DialPadFragment : Fragment() {
 
         registerForContextMenu(binding.editTextEnterNumber)
 
-        requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        //requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         configureBottomSlidePanel()
 

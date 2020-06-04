@@ -2,14 +2,19 @@ package com.vertial.fivemiov.ui.sipfragment
 
 
 
+import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.net.sip.*
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.PowerManager
 import android.telephony.PhoneNumberUtils
 import android.util.Log
 import android.view.*
-import android.widget.TextView
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -23,7 +28,6 @@ import com.vertial.fivemiov.data.RepoSIPE1
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentSipBinding
 import com.vertial.fivemiov.ui.initializeSharedPrefToFalse
-import kotlinx.android.synthetic.main.fragment_sip.*
 
 
 private val MYTAG="MY_Sip fragment"
@@ -32,6 +36,10 @@ class SipFragment : Fragment() {
     private lateinit var binding:FragmentSipBinding
     private lateinit var args:SipFragmentArgs
     private lateinit var viewModel: SipViewModel
+
+    //private lateinit var sensorManager: SensorManager
+   // private var mProximity: Sensor? = null
+    private lateinit var wl:PowerManager.WakeLock
 
     private var navigationUpInProcess=false
 
@@ -49,6 +57,12 @@ class SipFragment : Fragment() {
         super.onCreate(savedInstanceState)
         args= SipFragmentArgs.fromBundle(arguments!!)
         setHasOptionsMenu(true)
+
+        //sensorManager = requireActivity().getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        //mProximity = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY)
+
+
+
     }
 
     override fun onCreateView(
@@ -59,7 +73,6 @@ class SipFragment : Fragment() {
         binding= DataBindingUtil.inflate(inflater, R.layout.fragment_sip,container,false)
         binding.nametextView.text=args.contactName
 
-
         if(args.contactName==args.contactNumber) binding.sipnumbertextView.text=" "
         else binding.sipnumbertextView.text=args.contactNumber
 
@@ -68,16 +81,16 @@ class SipFragment : Fragment() {
         val mySipRepo=RepoSIPE1(database,mApi)
         val myRepo= Repo(database,mApi)
 
-        /*val myApp=requireActivity().application as MyApplication
-        val myAppContanier=myApp.myAppContainer*/
 
         viewModel = ViewModelProvider(this, SipViewModelFactory(mySipRepo,myRepo,requireActivity().application))
             .get(SipViewModel::class.java)
 
-
+        val pwm = requireActivity().getSystemService(Context.POWER_SERVICE) as PowerManager
+        wl=pwm.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK,"com.vertial.fivemiov:SipCall")
 
             binding.sipendbutton.setOnClickListener {
                 startNavigation()
+                Log.i(MYTAG, "end button clicked ")
             }
 
             binding.sipMicButton.setOnClickListener {
@@ -111,7 +124,6 @@ class SipFragment : Fragment() {
             }
 
 
-            requireActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
             viewModel.getSipAccountCredentials()
 
@@ -192,6 +204,7 @@ class SipFragment : Fragment() {
         })
 
 
+
     }
 
 
@@ -204,7 +217,6 @@ class SipFragment : Fragment() {
     }
 
     private fun initializeManager(sipUserName:String, sipPassword:String, sipServer:String,sipCallerId:String) {
-        Log.i(MYTAG,"initialize manager,")
         sipManager=SipManager.newInstance(requireContext())
         if(sipManager!=null) {
             initalizePeerProfile(sipServer)
@@ -213,8 +225,7 @@ class SipFragment : Fragment() {
     }
 
     private fun initalizePeerProfile(sipServer: String) {
-        //val peer=SipProfile.Builder("ankeanke","iptel.org")
-        //val peer=SipProfile.Builder("0038163352717","45.63.117.19")
+
         Log.i(MYTAG," broj iz args ${args.contactNumber}, ime je ${args.contactName}")
         val peer=SipProfile.Builder(PhoneNumberUtils.normalizeNumber(args.contactNumber),sipServer)
         peersipProfile=peer.build()
@@ -229,16 +240,6 @@ class SipFragment : Fragment() {
         }
 
         Log.i(MYTAG,"initialize local profile")
-
-
-        /*val mysipProfileBuilder = SipProfile.Builder("7936502090", "45.63.117.19")
-                .setPassword("rasa123321")
-                .setDisplayName("Milena")*/
-        //val mysipProfileBuilder = SipProfile.Builder("milena", "iptel.org").setPassword("Milena77")
-
-        /*val mysipProfileBuilder = SipProfile.Builder("9df9c99896", "45.63.117.19")
-               .setPassword("a6c192f08b061")
-               .setDisplayName("Milena")*/
 
 
         Log.i(MYTAG, "password je $sipPassword")
@@ -264,9 +265,6 @@ class SipFragment : Fragment() {
 
         viewModel.startRegTimeout()
 
-        /*Log.i(MYTAG,"is opened ${sipManager.isOpened(me?.uriString)}")
-        Log.i(MYTAG,"is registered ${sipManager.isRegistered(me?.uriString)}")
-        Log.i(MYTAG,"podaci ${me?.sipDomain},${me?.password},${me?.userName}")*/
 
     }
 
@@ -407,28 +405,41 @@ class SipFragment : Fragment() {
         binding.statustextView.text=status
     }
 
-
-    override fun onPause() {
-        Log.d(MYTAG, "on PAUSE")
-        sipAudioCall?.close()
-        closeLocalProfile()
-        viewModel.resetSipCredentials()
-        super.onPause()
+    override fun onStart() {
+        super.onStart()
+        requireActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        if(!wl.isHeld) wl.acquire()
     }
 
 
-
-    /*override fun onDestroyView() {
-        Log.d(MYTAG, "onDestroyView sipAudio Call je $sipAudioCall")
-        sipAudioCall?.endCall()
-        Log.d(MYTAG, "onDestroyView sipAudio Call posle end call je $sipAudioCall")
+    override fun onPause() {
+        super.onPause()
         sipAudioCall?.close()
-        Log.d(MYTAG, "onDestroyView sipAudio Call posle close je $sipAudioCall")
         closeLocalProfile()
         viewModel.resetSipCredentials()
+        //sensorManager.unregisterListener(this)
+        Log.i(MYTAG, "ON PAUSE")
+    }
 
-        super.onDestroyView()
-    }*/
+    override fun onStop() {
+        super.onStop()
+
+        requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        if(wl.isHeld) wl.release()
+
+
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        //proximity sensor listener
+        /*mProximity?.also { proximity ->
+            sensorManager.registerListener(this, proximity, SensorManager.SENSOR_DELAY_NORMAL)
+        }*/
+        Log.i(MYTAG, "ON RESUME")
+
+    }
 
     private fun showToast(message: String) {
         Toast.makeText(requireActivity(),message, Toast.LENGTH_LONG).show()
@@ -467,8 +478,43 @@ class SipFragment : Fragment() {
         }
     }
 
+    /*override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+
+    }*/
+
+    /*override fun onSensorChanged(event: SensorEvent?) {
+        val distance = event?.values?.get(0)
+        Log.i(MYTAG," udaljenost od telefona je $distance")
+        val maximumRange=mProximity?.maximumRange
+        Log.i(MYTAG,"maximum range je $maximumRange")
+
+        if(distance!=null && maximumRange!=null) {
+            if (distance >= maximumRange) {
+                //ukljuci ekran
+                Log.i(MYTAG," udaljenost od telefona je $distance , maksimum je $maximumRange")
 
 
+                val mode=requireActivity().windowManager.defaultDisplay.state
+                Log.i(MYTAG," state display a je $mode")
+            } else {
+                //iskljuci ekran
+                Log.i(MYTAG," udaljenost od telefona je $distance , telefon je blizu")
+                val mode=requireActivity().windowManager.defaultDisplay.state
+                Log.i(MYTAG," state display a je $mode")
 
+            }
 
+        }
+
+    }*/
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        Log.i(MYTAG,"on DESTROY VIEW")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.i(MYTAG,"on DESTROY")
+    }
 }
