@@ -9,7 +9,7 @@
 # and specify the fully qualified class name to the JavaScript interface
 # class:
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
+#  public *;
 #}
 
 # Uncomment this to preserve the line number information for
@@ -20,5 +20,24 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
+# OkHttp
+#-keepattributes Signature
+#-keepattributes *Annotation*
+#-keep class okhttp3.** { *; }
+#-keep interface okhttp3.** { *; }
+#-dontwarn okhttp3.**
+#-keepnames class com.fasterxml.jackson.** {
+#*;
+#}
+#-keepnames interface com.fasterxml.jackson.** {
+#    *;
+#}
+
+-keep class io.jsonwebtoken.** {
+  public protected private *;
+}
+
+# You can specify any path and filename.
+-printconfiguration ~/tmp/full-r8-config.txt
 
 

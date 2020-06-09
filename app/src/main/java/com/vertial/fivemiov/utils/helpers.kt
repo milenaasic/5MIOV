@@ -56,12 +56,13 @@ fun String.isPhoneNumberValid():Boolean{
 }
 
 fun String.isPasswordValid():Boolean{
-    //val passwordPattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&+-=])(?=\\S+$).{8,32}$"
-    //^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{4,}$
-    val passPattern="^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[*.!@$%^&(){}:;<>,?/~_+-=|]).{8,32}$"
 
+    val passPattern="^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[*.!@$%^&(){}:;<>,?/~_+-=|]).{8,32}$"
+  // val webAppPasswordPattern="^(?=.*[A-Z])(?=.*[!@#$%^&*\(\)_+\-\=\[\]{}\;'\\:"|,.\/\<\>\?\`\~\±])(?=.*[0-9])(?=.*[a-z]).{8,50}$)"
     //"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,10}$"
-    val passwordMatcher = Regex(passPattern)
+
+    val passPattern1="^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[*.!@$%^&(){}:;<>,?/~_+=|'\"-]).{8,32}$"
+    val passwordMatcher = Regex(passPattern1)
     return passwordMatcher.find(this) !=null
 
 }

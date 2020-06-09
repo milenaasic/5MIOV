@@ -91,8 +91,7 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
 
         viewModel.userData.observe(this, Observer {user->
-            //TODO ukloni proveru za bug kada vise ne bude trebala
-            Toast.makeText(this, "User in DB Registration:${user}", Toast.LENGTH_LONG).show()
+
             Log.i(MYTAG,("user u bazi je $user"))
 
             if(user!=null) {
@@ -141,7 +140,6 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
                     }
                 }
           })
-
 
     }
 

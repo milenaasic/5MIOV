@@ -108,6 +108,10 @@ class RegistrationFragment : Fragment() {
             }
         }
 
+        //simulate crash
+       /* val s:String?=null
+        s!!.length*/
+
         return binding.root
     }
 

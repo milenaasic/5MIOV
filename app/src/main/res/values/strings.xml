@@ -65,7 +65,7 @@
     <!-- layout items messages errors-->
     <string name="not_valid_phone_number">Invalid phone number </string>
     <string name="not_valid_email">Invalid email </string>
-    <string name="not_valid_password">Password must be at least 8 chars long, must have at least one uppercase, one lowercase and one special character</string>
+    <string name="not_valid_password">Password must be at least 8 chars long, must have at least one uppercase, one lowercase, one digit and one special character</string>
     <string name="enter_token">Enter verification code</string>
     <string name="confirm_password_error">Confirm password</string>
 

@@ -1,9 +1,18 @@
 package com.vertial.fivemiov.ui.myapplication
 
 import android.app.Application
+import android.app.job.JobInfo
+import android.content.Context
 import android.content.pm.PackageInfo
 import android.os.Build
 import android.util.Log
+import org.acra.ACRA
+import org.acra.BuildConfig
+import org.acra.annotation.AcraCore
+import org.acra.config.CoreConfigurationBuilder
+import org.acra.config.HttpSenderConfigurationBuilder
+import org.acra.data.StringFormat
+import org.acra.sender.HttpSender
 
 
 class MyApplication : Application() {
@@ -13,20 +22,31 @@ private val MYTAG="MY_ApplicationContext"
         getMobAppVersion()
     }
 
-    val myenigma:String by lazy {
-        getEnigma()
+    override fun attachBaseContext(base: Context?) {
+        super.attachBaseContext(base)
+        val builder = CoreConfigurationBuilder(this)
+            .setBuildConfigClass(BuildConfig::class.java)
+            .setReportFormat(StringFormat.JSON)
+
+
+
+        builder.getPluginConfigurationBuilder(
+            HttpSenderConfigurationBuilder::class.java
+        )
+            .setUri("https://5miov.vertial.net/api/mobileLog")
+            .setHttpMethod(HttpSender.Method.POST)
+            .setBasicAuthLogin("5miov")
+            .setBasicAuthPassword("tester")
+            .setEnabled(true)
+        /*builder.getPluginConfigurationBuilder(SchedulerConfigurationBuilder::class.java)
+            .setRequiresNetworkType(JobInfo.NETWORK_TYPE_UNMETERED)
+            .setRequiresBatteryNotLow(true)
+            .setEnabled(true)
+        builder.getPluginConfigurationBuilder(LimiterConfigurationBuilder::class.java)
+            .setEnabled(true)*/
+
+        ACRA.init(this, builder)
     }
-
-    private fun getEnigma():String {
-        TODO("Not yet implemented")
-        /*val i:String= "${111.toChar()}+${110.toChar()}+${97.toChar()}"
-
-        val f = String.(111,110,97);
-        f = String.fromCharCode(107,111,114) + f;*/
-        return ""
-    }
-
-
 
     private fun getMobAppVersion():String{
 

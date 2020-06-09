@@ -24,7 +24,7 @@ import java.nio.charset.Charset
 
 private const val NAME="MY_API"
 
-val coded= android.util.Base64.encodeToString("5miov:tester".toByteArray(),Base64.NO_WRAP)
+val coded= Base64.encodeToString("5miov:tester".toByteArray(),Base64.NO_WRAP)
 const val BASE_URL ="https://5miov.vertial.net/"
 const val HEADER_PHONE_KEY="X-Phone-Number"
 const val HEADER_SIGNATURE="Signature"
@@ -172,5 +172,6 @@ object MyAPI {
      fun sendErrorToServer(
          @Header(HEADER_PHONE_KEY) phoneNumber:String,
          @Query("process") process:String, @Query("message") errorMsg:String):Deferred<Response<Unit>>
+
 }
 

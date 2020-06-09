@@ -522,9 +522,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        //provera za bug
-        //TODO ukloni proveru kada vise ne bude trebala
-        Toast.makeText(this, "User in DB Main:${viewModel.userData.value}",Toast.LENGTH_LONG).show()
+
     }
 
 }
