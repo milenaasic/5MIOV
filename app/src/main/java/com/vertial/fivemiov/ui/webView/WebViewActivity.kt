@@ -31,6 +31,7 @@ import com.vertial.fivemiov.ui.initializeSharedPrefToFalse
 import com.vertial.fivemiov.ui.main_activity.MainActivity
 import com.vertial.fivemiov.utils.DEFAULT_SHARED_PREFERENCES
 import com.vertial.fivemiov.utils.PHONEBOOK_IS_EXPORTED
+import com.vertial.fivemiov.utils.getMobAppVersion
 import kotlinx.android.synthetic.main.fragment_detail_contact.*
 
 
@@ -54,10 +55,14 @@ class WebViewActivity : AppCompatActivity() {
 
         val myDatabaseDao = MyDatabase.getInstance(this).myDatabaseDao
         val myApi = MyAPI.retrofitService
-        val myRepository = RepoContacts(contentResolver, myDatabaseDao, myApi)
+        val mobileAppVersion=packageManager.getPackageInfo(packageName, 0).getMobAppVersion()
+        val myRepository = RepoContacts(contentResolver,
+                                        myDatabaseDao,
+                                        myApi,
+                                        resources.getString(R.string.mobile_app_version_header,mobileAppVersion)
+                                        )
 
-       /* val myApp=application as MyApplication
-        val myAppContanier=myApp.myAppContainer*/
+
 
         viewModel = ViewModelProvider(this, WebViewViewModelFactory(myRepository, application))
             .get(WebViewViewModel::class.java)

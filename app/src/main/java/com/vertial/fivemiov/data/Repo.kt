@@ -11,7 +11,7 @@ import java.lang.Exception
 
 
 private const val MY_TAG="MY_Repository"
-class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
+class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobileAppVer:String="0.0"){
 
     //User Live Data
     fun getUserData()=myDatabaseDao.getUser()
@@ -95,6 +95,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
         val defResponse=myAPI.sendRegistrationToServer(
                 phoneNumber = phone,
                 signature = produceJWtToken(Pair(Claim.NUMBER.myClaim,phone)),
+                mobileAppVersion = mobileAppVer,
                 request = NetRequest_Registration(phoneNumber = phone )
                 )
         try{
@@ -143,6 +144,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
                                 Pair(Claim.EMAIL.myClaim,email),
                                 Pair(Claim.PASSWORD.myClaim,password)
                                 ),
+                mobileAppVersion = mobileAppVer,
                 request = NetRequest_AddNumberToAccount(
                         phoneNumber = phone,
                         email = email,
@@ -188,6 +190,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
                                             Pair(Claim.PASSWORD.myClaim,password),
                                             Pair(Claim.SIGN_IN.myClaim, CLAIM_VALUE_TRUE)
                 ),
+                mobileAppVersion = mobileAppVer,
                 request = NetRequest_NmbExistsInDB_UserHasAccount(enteredPhoneNumber,email, password)
                 )
         try{
@@ -216,6 +219,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
                 phoneNumber = enteredPhoneNumber,
                 signature = produceJWtToken(Pair(Claim.NUMBER.myClaim,enteredPhoneNumber),
                                             Pair(Claim.SIGN_IN.myClaim, CLAIM_VALUE_FALSE)),
+                mobileAppVersion = mobileAppVer,
                 request = NetRequest_NmbExistsInDB_NoAccount(phoneNumber = enteredPhoneNumber)
                 )
         try{
@@ -268,6 +272,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
                                 Pair(Claim.EMAIL.myClaim,email),
                                 Pair(Claim.PASSWORD.myClaim,password)
                             ),
+                mobileAppVersion = mobileAppVer,
                 request = NetRequest_Authorization(phoneNumber = phone,smstoken = smsToken,email = email,password = password )
                 )
         try{
@@ -279,7 +284,8 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
                     resultAuthorization = result,
                     resultSetAccountEmailAndPass = null,
                     myDatabaseDao = myDatabaseDao,
-                    myAPI = myAPI
+                    myAPI = myAPI,
+                    mobileAppVer = mobileAppVer
                 )
 
                 GlobalScope.launch {
@@ -345,6 +351,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
                 Pair(Claim.EMAIL.myClaim,email),
                 Pair(Claim.PASSWORD.myClaim,password)
             ),
+            mobileAppVersion = mobileAppVer,
             request = NetRequest_SetAccountEmailAndPass(
                             phoneNumber=phoneNumber,authToken= token,email = email,password = password)
         )
@@ -358,7 +365,8 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService){
                         resultAuthorization = null,
                         resultSetAccountEmailAndPass = result,
                         myDatabaseDao = myDatabaseDao,
-                        myAPI = myAPI
+                        myAPI = myAPI,
+                        mobileAppVer = mobileAppVer
                     )
 
                     GlobalScope.launch {
@@ -438,7 +446,8 @@ class UncancelableJob(
                         val resultAuthorization:NetResponse_Authorization?,
                         val resultSetAccountEmailAndPass:NetResponse_SetAccountEmailAndPass?,
                         val myDatabaseDao: MyDatabaseDao,
-                        val myAPI: MyAPIService){
+                        val myAPI: MyAPIService,
+                        val mobileAppVer: String ){
 
     val MY_TAG="MY_klasaUncanceJOb"
 
@@ -502,6 +511,7 @@ class UncancelableJob(
                     Pair(Claim.PHONE.myClaim,phone),
                     Pair(Claim.FORCE_RESET.myClaim, CLAIM_VALUE_1)
                 ),
+                mobileAppVersion = mobileAppVer,
                 request = NetRequest_ResetSipAccess(authToken=authToken,phoneNumber = phone)
                 )
         try {
@@ -520,6 +530,7 @@ class UncancelableJob(
                 Pair(Claim.TOKEN.myClaim,token),
                 Pair(Claim.PHONE.myClaim,phone)
             ),
+            mobileAppVersion = mobileAppVer,
             request = NetRequest_SetE1Prenumber(
                     authToken = token,
                     phoneNumber = phone

@@ -11,14 +11,13 @@ import com.vertial.fivemiov.database.MyDatabaseDao
 
 class SipViewModelFactory(
     val mySipRepo:RepoSIPE1,
-    val myRepo:Repo,
     val application: Application
 ): ViewModelProvider.Factory{
 
     @Suppress("unchecked_cast")
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(SipViewModel::class.java)) {
-            return SipViewModel(mySipRepo,myRepo, application) as T
+            return SipViewModel(mySipRepo, application) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

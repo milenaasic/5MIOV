@@ -11,6 +11,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.net.*
 import android.net.sip.SipManager
@@ -42,6 +43,7 @@ import com.vertial.fivemiov.model.PhoneItem
 import com.vertial.fivemiov.model.RecentCall
 import com.vertial.fivemiov.ui.fragment_dial_pad.DialPadFragment
 import com.vertial.fivemiov.ui.fragment_main.MainFragment
+import com.vertial.fivemiov.utils.getMobAppVersion
 import com.vertial.fivemiov.utils.isVOIPsupported
 import com.vertial.fivemiov.utils.isValidPhoneNumber
 import java.util.*
@@ -82,7 +84,12 @@ class DetailContact : Fragment() {
         //val myAppContanier=myApp.myAppContainer
         val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
         val apiService= MyAPI.retrofitService
-        val repo= RepoContacts(requireActivity().contentResolver,database,apiService)
+        val mobileAppVersion=requireActivity().packageManager.getPackageInfo(requireActivity().packageName, 0).getMobAppVersion()
+        val repo= RepoContacts(requireActivity().contentResolver,
+                                database,
+                                apiService,
+                                resources.getString(R.string.mobile_app_version_header,mobileAppVersion)
+                                )
 
         viewModel=ViewModelProvider(this,DetailContactViewModelFactory(args.contactLookUpKey,repo,requireActivity().application)).get(DetailContactViewModel::class.java)
 

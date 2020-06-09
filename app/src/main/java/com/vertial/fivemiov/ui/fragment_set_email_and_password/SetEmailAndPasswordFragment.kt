@@ -21,11 +21,7 @@ import com.vertial.fivemiov.api.MyAPI
 import com.vertial.fivemiov.data.Repo
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentSetEmailAndPasswordBinding
-import com.vertial.fivemiov.utils.afterTextChanged
-import com.vertial.fivemiov.utils.isEmailValid
-
-import com.vertial.fivemiov.utils.isOnline
-import com.vertial.fivemiov.utils.isPasswordValid
+import com.vertial.fivemiov.utils.*
 
 private const val MYTAG="SetEmailAndPasswordFrag"
 class SetEmailAndPasswordFragment : Fragment() {
@@ -47,7 +43,11 @@ class SetEmailAndPasswordFragment : Fragment() {
 
         val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
         val apiService= MyAPI.retrofitService
-        val repo= Repo(database,apiService)
+        val mobileAppVersion=requireActivity().packageManager.getPackageInfo(requireActivity().packageName, 0).getMobAppVersion()
+        val repo= Repo( database,
+                        apiService,
+                        resources.getString(R.string.mobile_app_version_header,mobileAppVersion)
+                        )
 
         /*val myApp=requireActivity().application as MyApplication
         val myAppContanier=myApp.myAppContainer*/

@@ -17,7 +17,7 @@ import java.lang.Exception
 
 private val MYTAG="MY_SIPVIewMOdel"
 
-class SipViewModel(val mySipRepo: RepoSIPE1, val myRepository: Repo, application: Application) : AndroidViewModel(application) {
+class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : AndroidViewModel(application) {
 
     private val _timeout= MutableLiveData<Boolean>()
     val timeout:LiveData<Boolean>

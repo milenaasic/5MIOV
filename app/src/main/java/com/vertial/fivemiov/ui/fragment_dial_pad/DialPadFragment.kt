@@ -72,7 +72,12 @@ class DialPadFragment : Fragment() {
 
         val database=MyDatabase.getInstance(requireContext()).myDatabaseDao
         val apiService=MyAPI.retrofitService
-        val repo=RepoContacts(requireActivity().contentResolver,database,apiService)
+        val mobileAppVersion=requireActivity().packageManager.getPackageInfo(requireActivity().packageName, 0).getMobAppVersion()
+        val repo=RepoContacts(  requireActivity().contentResolver,
+                                database,
+                                apiService,
+                                resources.getString(R.string.mobile_app_version_header,mobileAppVersion)
+        )
 
 
         viewModel = ViewModelProvider(this, DialpadFragmentViewModelFactory(repo,requireActivity().application))

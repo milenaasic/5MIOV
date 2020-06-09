@@ -21,6 +21,7 @@ import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentRecentCallsBinding
 import com.vertial.fivemiov.model.RecentCall
 import com.vertial.fivemiov.ui.fragment_dial_pad.DialPadFragment
+import com.vertial.fivemiov.utils.getMobAppVersion
 
 private val MYTAG="MY_RecentCallsFragment"
 class RecentCallsFragment : Fragment() {
@@ -39,7 +40,12 @@ class RecentCallsFragment : Fragment() {
 
         val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
         val apiService= MyAPI.retrofitService
-        val repo= RepoContacts(requireActivity().contentResolver,database,apiService)
+        val mobileAppVersion=requireActivity().packageManager.getPackageInfo(requireActivity().packageName, 0).getMobAppVersion()
+        val repo= RepoContacts(requireActivity().contentResolver,
+                                database,
+                                apiService,
+                                resources.getString(R.string.mobile_app_version_header,mobileAppVersion)
+                                )
 
 
         viewModel = ViewModelProvider(this, RecentCallsViewModelFactory(repo,requireActivity().application))

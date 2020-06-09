@@ -12,7 +12,7 @@ import java.lang.Exception
 
 private const val MYTAG="MY_Sip_and_e1_repo"
 
-class RepoSIPE1 (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIService){
+class RepoSIPE1 (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIService,val mobileAppVer:String="0.0"){
 
 
     private val _getSipAccessCredentialsNetSuccess= MutableLiveData<NetResponse_GetSipAccessCredentials?>()
@@ -35,7 +35,7 @@ class RepoSIPE1 (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIService){
     }
 
     fun resetSipAccessInBackGround(){
-        val myJobSip=UncancelableJobSip(myDatabaseDao,myAPI)
+        val myJobSip=UncancelableJobSip(myDatabaseDao,myAPI,mobileAppVer)
         GlobalScope.launch {
                 withContext(Dispatchers.IO){
                     myJobSip.doJob()
@@ -55,6 +55,7 @@ class RepoSIPE1 (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIService){
                     Pair(Claim.TOKEN.myClaim,token),
                     Pair(Claim.PHONE.myClaim,phone)
                 ),
+                mobileAppVersion = mobileAppVer,
                 request = NetRequest_GetSipAccessCredentials(authToken = token,phoneNumber = phone)
                 )
         try {
@@ -91,7 +92,7 @@ class RepoSIPE1 (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIService){
 
 }
 
-class UncancelableJobSip(val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService) {
+class UncancelableJobSip(val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService,val mobileAppVer: String) {
 
     val MY_TAG = "MY_klasaUncanceJObSIP"
 
@@ -125,6 +126,7 @@ class UncancelableJobSip(val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIServic
                     Pair(Claim.PHONE.myClaim,phone),
                     Pair(Claim.FORCE_RESET.myClaim, CLAIM_VALUE_1)
                 ),
+                mobileAppVersion = mobileAppVer,
                 request = NetRequest_ResetSipAccess(authToken=authToken,phoneNumber = phone)
                 )
         try {

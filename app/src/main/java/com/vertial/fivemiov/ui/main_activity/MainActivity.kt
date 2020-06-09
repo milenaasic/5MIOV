@@ -75,7 +75,12 @@ class MainActivity : AppCompatActivity() {
 
         val myDatabaseDao = MyDatabase.getInstance(this).myDatabaseDao
         val myApi = MyAPI.retrofitService
-        val myRepository = RepoContacts(contentResolver, myDatabaseDao, myApi)
+        val mobileAppVersion=packageManager.getPackageInfo(packageName, 0).getMobAppVersion()
+        val myRepository = RepoContacts(contentResolver,
+                                        myDatabaseDao,
+                                        myApi,
+                                        resources.getString(R.string.mobile_app_version_header,mobileAppVersion)
+        )
 
 
 

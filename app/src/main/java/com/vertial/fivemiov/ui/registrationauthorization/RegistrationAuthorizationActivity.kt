@@ -51,9 +51,9 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
         val myDatabaseDao= MyDatabase.getInstance(this).myDatabaseDao
         val myApi= MyAPI.retrofitService
-
-        val myRepository= Repo(myDatabaseDao,myApi)
-        val mySIPE1Repo=RepoSIPE1(myDatabaseDao,myApi)
+        val mobileAppVersion=packageManager.getPackageInfo(packageName, 0).getMobAppVersion()
+        val myRepository= Repo(myDatabaseDao,myApi, mobileAppVer = resources.getString(R.string.mobile_app_version_header,mobileAppVersion))
+        val mySIPE1Repo=RepoSIPE1(myDatabaseDao,myApi, mobileAppVer =resources.getString(R.string.mobile_app_version_header,mobileAppVersion))
 
         if(!isOnline(application)) showSnackbar(resources.getString(R.string.no_internet))
 

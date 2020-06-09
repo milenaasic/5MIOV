@@ -28,6 +28,7 @@ import com.vertial.fivemiov.data.RepoSIPE1
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentSipBinding
 import com.vertial.fivemiov.ui.initializeSharedPrefToFalse
+import com.vertial.fivemiov.utils.getMobAppVersion
 
 
 private val MYTAG="MY_Sip fragment"
@@ -78,11 +79,13 @@ class SipFragment : Fragment() {
 
         val database= MyDatabase.getInstance(requireActivity().application).myDatabaseDao
         val mApi= MyAPI.retrofitService
-        val mySipRepo=RepoSIPE1(database,mApi)
-        val myRepo= Repo(database,mApi)
+        val mobileAppVersion=requireActivity().packageManager.getPackageInfo(requireActivity().packageName, 0).getMobAppVersion()
+        val mySipRepo=RepoSIPE1(database,
+                                mApi,
+                                resources.getString(R.string.mobile_app_version_header,mobileAppVersion))
 
 
-        viewModel = ViewModelProvider(this, SipViewModelFactory(mySipRepo,myRepo,requireActivity().application))
+        viewModel = ViewModelProvider(this, SipViewModelFactory(mySipRepo,requireActivity().application))
             .get(SipViewModel::class.java)
 
         val pwm = requireActivity().getSystemService(Context.POWER_SERVICE) as PowerManager

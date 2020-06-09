@@ -3,6 +3,7 @@ package com.vertial.fivemiov.api
 import android.annotation.TargetApi
 import android.content.Context
 import android.util.Base64
+import android.util.Log
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -24,7 +25,7 @@ import java.nio.charset.Charset
 
 private const val NAME="MY_API"
 
-val coded= Base64.encodeToString("5miov:tester".toByteArray(),Base64.NO_WRAP)
+/*val coded= Base64.encodeToString("5miov:tester".toByteArray(),Base64.NO_WRAP)
 const val BASE_URL ="https://5miov.vertial.net/"
 const val HEADER_PHONE_KEY="X-Phone-Number"
 const val HEADER_SIGNATURE="Signature"
@@ -56,46 +57,89 @@ private val retrofit= Retrofit.Builder()
     .addConverterFactory(MoshiConverterFactory.create(moshi))
     .addCallAdapterFactory(CoroutineCallAdapterFactory())
     .baseUrl(BASE_URL)
-    .build()
+    .build()*/
+
+const val HEADER_PHONE_KEY="X-Phone-Number"
+const val HEADER_SIGNATURE="Signature"
+const val HEADER_MOBILE_APP_VERSION="X-App-Version"
+const val BASE_URL ="https://5miov.vertial.net/"
 
 object MyAPI {
+
+    private val coded= Base64.encodeToString("5miov:tester".toByteArray(),Base64.NO_WRAP)
+
+    private val moshi= Moshi.Builder()
+        .add(KotlinJsonAdapterFactory())
+        .build()
+
+    private val logging=HttpLoggingInterceptor().apply {
+        level=HttpLoggingInterceptor.Level.BODY
+    }
+
+    private val okHttpClient = OkHttpClient.Builder()
+        .addInterceptor(object:Interceptor{
+            override fun intercept(chain: Interceptor.Chain): okhttp3.Response {
+                val requset=chain.request()
+                val newRequest: Request.Builder=requset.newBuilder()
+                    .addHeader("Authorization", "Basic $coded")
+                return chain.proceed((newRequest.build()))
+            }
+        })
+        .addInterceptor(logging)
+        .build()
+
+
+    private val retrofit= Retrofit.Builder()
+        .client(okHttpClient)
+        .addConverterFactory(MoshiConverterFactory.create(moshi))
+        .addCallAdapterFactory(CoroutineCallAdapterFactory())
+        .baseUrl(BASE_URL)
+        .build()
+
+
     val retrofitService : MyAPIService by lazy {
+        Log.i(NAME,"val coded $coded, moshi je $moshi, logging $logging, okhttpclient $okHttpClient, retrofit $retrofit ")
         retrofit.create(MyAPIService::class.java)
     }
+
 }
 
  interface MyAPIService {
 
-    //Registrationa and Authorization Process
-
+    //Registration and Authorization Process
     @POST("api/user/signup")
     fun sendRegistrationToServer(
         @Header(HEADER_PHONE_KEY) phoneNumber:String,
         @Header(HEADER_SIGNATURE) signature:String,
+        @Header(HEADER_MOBILE_APP_VERSION) mobileAppVersion:String,
         @Body request: NetRequest_Registration): Deferred<NetResponse_Registration>
 
      @POST("api/user/signup")
      fun sendAddNumberToAccount(
          @Header(HEADER_PHONE_KEY) phoneNumber:String,
          @Header(HEADER_SIGNATURE) signature:String,
+         @Header(HEADER_MOBILE_APP_VERSION) mobileAppVersion:String,
          @Body request: NetRequest_AddNumberToAccount): Deferred<NetResponse_AddNumberToAccount>
 
      @POST("api/user/signup")
      fun numberExistsInDBVerifyAccount(
          @Header(HEADER_PHONE_KEY) phoneNumber:String,
          @Header(HEADER_SIGNATURE) signature:String,
+         @Header(HEADER_MOBILE_APP_VERSION) mobileAppVersion:String,
          @Body request: NetRequest_NmbExistsInDB_UserHasAccount): Deferred<NetResponse_NmbExistsInDB>
 
      @POST("api/user/signup")
      fun numberExistsInDB_NOAccount(
          @Header(HEADER_PHONE_KEY) phoneNumber:String,
          @Header(HEADER_SIGNATURE) signature:String,
+         @Header(HEADER_MOBILE_APP_VERSION) mobileAppVersion:String,
          @Body request: NetRequest_NmbExistsInDB_NoAccount): Deferred<NetResponse_NmbExistsInDB>
 
      @POST("api/user/create")
      fun authorizeUser(
          @Header(HEADER_PHONE_KEY) phoneNumber:String,
          @Header(HEADER_SIGNATURE) signature:String,
+         @Header(HEADER_MOBILE_APP_VERSION) mobileAppVersion:String,
          @Body request: NetRequest_Authorization): Deferred<NetResponse_Authorization>
 
 
@@ -106,12 +150,14 @@ object MyAPI {
      fun setAccountEmailAndPasswordForUser(
          @Header(HEADER_PHONE_KEY) phoneNumber:String,
          @Header(HEADER_SIGNATURE) signature:String,
+         @Header(HEADER_MOBILE_APP_VERSION) mobileAppVersion:String,
          @Body request: NetRequest_SetAccountEmailAndPass): Deferred<NetResponse_SetAccountEmailAndPass>
 
      @POST("api/phoneBook/update")
      fun exportPhoneBook(
          @Header(HEADER_PHONE_KEY) phoneNumber:String,
          @Header(HEADER_SIGNATURE) signature:String,
+         @Header(HEADER_MOBILE_APP_VERSION) mobileAppVersion:String,
          @Body request: NetRequest_ExportPhonebook): Deferred<NetResponse_ExportPhonebook>
 
 
@@ -120,12 +166,14 @@ object MyAPI {
     fun getE1(
         @Header(HEADER_PHONE_KEY) phoneNumber:String,
         @Header(HEADER_SIGNATURE) signature:String,
+        @Header(HEADER_MOBILE_APP_VERSION) mobileAppVersion:String,
         @Body request: NetRequest_GetE1): Deferred<NetResponse_GetE1>
 
      @POST("/api/sip/setNewE1")
      fun setNewE1(
          @Header(HEADER_PHONE_KEY) phoneNumber:String,
          @Header(HEADER_SIGNATURE) signature:String,
+         @Header(HEADER_MOBILE_APP_VERSION) mobileAppVersion:String,
          @Body request: NetRequest_SetE1Prenumber): Deferred<NetResponse_SetE1Prenumber>
 
 
@@ -136,6 +184,7 @@ object MyAPI {
      fun getSipCallerIds(
          @Header(HEADER_PHONE_KEY) phoneNumber:String,
          @Header(HEADER_SIGNATURE) signature:String,
+         @Header(HEADER_MOBILE_APP_VERSION) mobileAppVersion:String,
          @Body request: NetRequest_GetSipCallerIds): Deferred<NetResponse_GetSipCallerIds>
 
 
@@ -143,6 +192,7 @@ object MyAPI {
      fun setSipCallerId(
          @Header(HEADER_PHONE_KEY) phoneNumber:String,
          @Header(HEADER_SIGNATURE) signature:String,
+         @Header(HEADER_MOBILE_APP_VERSION) mobileAppVersion:String,
          @Body request: NetRequest_SetSipCallerId): Deferred<NetResponse_SetSipCallerId>
 
 
@@ -150,12 +200,14 @@ object MyAPI {
      fun resetSipAccess(
          @Header(HEADER_PHONE_KEY) phoneNumber:String,
          @Header(HEADER_SIGNATURE) signature:String,
+         @Header(HEADER_MOBILE_APP_VERSION) mobileAppVersion:String,
          @Body request: NetRequest_ResetSipAccess): Deferred<NetResponse_ResetSipAccess>
 
      @POST("api/sip/getSipAccess")
      fun getSipAccess(
          @Header(HEADER_PHONE_KEY) phoneNumber:String,
          @Header(HEADER_SIGNATURE) signature:String,
+         @Header(HEADER_MOBILE_APP_VERSION) mobileAppVersion:String,
          @Body request: NetRequest_GetSipAccessCredentials): Deferred<NetResponse_GetSipAccessCredentials>
 
 
@@ -164,6 +216,7 @@ object MyAPI {
     fun getCurrentCredit(
         @Header(HEADER_PHONE_KEY) phoneNumber:String,
         @Header(HEADER_SIGNATURE) signature:String,
+        @Header(HEADER_MOBILE_APP_VERSION) mobileAppVersion:String,
         @Body request: NetRequest_GetCurrentCredit): Deferred<NetResponse_GetCurrentCredit>
 
 

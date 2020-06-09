@@ -24,7 +24,10 @@ import org.json.JSONObject
 import java.util.*
 
 private const val MY_TAG="MY_ContactsRepository"
-class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDatabaseDao, val myAPIService: MyAPIService) {
+class RepoContacts (val contentResolver: ContentResolver,
+                    val myDatabaseDao: MyDatabaseDao,
+                    val myAPIService: MyAPIService,
+                    val mobileAppVer:String="0.0") {
 
     //User Live Data
     fun getUserData() = myDatabaseDao.getUser()
@@ -79,6 +82,7 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
                     Pair(Claim.TOKEN.myClaim,token),
                     Pair(Claim.PHONE.myClaim,phone)
             ),
+            mobileAppVersion = mobileAppVer,
             request = NetRequest_GetCurrentCredit(authToken= token,phoneNumber= phone)
         )
         try {
@@ -133,6 +137,7 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
                     claimsAndValues1 = Pair(Claim.TOKEN.myClaim,token),
                     claimsAndValues2 = Pair(Claim.PHONENUMBER.myClaim,phoneNumber)
                 ),
+                mobileAppVersion = mobileAppVer,
                 request = NetRequest_ExportPhonebook(
                     token,
                     phoneNumber,
@@ -181,7 +186,12 @@ class RepoContacts (val contentResolver: ContentResolver,val myDatabaseDao: MyDa
     fun refreshE1(phoneNumber: String,token:String){
         if(token.isNotEmpty() && phoneNumber.isNotEmpty()) {
 
-            val myE1Job = UncancelableJob(phone=phoneNumber,resultAuthorization = null, resultSetAccountEmailAndPass = null, myDatabaseDao = myDatabaseDao, myAPI = myAPIService)
+            val myE1Job = UncancelableJob(  phone=phoneNumber,
+                                            resultAuthorization = null,
+                                            resultSetAccountEmailAndPass = null,
+                                            myDatabaseDao = myDatabaseDao,
+                                            myAPI = myAPIService,
+                                            mobileAppVer = mobileAppVer)
 
             GlobalScope.launch {
                 withContext(IO) {

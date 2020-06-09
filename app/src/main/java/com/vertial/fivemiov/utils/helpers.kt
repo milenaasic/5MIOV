@@ -2,6 +2,8 @@ package com.vertial.fivemiov.utils
 
 import android.app.Application
 import android.content.Context
+import android.content.pm.PackageInfo
+import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.sip.SipManager
 import android.os.Build
@@ -57,12 +59,10 @@ fun String.isPhoneNumberValid():Boolean{
 
 fun String.isPasswordValid():Boolean{
 
-    val passPattern="^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[*.!@$%^&(){}:;<>,?/~_+-=|]).{8,32}$"
-  // val webAppPasswordPattern="^(?=.*[A-Z])(?=.*[!@#$%^&*\(\)_+\-\=\[\]{}\;'\\:"|,.\/\<\>\?\`\~\±])(?=.*[0-9])(?=.*[a-z]).{8,50}$)"
-    //"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,10}$"
+   // val passPattern="^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[*.!@$%^&(){}:;<>,?/~_+-=|]).{8,32}$"
 
-    val passPattern1="^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[*.!@$%^&(){}:;<>,?/~_+=|'\"-]).{8,32}$"
-    val passwordMatcher = Regex(passPattern1)
+    val passPattern="^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[*.!@$%^&(){}:;<>,?/~_+=|'\"-]).{8,32}$"
+    val passwordMatcher = Regex(passPattern)
     return passwordMatcher.find(this) !=null
 
 }
@@ -135,15 +135,7 @@ fun EditText.afterTextChanged(afterTextChanged: (String) -> Unit) {
     })
 }
 
-//obrada kontakt liste
-
-/*fun removeEmptyContactItem(inputlist:List<ContactItem>):List<ContactItem>{
-
-    val list= inputlist.toMutableList()
-    Log.i(MYTAG,"poslednji element je ${list.last()}")
-    if(list.last().name== EMPTY_NAME) list.removeAt(list.size-1)
-    return list
-}*/
+//Contact List
 
 fun formatDateFromMillis(timeInMillis:Long):String{
     val df = DateFormat.getDateInstance(DateFormat.MEDIUM)
@@ -162,3 +154,25 @@ fun formatTimeFromMillis(mytimeInMillis: Long): String {
     }
     return df.format(calendar.time)
 }
+
+ fun PackageInfo.getMobAppVersion():String{
+
+    var myversionName=""
+    var versionCode=-1L
+
+    try {
+        //val packageInfo: PackageInfo = packageManager.getPackageInfo(requireActivity().packageName, 0);
+        myversionName = this.versionName
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            versionCode=this.longVersionCode
+        }else{
+            versionCode= this.versionCode.toLong()
+
+        }
+    } catch ( e:Throwable) {
+        e.printStackTrace();
+    }
+
+    return myversionName
+}
+
