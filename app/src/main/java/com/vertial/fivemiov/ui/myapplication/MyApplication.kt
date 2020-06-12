@@ -8,13 +8,26 @@ import android.os.Build
 import android.util.Log
 import org.acra.ACRA
 import org.acra.BuildConfig
-import org.acra.annotation.AcraCore
+import org.acra.ReportField
+import org.acra.annotation.*
+import org.acra.annotation.AcraHttpSender
 import org.acra.config.CoreConfigurationBuilder
 import org.acra.config.HttpSenderConfigurationBuilder
+import org.acra.config.MailSenderConfigurationBuilder
 import org.acra.data.StringFormat
 import org.acra.sender.HttpSender
 
 
+
+@AcraCore(buildConfigClass = BuildConfig::class,
+        reportFormat = StringFormat.JSON
+
+        )
+@AcraHttpSender(uri = "https://5miov.vertial.net/api/mobileLog",
+                httpMethod = HttpSender.Method.POST,
+                basicAuthLogin = "5miov",
+                basicAuthPassword = ("tester")
+                )
 class MyApplication : Application() {
 private val MYTAG="MY_ApplicationContext"
 
@@ -22,30 +35,11 @@ private val MYTAG="MY_ApplicationContext"
         getMobAppVersion()
     }
 
+
     override fun attachBaseContext(base: Context?) {
         super.attachBaseContext(base)
-        val builder = CoreConfigurationBuilder(this)
-            .setBuildConfigClass(BuildConfig::class.java)
-            .setReportFormat(StringFormat.JSON)
 
-
-
-        builder.getPluginConfigurationBuilder(
-            HttpSenderConfigurationBuilder::class.java
-        )
-            .setUri("https://5miov.vertial.net/api/mobileLog")
-            .setHttpMethod(HttpSender.Method.POST)
-            .setBasicAuthLogin("5miov")
-            .setBasicAuthPassword("tester")
-            .setEnabled(true)
-        /*builder.getPluginConfigurationBuilder(SchedulerConfigurationBuilder::class.java)
-            .setRequiresNetworkType(JobInfo.NETWORK_TYPE_UNMETERED)
-            .setRequiresBatteryNotLow(true)
-            .setEnabled(true)
-        builder.getPluginConfigurationBuilder(LimiterConfigurationBuilder::class.java)
-            .setEnabled(true)*/
-
-        ACRA.init(this, builder)
+        ACRA.init(this)
     }
 
     private fun getMobAppVersion():String{

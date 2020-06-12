@@ -58,11 +58,11 @@ class MainFragmentViewModel(val repoContacts: RepoContacts,application: Applicat
 
         if(!fullList.isNullOrEmpty()){
             if(query!=null) {
-                val lowerCaseQuery: String = query.toLowerCase()
+                val lowerCaseQuery: String = query.toLowerCase(Locale.getDefault())
 
                 val filteredContactsList: MutableList<ContactItem> = ArrayList()
                 for (item in fullList) {
-                    if (item.name.toLowerCase().contains(lowerCaseQuery)) {
+                    if (item.name.toLowerCase(Locale.getDefault()).contains(lowerCaseQuery)) {
                         filteredContactsList.add(item)
                     }
                 }
@@ -75,47 +75,6 @@ class MainFragmentViewModel(val repoContacts: RepoContacts,application: Applicat
     }
 
 
-    fun getE1PrenumberIf24hPassed(){
-    //uzmi timestamp iz baze i proveri da li je proslo 24h
-        var myToken=""
-        var myPhoneNumber=""
-        viewModelScope.launch {
-            val defUser = async(IO) {
-                repoContacts.getUser()
-            }
-            try {
-                val user = defUser.await()
-                myToken = user.userToken
-                myPhoneNumber=user.userPhone
-            } catch (t: Throwable) {
-                Log.i(MYTAG, "nije pokupio usera iz baze ${t.message} ")
-            }
-        }
-
-        if(myToken.isNotEmpty() && myPhoneNumber.isNotEmpty()) {
-            viewModelScope.launch {
-                val defTimestamp = async(IO) {
-                    repoContacts.getE1Timestamp()
-                }
-                try {
-                    val timestamp = defTimestamp.await()
-                    Log.i(
-                        MYTAG,
-                        "timestamp je $timestamp, a system time je ${System.currentTimeMillis()} , token je $myToken"
-                    )
-                    if (did24HoursPass(System.currentTimeMillis(), timestamp)) {
-                        Log.i(MYTAG, "usao u did 24 hours passed ")
-                        repoContacts.refreshE1(phoneNumber= myPhoneNumber,token=myToken)
-                    }
-
-                } catch (e: Throwable) {
-                    Log.i(MYTAG, "24 hours passed ${e.message} ")
-                }
-
-            }
-        }
-
-    }
 
    private fun  getAllRawContacts(){
         viewModelScope.launch {
@@ -136,20 +95,6 @@ class MainFragmentViewModel(val repoContacts: RepoContacts,application: Applicat
         }
     }
 
-    /*private fun  getPhoneBook(){
-        viewModelScope.launch {
 
-            val defResultLIst= async(IO) {
-                repoContacts.getRawContactsPhonebook()
-            }
-            try {
-                val resultList=defResultLIst.await()
-
-            }catch (t:Throwable){
-                Log.i(MYTAG, " getAllRawContacts error ${t.message}")
-
-            }
-        }
-    }*/
 
 }

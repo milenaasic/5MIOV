@@ -21,7 +21,8 @@ import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentRecentCallsBinding
 import com.vertial.fivemiov.model.RecentCall
 import com.vertial.fivemiov.ui.fragment_dial_pad.DialPadFragment
-import com.vertial.fivemiov.utils.getMobAppVersion
+import com.vertial.fivemiov.ui.myapplication.MyApplication
+
 
 private val MYTAG="MY_RecentCallsFragment"
 class RecentCallsFragment : Fragment() {
@@ -40,11 +41,11 @@ class RecentCallsFragment : Fragment() {
 
         val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
         val apiService= MyAPI.retrofitService
-        val mobileAppVersion=requireActivity().packageManager.getPackageInfo(requireActivity().packageName, 0).getMobAppVersion()
+
         val repo= RepoContacts(requireActivity().contentResolver,
                                 database,
                                 apiService,
-                                resources.getString(R.string.mobile_app_version_header,mobileAppVersion)
+                                resources.getString(R.string.mobile_app_version_header,(requireActivity().application as MyApplication).mobileAppVersion)
                                 )
 
 
@@ -67,16 +68,14 @@ class RecentCallsFragment : Fragment() {
         recentCallsAdapter= RecentCallsAdapter(
             RecentCallClickListener {phoneNumber->
                 val parent =parentFragment as DialPadFragment
-                parent?.pastePhoneNumber(phoneNumber )
+                parent.pastePhoneNumber(phoneNumber )
             }
         )
 
         binding.recentCallsRecView.setHasFixedSize(true)
         binding.recentCallsRecView.adapter=recentCallsAdapter
 
-        /*recentCallsAdapter.dataList=listOf(RecentCall(0, "milena","+1 56 896 523",System.currentTimeMillis()),
-            RecentCall(0, "milena2","+1 56 896 523-2",System.currentTimeMillis())
-        )*/
+
 
     }
 
@@ -84,7 +83,7 @@ class RecentCallsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         viewModel.recentCalls.observe(viewLifecycleOwner, Observer {list->
-            Log.i(MYTAG," recent call lista iz baze je $list")
+
             if(list!=null){
                 //if(list.isEmpty()) showSnackBar(getString(R.string.no_recent_calls))
                 //else recentCallsAdapter.dataList=list.reversed()

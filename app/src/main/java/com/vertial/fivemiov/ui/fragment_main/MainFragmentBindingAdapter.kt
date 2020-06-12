@@ -16,7 +16,7 @@ private val MYTAG="MY_MainFragBindAdapter"
 
 @BindingAdapter("setNameWithColoredLetters","textToColor","mycolor")
 fun setNameWithColoredLetters(view:TextView, item: ContactItem, textToColor:String?, color:String){
-    //Log.i(MYTAG,"contact je $item, za bojenje je $textToColor")
+
     if(item.name== EMPTY_NAME) view.text=""
     else {
         if (textToColor == null) view.text = item.name

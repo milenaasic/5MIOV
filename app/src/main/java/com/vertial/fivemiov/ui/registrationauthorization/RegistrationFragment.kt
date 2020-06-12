@@ -50,32 +50,21 @@ class RegistrationFragment : Fragment() {
 
         binding.registerButton.setOnClickListener {
 
-            //showTermsOfUseDailog()
-           // it.isEnabled = false
             hidekeyboard()
             binding.rootRegContLayout.requestFocus()
             if (!isOnline(requireActivity().application)) {
                 showSnackBar(resources.getString(R.string.no_internet))
-               // it.isEnabled = true
+
                 return@setOnClickListener
             }
 
-            Log.i(MY_TAG, "registrtion button je clicked}")
 
             val enteredPhoneNumber = binding.phoneNumberEditText.text.toString()
             if (enteredPhoneNumber.isPhoneNumberValid()) {
                 showTermsOfUseDailog(enteredPhoneNumber)
 
-                /*showTermsOfUseDailog()
-                it.isEnabled = false
-                showProgressBar(true)
-                activityViewModel.registerButtonClicked(
-                    enteredPhoneNumber.removePlus(),
-                    smsResend = false
-                )*/
-
             } else {
-               // it.isEnabled = true
+
                 binding.enterPhoneTextInputLayout.setError(resources.getString(R.string.not_valid_phone_number))
             }
         }
@@ -88,10 +77,10 @@ class RegistrationFragment : Fragment() {
         }
 
         binding.phoneNumberEditText.setOnEditorActionListener { view, action, keyEvent ->
-            Log.i(MY_TAG, "action listener , action je $action")
+
             when (action) {
                 EditorInfo.IME_ACTION_DONE, EditorInfo.IME_ACTION_UNSPECIFIED -> {
-                    Log.i(MY_TAG, "action listener , usao u action done")
+                    Log.i(MY_TAG, "action listener , action done or unspecified")
                     hidekeyboard()
                     view.clearFocus()
                     true
@@ -108,9 +97,6 @@ class RegistrationFragment : Fragment() {
             }
         }
 
-        //simulate crash
-       /* val s:String?=null
-        s!!.length*/
 
         return binding.root
     }
@@ -119,7 +105,6 @@ class RegistrationFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         activityViewModel.registrationNetworkError.observe(viewLifecycleOwner, Observer {
-            Log.i(MY_TAG, "net reg greska je ${it}")
 
             if (it != null) {
                 showSnackBar(resources.getString(R.string.something_went_wrong))
@@ -130,7 +115,6 @@ class RegistrationFragment : Fragment() {
         })
 
         activityViewModel.registrationNetSuccess.observe(viewLifecycleOwner, Observer { response ->
-            Log.i(MY_TAG, "net reg response j e ${response.toString()}")
 
             if (response != null) {
                 when {
@@ -171,36 +155,7 @@ class RegistrationFragment : Fragment() {
 
     }
 
-   /* private fun registerButtonClicked() {
-        val it = binding.registerButton
-        it.isEnabled = false
-        hidekeyboard()
-        binding.rootRegContLayout.requestFocus()
-        if (!isOnline(requireActivity().application)) {
-            showSnackBar(resources.getString(R.string.no_internet))
-            it.isEnabled = true
-            return
-        }
 
-
-        Log.i(MY_TAG, "registrtion button je clicked}")
-
-
-        val enteredPhoneNumber = binding.phoneNumberEditText.text.toString()
-        if (enteredPhoneNumber.isPhoneNumberValid()) {
-            it.isEnabled = false
-            showProgressBar(true)
-            activityViewModel.registerButtonClicked(
-                enteredPhoneNumber.removePlus(),
-                smsResend = false
-            )
-
-        } else {
-            it.isEnabled = true
-            binding.enterPhoneTextInputLayout.setError(resources.getString(R.string.not_valid_phone_number))
-        }
-
-    }*/
 
     private fun hidekeyboard() {
         val inputMethodManager =

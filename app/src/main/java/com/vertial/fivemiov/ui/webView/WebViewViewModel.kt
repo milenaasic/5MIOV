@@ -58,7 +58,7 @@ class WebViewViewModel(val myRepository: RepoContacts, application: Application)
 
 
     fun getPhoneBook(){
-       Log.i(MY_TAG,"get phone boook webview")
+       Log.i(MY_TAG,"get phone boook from webview")
 
         viewModelScope.launch {
 
@@ -100,19 +100,6 @@ class WebViewViewModel(val myRepository: RepoContacts, application: Application)
         myRepository.phoneBookExportFinishedFromWebView()
     }
 
-    /*fun loadloadDashboard(){
-        viewModelScope.launch {
-
-            val loadDashDef=MyAPI.retrofitService.loadDashboard()
-            try {
-                val result=loadDashDef.await()
-                Log.i(MY_TAG,"result je ${result}")
-            }catch (e:Throwable) {
-                Log.i(MY_TAG,"exceptione ${e.message}")
-            }
-        }
-
-    }*/
 
 
 

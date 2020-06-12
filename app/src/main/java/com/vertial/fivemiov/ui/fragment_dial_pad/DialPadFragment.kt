@@ -34,6 +34,7 @@ import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentDialPadBinding
 import com.vertial.fivemiov.model.RecentCall
 import com.vertial.fivemiov.ui.initializeSharedPrefToFalse
+import com.vertial.fivemiov.ui.myapplication.MyApplication
 import com.vertial.fivemiov.utils.*
 import kotlin.math.roundToInt
 
@@ -72,11 +73,10 @@ class DialPadFragment : Fragment() {
 
         val database=MyDatabase.getInstance(requireContext()).myDatabaseDao
         val apiService=MyAPI.retrofitService
-        val mobileAppVersion=requireActivity().packageManager.getPackageInfo(requireActivity().packageName, 0).getMobAppVersion()
         val repo=RepoContacts(  requireActivity().contentResolver,
                                 database,
                                 apiService,
-                                resources.getString(R.string.mobile_app_version_header,mobileAppVersion)
+                                resources.getString(R.string.mobile_app_version_header,(requireActivity().application as MyApplication).mobileAppVersion)
         )
 
 
@@ -116,7 +116,7 @@ class DialPadFragment : Fragment() {
                         val phoneNumber=binding.editTextEnterNumber.text.toString()
                         val normPhoneNumber=PhoneNumberUtils.normalizeNumber(phoneNumber)
                         if(checkForPermissions()) {
-                            if(normPhoneNumber.isValidPhoneNumber()) {
+                            if(normPhoneNumber.isPhoneNumberValid()) {
                                 viewModel.insertCallIntoDB(RecentCall(recentCallName = phoneNumber,recentCallPhone = phoneNumber,recentCallTime = System.currentTimeMillis()))
                                 findNavController().navigate(DialPadFragmentDirections.actionDialPadFragmentToSipFragment(normPhoneNumber,normPhoneNumber))
                             }
@@ -147,7 +147,7 @@ class DialPadFragment : Fragment() {
           }
 
           binding.editTextEnterNumber.setOnClickListener {
-              Log.i(MYTAG, "duzina u edit tekstu je ${binding.editTextEnterNumber.length()} ")
+
               if(binding.editTextEnterNumber.length()!=0) {
                                     binding.editTextEnterNumber.isCursorVisible=true
                   val start=binding.editTextEnterNumber.selectionStart
@@ -176,17 +176,11 @@ class DialPadFragment : Fragment() {
     }
 
     private fun configureBottomSlidePanel() {
-        Log.i(MYTAG," usao u backdrop fragment ")
+
 
         bsb=BottomSheetBehavior.from(binding.recentcallsFragment)
         bsb.state = BottomSheetBehavior.STATE_HIDDEN
-       /*val dip = 50f
-        val px = TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_DIP,
-            dip,
-            resources.getDisplayMetrics()
-        )
-        Log.i(MYTAG,"24 dipa u pikseliam je ${px.toInt()}")*/
+
 
     }
 
@@ -199,7 +193,7 @@ class DialPadFragment : Fragment() {
 
         viewModel.userData.observe(viewLifecycleOwner, Observer {user->
            if(user!=null) {
-               Log.i(MYTAG, " user je $user")
+               Log.i(MYTAG, " user from DB: $user")
                if (user.userEmail == EMPTY_EMAIL) binding.setEmailAndPassButton.visibility =
                    View.VISIBLE
                else binding.setEmailAndPassButton.visibility = View.GONE
@@ -249,7 +243,7 @@ class DialPadFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        Log.i(MYTAG, " onSTart")
+
         if(isOnline(requireActivity().application)) viewModel.getCredit()
         else binding.creditTextView.text="No internet"
 
@@ -266,8 +260,7 @@ class DialPadFragment : Fragment() {
     private fun deleteDigit(){
 
         val charCount:Int = binding.editTextEnterNumber.length()
-        Log.i(MYTAG, " char count: $charCount")
-        Log.i(MYTAG, " position: $currentCursorPosition")
+
         when (charCount){
             0->{}
             1->{ binding.editTextEnterNumber.text.delete(charCount - 1, charCount)
@@ -336,12 +329,12 @@ class DialPadFragment : Fragment() {
     }
 
     fun pastePhoneNumber(pasteData:String) {
-        Log.i(MYTAG," paste na klipu je $pasteData")
+
         bsb.state = BottomSheetBehavior.STATE_HIDDEN
         if(!pasteData.isNullOrEmpty() && pasteData.isNotBlank() && pasteData.length<= MAX_CHARS_ALLOWED_IN_LAYOUT){
             val pasteDataNormalized=PhoneNumberUtils.normalizeNumber(pasteData.toString())
 
-            if(pasteDataNormalized.isValidPhoneNumber()){
+            if(pasteDataNormalized.isPhoneNumberValid()){
                 binding.editTextEnterNumber.apply {
                     text=Editable.Factory.getInstance().newEditable(pasteData)
                     currentCursorPosition=pasteData.lastIndex+1
@@ -380,20 +373,20 @@ class DialPadFragment : Fragment() {
                 if (grantResults.isNotEmpty()) {
 
                     if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                        Log.i(MYTAG,"grantResults 0 je ${grantResults[0]}")
+                        Log.i(MYTAG,"grantResults 0  ${grantResults[0]}")
                     } else {
                         showSnackBar(resources.getString(R.string.no_permission_make_phone_call))
                     }
 
 
                     if (grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-                        Log.i(MYTAG,"grantResults 1 je ${grantResults[1]}")
+                        Log.i(MYTAG,"grantResults 1  ${grantResults[1]}")
                     } else {
                         showSnackBar(resources.getString(R.string.no_SIP_permission))
                     }
 
                     if (grantResults[2] == PackageManager.PERMISSION_GRANTED) {
-                        Log.i(MYTAG,"grantResults 2 audio je ${grantResults[1]}")
+                        Log.i(MYTAG,"grantResults 2 audio  ${grantResults[1]}")
                     } else {
                         showSnackBar(resources.getString(R.string.no_audio_permission))
                     }
@@ -412,12 +405,12 @@ class DialPadFragment : Fragment() {
     private fun makePhoneCall() {
         val enteredPhone=binding.editTextEnterNumber.text.toString()
         val phone = PhoneNumberUtils.normalizeNumber(enteredPhone)
-        Log.i(MYTAG, "normalizovan broj je $phone")
-        if (phone.isValidPhoneNumber()) {
+
+        if (phone.isPhoneNumberValid()) {
 
             val intentToCall = Intent(Intent.ACTION_CALL).apply {
                 setData(Uri.parse(resources.getString(R.string.prenumber_call,myPrenumber,phone)))
-                Log.i(MYTAG, "uri je tel:$myPrenumber,$phone ")
+                Log.i(MYTAG, "uri is ${resources.getString(R.string.prenumber_call,myPrenumber,phone)} ")
             }
 
             if (intentToCall.resolveActivity(requireActivity().packageManager) != null) {
@@ -431,7 +424,7 @@ class DialPadFragment : Fragment() {
 
     private fun setRecentCallsFragmentHeight(){
         val dialPadHeight=binding.dialNumbersLayout.layoutParams.height
-        Log.i(MYTAG," dialpad height je $dialPadHeight, screenDensity je ${resources.displayMetrics.density}")
+        Log.i(MYTAG," dialpad height: $dialPadHeight, screenDensity je ${resources.displayMetrics.density}")
         val params=binding.recentcallsFragment.layoutParams
         params.height=calculateRecentCallsFragmentHeight()
         binding.recentcallsFragment.layoutParams=params
@@ -444,7 +437,7 @@ class DialPadFragment : Fragment() {
 
         val guidelinePositionInLayout=0.7
        val screenHeight=resources.displayMetrics.heightPixels
-       Log.i(MYTAG, "screen height je $screenHeight")
+
         var actionBarHeight = 56*resources.displayMetrics.density.toInt()
         val statusBarHeightDP = 30
         val typedValue = TypedValue()
@@ -458,12 +451,12 @@ class DialPadFragment : Fragment() {
                 TypedValue.complexToDimensionPixelSize(typedValue.data, resources.displayMetrics)
         }
 
-        Log.i(MYTAG,"density je ${resources.displayMetrics.density}, a actionbar je $actionBarHeight")
+        Log.i(MYTAG,"density is ${resources.displayMetrics.density}, a actionbar height $actionBarHeight")
 
         val dialPadFragHeight=screenHeight-actionBarHeight-statusBarHeightDP*resources.displayMetrics.density
-        Log.i(MYTAG," dialpadFragm height je $dialPadFragHeight")
+
         val percentOfReturnHeight=guidelinePositionInLayout*dialPadFragHeight
-        Log.i(MYTAG," percent of 0,7 height je $percentOfReturnHeight, a to Int je ${percentOfReturnHeight.toInt()}")
+
         return percentOfReturnHeight.roundToInt()
     }
 

@@ -61,18 +61,18 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
     }
 
     fun resetSignUpParameters(){
-        Log.i(MY_TAG,"reset user paramtri PRE su $enteredPhoneNumber, $enteredEmail, $enteredPassword, $signInParameter")
+        Log.i(MY_TAG,"reset user params BEFORE RESET: $enteredPhoneNumber, $enteredEmail, $enteredPassword, $signInParameter")
         enteredEmail=null
         enteredPassword=null
         signInParameter=null
-        Log.i(MY_TAG,"reset user paramtri su $enteredPhoneNumber,$enteredEmail, $enteredPassword, $signInParameter")
+        Log.i(MY_TAG,"reset user params AFTER RESET $enteredPhoneNumber,$enteredEmail, $enteredPassword, $signInParameter")
     }
 
 
     //registration fragment
     fun registerButtonClicked(phoneNumber:String, smsResend:Boolean){
         enteredPhoneNumber=phoneNumber
-        Log.i(MY_TAG,("registration button clicked sa smsresend $smsResend"))
+
         //send registrtion phone number to server and go to authorization fragment
         viewModelScope.launch {
             myRepository.sendRegistationToServer(phoneNumber,smsResend)
@@ -94,7 +94,7 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
         enteredPhoneNumber=phoneNumber
         enteredEmail=email
         enteredPassword=password
-        Log.i(MY_TAG,("add number button clicked resend je $smsResend"))
+
         //send add phone, email and pass to server and go to authorization fragment
         viewModelScope.launch {
             myRepository.assignPhoneNumberToAccount(phoneNumber,email,password,smsResend)
@@ -171,12 +171,7 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
 
     }
 
-    /*fun resendSMS(phoneNumber:String){
-        viewModelScope.launch {
-            myRepository.resendSMS(phoneNumber)
-        }
 
-    }*/
 
     fun resetAuthorization_NetSuccess(){
         myRepository.resetAuthorization_NetSuccess()
@@ -205,7 +200,7 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
         _verificationTokenForAuthFragment.value=null
     }
 
-    // ovo pozivam u momentu kada posaljem zahtev ka serveru za prosledjivanje sms-a sa tokenom
+    // this is called when SMS request is made to server
     fun startSMSRetreiverFunction(){
         _startSMSRetreiver.value=true
     }

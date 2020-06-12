@@ -62,7 +62,7 @@ class NumberExistsInDatabase : Fragment() {
 
         }
 
-        binding.nmbExistsPassEditText.setOnEditorActionListener { view, action, keyEvent ->
+        binding.nmbExistsPassEditText.setOnEditorActionListener { view, action, _ ->
             when (action){
                 EditorInfo.IME_ACTION_DONE,EditorInfo.IME_ACTION_UNSPECIFIED-> {
                     hidekeyboard()
@@ -83,15 +83,15 @@ class NumberExistsInDatabase : Fragment() {
 
          }
 
-        //Kada EditText polja imaju fokus treba da se iskljuci greska
+      //when in focus turn off error
         binding.apply {
 
-            nmbExistsEmailEditText.setOnFocusChangeListener { view, hasFocus ->
+            nmbExistsEmailEditText.setOnFocusChangeListener { _, hasFocus ->
                 if(hasFocus) binding.nmbExistsEmailTextInputLayout.error=null
             }
             nmbExistsEmailEditText.afterTextChanged {binding.nmbExistsEmailTextInputLayout.error=null  }
 
-            nmbExistsPassEditText.setOnFocusChangeListener { view, hasFocus ->
+            nmbExistsPassEditText.setOnFocusChangeListener { _, hasFocus ->
                 if(hasFocus) binding.nmbExistsEnterPassTextInputLayout.error=null
             }
             nmbExistsPassEditText.afterTextChanged { binding.nmbExistsEnterPassTextInputLayout.error=null }
@@ -160,7 +160,7 @@ class NumberExistsInDatabase : Fragment() {
     }
 
     override fun onDestroy() {
-        Log.i(MY_TAG,"onDestroy()")
+        Log.i(MY_TAG,"onDestroy(), activityViewModel:${activityViewModel.toString()}")
         if(activityViewModel!=null) activityViewModel?.resetSignUpParameters()
         super.onDestroy()
 

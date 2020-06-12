@@ -10,7 +10,7 @@ import kotlinx.coroutines.*
 import java.lang.Exception
 
 
-private const val MYTAG="MY_Sip_and_e1_repo"
+private const val MYTAG="MY_SIP_REPO"
 
 class RepoSIPE1 (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIService,val mobileAppVer:String="0.0"){
 
@@ -23,7 +23,7 @@ class RepoSIPE1 (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIService,val m
     val getSipAccessCredentialsNetError: LiveData<String?>
         get() = _getSipAccessCredentialsNetError
 
-    //set sharedPref TO false because of Log out
+    //set sharedPref to false because of Log out
     private val _loggingOut= MutableLiveData<Boolean>()
     val loggingOut: LiveData<Boolean>
         get() = _loggingOut
@@ -71,7 +71,7 @@ class RepoSIPE1 (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIService,val m
             else _getSipAccessCredentialsNetSuccess.value=response
 
         }catch (e:Throwable){
-            Log.i(MYTAG," getSipAccess greska ${e.message}")
+
             GlobalScope.launch {
                 withContext(Dispatchers.IO){
                     SendErrorrToServer(myAPI,phone,"getSipAccessCredentials $phone, $token",e.message.toString()).sendError()
@@ -94,12 +94,11 @@ class RepoSIPE1 (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIService,val m
 
 class UncancelableJobSip(val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService,val mobileAppVer: String) {
 
-    val MY_TAG = "MY_klasaUncanceJObSIP"
+    val MY_TAG = "MY_SIP_UNCANCELABLE_JOB"
 
     suspend fun doJob() {
-        Log.i(MY_TAG, "usao u doJOb")
+
         val deferredUser = GlobalScope.async(Dispatchers.IO) {
-            //delay(3000)
             myDatabaseDao.getUserNoLiveData()
         }
         try {
@@ -107,7 +106,7 @@ class UncancelableJobSip(val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIServic
             if (myUser.userToken.isNotEmpty() && myUser.userPhone.isNotEmpty()) resetSipAccess(myUser.userToken,myUser.userPhone)
 
         } catch (e: Exception) {
-            Log.i(MY_TAG, "db greska reset sip credentials ${e.message}")
+            Log.i(MY_TAG, "DB error ${e.message}")
 
         }
 
@@ -118,7 +117,7 @@ class UncancelableJobSip(val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIServic
         authToken: String,
         phone: String
     ) {
-        Log.i(MY_TAG, "usao u resetSipAccess")
+
         val defResult = myAPI.resetSipAccess(
                 phoneNumber = phone,
                 signature = produceJWtToken(
@@ -133,7 +132,7 @@ class UncancelableJobSip(val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIServic
             val result = defResult.await()
 
         } catch (e: Throwable) {
-            Log.i(MY_TAG, "greska resetSipAccess ${e.message}")
+
             GlobalScope.launch {
                 withContext(Dispatchers.IO){
                     SendErrorrToServer(myAPI,phone,"resetSipAccess $phone, $authToken",e.message.toString()).sendError()

@@ -1,20 +1,16 @@
 package com.vertial.fivemiov.ui.main_activity
 
-import android.app.Application
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Color
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.provider.ContactsContract
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -33,12 +29,14 @@ import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.ActivityMainBinding
 import com.vertial.fivemiov.ui.initializeSharedPrefToFalse
+import com.vertial.fivemiov.ui.myapplication.MyApplication
 import com.vertial.fivemiov.ui.registrationauthorization.RegistrationAuthorizationActivity
 import com.vertial.fivemiov.ui.webView.WebViewActivity
 import com.vertial.fivemiov.utils.*
+import org.acra.ACRA
 
 
-private const val MY_TAG="MY_MainActivity"
+private const val MY_TAG="MY_MAIN_ACTIVITY"
 class MainActivity : AppCompatActivity() {
 
 
@@ -61,8 +59,6 @@ class MainActivity : AppCompatActivity() {
         const val SIP_FRAGMENT = 4
         const val ABOUT_FRAGMENT=5
 
-        const val MAIN_ACTIVITY_SHARED_PREF_NAME = "MainActivitySharedPref"
-
 
     }
 
@@ -70,16 +66,18 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         setSupportActionBar(binding.toolbarMain)
 
         val myDatabaseDao = MyDatabase.getInstance(this).myDatabaseDao
         val myApi = MyAPI.retrofitService
-        val mobileAppVersion=packageManager.getPackageInfo(packageName, 0).getMobAppVersion()
+
         val myRepository = RepoContacts(contentResolver,
                                         myDatabaseDao,
                                         myApi,
-                                        resources.getString(R.string.mobile_app_version_header,mobileAppVersion)
+                                        resources.getString(R.string.mobile_app_version_header,(application as MyApplication).mobileAppVersion)
         )
 
 
@@ -132,7 +130,7 @@ class MainActivity : AppCompatActivity() {
 
         if (savedInstanceState != null) {
             mySavedInstanceState=savedInstanceState
-            Log.i(MY_TAG, "usao u onSaveInstance nije null")
+            Log.i(MY_TAG, "savedInstanceState is not null")
 
             when (savedInstanceState.get(CURRENT_FRAGMENT)) {
                 MAIN_FRAGMENT -> {
@@ -163,6 +161,10 @@ class MainActivity : AppCompatActivity() {
 
 
         viewModel.userData.observe(this, Observer { user ->
+            //crash report custom data
+           ACRA.getErrorReporter().putCustomData("MAIN_ACTIVITY_observe_user_data_phone",user.userPhone)
+           ACRA.getErrorReporter().putCustomData("MAIN_ACTIVITY_observe_user_data_token",user.userToken)
+
             if(user!=null){
                 if (user.userPhone==EMPTY_PHONE_NUMBER || user.userPhone.isEmpty() || user.userToken== EMPTY_TOKEN || user.userToken.isEmpty()) {
                     startActivity(Intent(this, RegistrationAuthorizationActivity::class.java))
@@ -177,7 +179,6 @@ class MainActivity : AppCompatActivity() {
             if (it != null) {
                 viewModel.exportPhoneBook(it)
             }
-            Log.i(MY_TAG, "phonebook lista je main activity $it")
         })
 
         viewModel.phoneBookExported.observe(this, Observer {
@@ -187,11 +188,6 @@ class MainActivity : AppCompatActivity() {
                 val sharedPreferences =
                     application.getSharedPreferences(DEFAULT_SHARED_PREFERENCES, Context.MODE_PRIVATE)
                 if (sharedPreferences.contains(PHONEBOOK_IS_EXPORTED)) {
-                    val isExported = sharedPreferences.getBoolean(PHONEBOOK_IS_EXPORTED, false)
-                    Log.i(
-                        MY_TAG,
-                        " usao u ima phoneBookIsExported promenljiva i vrednost je $isExported"
-                    )
                     sharedPreferences.edit().putBoolean(PHONEBOOK_IS_EXPORTED, true).apply()
 
                 }
@@ -202,13 +198,11 @@ class MainActivity : AppCompatActivity() {
 
 
         viewModel.shouldShowSetAccountDisclaimer.observe(this, Observer {
-            Log.i(MY_TAG,"observera za setAccount Disclaimer je $it")
 
             if(it!=null) {
                 if (it) {
                     showSetAccountDialog()
                     viewModel.setAccountDialogDiscalimerShown()
-
                 }
             }
          })
@@ -235,10 +229,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onRestart() {
 
-        Log.i(MY_TAG, " ON RESTART")
-       Log.i(MY_TAG, " saved state je ${mySavedInstanceState?.get(CURRENT_FRAGMENT)}")
+       Log.i(MY_TAG, " Restart, saved state is ${mySavedInstanceState?.get(CURRENT_FRAGMENT)}")
        if(navController.currentDestination?.id==R.id.sipFragment) {
-           Log.i(MY_TAG, " current destinatio je sipfragment")
            navController.navigateUp()
        }
         super.onRestart()
@@ -286,7 +278,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun setDialPadFragmentUI() {
         binding.toolbarMain.apply {
-            //navigationIcon = resources.getDrawable(R.drawable.ic_back_black, null)
             elevation=(4 * resources.displayMetrics.density)
             title=resources.getString(R.string.app_name)
 
@@ -295,21 +286,7 @@ class MainActivity : AppCompatActivity() {
                 window.statusBarColor= Color.TRANSPARENT
             }
 
-            /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                window.decorView.systemUiVisibility= 0
-                setBackgroundColor(resources.getColor(android.R.color.background_light,null))
-                window.statusBarColor= resources.getColor(R.color.colorPrimaryDark,null)
-            }else{
-                setBackgroundColor(resources.getColor(android.R.color.background_light))
-                window.statusBarColor= resources.getColor(R.color.colorPrimaryDark)
-            }*/
         }
-
-
-        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-            window.decorView.systemUiVisibility= 0
-            window.statusBarColor= resources.getColor(R.color.colorPrimaryDark, null)
-        }*/
 
     }
 
@@ -395,13 +372,14 @@ class MainActivity : AppCompatActivity() {
             R.id.menu_item_share->{
                     val share = Intent.createChooser(Intent().apply {
                         action = Intent.ACTION_SEND
+                        //TODO change to google play url
                         putExtra(Intent.EXTRA_TEXT, "https://http://www.5mtelecom.com/")
 
                         // (Optional) Here we're setting the title of the content
                         //putExtra(Intent.EXTRA_TITLE, "Make cheap international calls")
                         type="text/plain"
 
-                        }, "5MIOV -Make cheap international calls")
+                        }, getString(R.string.share_title))
                         startActivity(share)
                         return true
 
@@ -441,8 +419,8 @@ class MainActivity : AppCompatActivity() {
 
         builder?.apply {
             setMessage(R.string.set_account_dialog)
-                .setTitle("Important")
-                .setNeutralButton("I Understand", { dialog, id ->
+                .setTitle(getString(R.string.disclaimer_title_important))
+                .setNeutralButton(getString(R.string.disclaimer_IUnderstand_button), { dialog, id ->
                     setSharedPrefDisclaimerShownValueToTrue()
                     dialog.dismiss()
                 })
@@ -459,21 +437,7 @@ class MainActivity : AppCompatActivity() {
             application.getSharedPreferences(DEFAULT_SHARED_PREFERENCES, Context.MODE_PRIVATE)
 
         if (sharedPreferences.contains(DISCLAIMER_WAS_SHOWN)) {
-            Log.i(
-                MY_TAG,
-                " usao u ima disclaimer promenljivu i vrednost je ${sharedPreferences.getBoolean(
-                    DISCLAIMER_WAS_SHOWN,
-                    false
-                )}"
-            )
             sharedPreferences.edit().putBoolean(DISCLAIMER_WAS_SHOWN, true).apply()
-            Log.i(
-                MY_TAG,
-                "  usao u ima disclaimer promenljivu posle promene ${sharedPreferences.getBoolean(
-                    DISCLAIMER_WAS_SHOWN,
-                    false
-                )}"
-            )
         }
     }
 
@@ -524,11 +488,6 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-
-    override fun onPause() {
-        super.onPause()
-
-    }
 
 }
 

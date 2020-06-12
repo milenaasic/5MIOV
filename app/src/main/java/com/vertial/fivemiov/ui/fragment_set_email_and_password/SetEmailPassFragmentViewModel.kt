@@ -25,13 +25,12 @@ class SetEmailPassFragmentViewModel(val myrepository: Repo, application: Applica
 
             viewModelScope.launch {
                 val deferredUser = viewModelScope.async(IO) {
-                    //delay(3000)
                     myrepository.getUser()
                 }
                 try {
                      val myUser = deferredUser.await()
                     if(myUser!=null){
-                        Log.i(MYTAG, "setEmialView MOdel ${myUser.userPhone},$myUser.authtoken,$email,$password")
+                        Log.i(MYTAG, " user from DB: ${myUser.userPhone},$myUser.authtoken,$email,$password")
                         if( myUser.userPhone.isNotEmpty()
                             && myUser.userPhone!= EMPTY_PHONE_NUMBER
                             && myUser.userToken.isNotEmpty()
@@ -43,7 +42,7 @@ class SetEmailPassFragmentViewModel(val myrepository: Repo, application: Applica
                     }
 
                 } catch (e: Exception) {
-                    Log.i(MYTAG,"db greska ${e.message}")
+                    Log.i(MYTAG,"DB error ${e.message}")
                 }
 
 

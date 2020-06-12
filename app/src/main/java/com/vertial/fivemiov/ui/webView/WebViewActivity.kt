@@ -19,8 +19,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.vertial.fivemiov.R
-import com.vertial.fivemiov.api.BASE_URL
-import com.vertial.fivemiov.api.MyAPI
+import com.vertial.fivemiov.api.*
 import com.vertial.fivemiov.data.RepoContacts
 import com.vertial.fivemiov.data.produceJWtToken
 import com.vertial.fivemiov.database.MyDatabase
@@ -29,13 +28,14 @@ import com.vertial.fivemiov.model.PhoneBookItem
 import com.vertial.fivemiov.model.User
 import com.vertial.fivemiov.ui.initializeSharedPrefToFalse
 import com.vertial.fivemiov.ui.main_activity.MainActivity
+import com.vertial.fivemiov.ui.myapplication.MyApplication
 import com.vertial.fivemiov.utils.DEFAULT_SHARED_PREFERENCES
 import com.vertial.fivemiov.utils.PHONEBOOK_IS_EXPORTED
-import com.vertial.fivemiov.utils.getMobAppVersion
 import kotlinx.android.synthetic.main.fragment_detail_contact.*
+import org.acra.ACRA
 
 
-private const val MY_TAG="MY_WebVIewActivity"
+private const val MY_TAG="MY_WEBVIEW_ACTIVITY"
 class WebViewActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityWebViewBinding
@@ -43,8 +43,6 @@ class WebViewActivity : AppCompatActivity() {
 
     companion object{
          const val HEADER_AUTH_TOKEN_KEY="X-Wvtk"
-         const val HEADER_AUTH_PHONE_KEY="X-Phone-Number"
-         const val HEADER_SIGNATURE="Sign"
          const val DASHBOARD_URL= BASE_URL+"dashboard"
     }
 
@@ -55,7 +53,7 @@ class WebViewActivity : AppCompatActivity() {
 
         val myDatabaseDao = MyDatabase.getInstance(this).myDatabaseDao
         val myApi = MyAPI.retrofitService
-        val mobileAppVersion=packageManager.getPackageInfo(packageName, 0).getMobAppVersion()
+        val mobileAppVersion=(application as MyApplication).mobileAppVersion
         val myRepository = RepoContacts(contentResolver,
                                         myDatabaseDao,
                                         myApi,
@@ -76,7 +74,10 @@ class WebViewActivity : AppCompatActivity() {
         }
 
         viewModel.user.observe(this, Observer {
-            Log.i(MY_TAG, " user je $it")
+
+            ACRA.getErrorReporter().putCustomData("WEBVIEW_ACTIVITY_observe_user_data_phone",it.userPhone)
+            ACRA.getErrorReporter().putCustomData("WEBVIEW_ACTIVITY_observe_user_data_token",it.userToken)
+
             if(it!=null) binding.myWebView.loadUrl(DASHBOARD_URL, getCustomHeaders(token=it.userToken,phone=it.userPhone))
 
         })
@@ -95,8 +96,6 @@ class WebViewActivity : AppCompatActivity() {
 
         viewModel.phoneBook.observe(this, Observer {
             if (it != null) {
-                Log.i(MY_TAG,"phone book je $it")
-               // val testLIst= mutableListOf<PhoneBookItem?>()
                 val mylist=it.filter { item:PhoneBookItem?->item!=null }
                 viewModel.exportPhoneBook(mylist)
             }
@@ -113,15 +112,10 @@ class WebViewActivity : AppCompatActivity() {
                     Context.MODE_PRIVATE
                 )
                 if (sharedPreferences.contains(PHONEBOOK_IS_EXPORTED)) {
-                    val isExported =
-                        sharedPreferences.getBoolean(PHONEBOOK_IS_EXPORTED, false)
-                    Log.i(
-                        MY_TAG,
-                        " usao u ima phoneBookIsExported promenljiva i vrednost je $isExported"
-                    )
+
                     sharedPreferences.edit().putBoolean(PHONEBOOK_IS_EXPORTED, true)
                         .apply()
-                    Log.i(MY_TAG, "  phoneBookIsExported promenljiva posle promene $isExported")
+
                 }
             }
         })
@@ -143,11 +137,13 @@ class WebViewActivity : AppCompatActivity() {
 
     fun getCustomHeaders(token:String, phone:String): Map<String, String> {
         val map = mutableMapOf<String, String>()
+        val mobileAppVer=resources.getString(R.string.mobile_app_version_header,(application as MyApplication).mobileAppVersion)
         map.put(HEADER_AUTH_TOKEN_KEY, token)
-        map.put(HEADER_AUTH_PHONE_KEY,phone)
+        map.put(HEADER_PHONE_KEY,phone)
+        map.put(HEADER_MOBILE_APP_VERSION,mobileAppVer)
         map.put(HEADER_SIGNATURE, produceJWtToken(
                                                 Pair(HEADER_AUTH_TOKEN_KEY,token),
-                                                Pair(HEADER_AUTH_PHONE_KEY,phone)
+                                                Pair(HEADER_PHONE_KEY,phone)
                                 )
         )
         return map
@@ -158,28 +154,16 @@ class WebViewActivity : AppCompatActivity() {
 
     inner class MyWebWievClient() : WebViewClient() {
 
-        /*override fun shouldOverrideUrlLoading(
-            view: WebView?,
-            request: WebResourceRequest?
-        ): Boolean {
-            Log.i(
-                MY_TAG, "shouldOverrideUrlLoading, url je ${request?.url}, super je ${super.shouldOverrideUrlLoading(view, request)}"
-            )
-            return super.shouldOverrideUrlLoading(view, request)
-
-        }*/
-
 
         override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
             super.onPageStarted(view, url, favicon)
-            Log.i(MY_TAG, "web view client onPage started")
+
 
         }
 
         override fun onPageFinished(view: WebView?, url: String?) {
             super.onPageFinished(view, url)
             //progress bar gone
-            Log.i(MY_TAG, "web view client onPage finished")
             binding.webViewLinLayout.visibility= View.GONE
 
         }
@@ -189,7 +173,7 @@ class WebViewActivity : AppCompatActivity() {
             request: WebResourceRequest?,
             error: WebResourceError?
         ) {
-            Log.i(MY_TAG," webview greska $error, $detail_contact_rec_view, $request")
+            Log.i(MY_TAG," WebView onReceivedError $error, $detail_contact_rec_view, $request")
             super.onReceivedError(view, request, error)
         }
 

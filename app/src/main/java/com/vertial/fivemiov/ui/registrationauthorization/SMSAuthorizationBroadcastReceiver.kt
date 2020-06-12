@@ -38,11 +38,11 @@ class SMSAuthorizationBroadcastReceiver : BroadcastReceiver() {
                 CommonStatusCodes.SUCCESS ->  {
                         var  message : String?= extras[SmsRetriever.EXTRA_SMS_MESSAGE] as String?
                         if(!message.isNullOrEmpty()) _receivedSMSMessage.value=message
-                    Log.i(MYTAG,"u on receive success $message")
+                    Log.i(MYTAG," on receive success $message")
                 }
 
                 CommonStatusCodes.TIMEOUT -> {
-                    Log.i(MYTAG,"u on receive je TIMEOUT")
+                    Log.i(MYTAG," on receive is TIMEOUT")
                     _receivedSMSMessage.value= timeout
                 }
             }

@@ -18,7 +18,7 @@ fun setRecentCallDate(view: TextView, item: RecentCall?){
         if(DateUtils.isToday(item.recentCallTime)) view.text= "Today, ${formatTimeFromMillis(item.recentCallTime)}"
         else view.text= "${formatDateFromMillis(item.recentCallTime)}, ${formatTimeFromMillis(item.recentCallTime)}"
 
-        //view.text= "${formatDateFromMillis(item.recentCallTime)}, ${formatTimeFromMillis(item.recentCallTime)}"
+
     }
 }
 

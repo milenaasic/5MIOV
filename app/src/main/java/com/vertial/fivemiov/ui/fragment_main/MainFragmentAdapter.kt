@@ -84,36 +84,7 @@ class MainFragmentAdapter(val clickListener: ContactItemClickListener,val myColo
         }
     }
 
-    /*override fun getFilter(): Filter {
-        Filter {
-            return object : Filter() {
-                override fun performFiltering(constraint: CharSequence?): FilterResults {
-                    val charSearch = constraint.toString()
-                    if (charSearch.isEmpty()) {
-                        filteredList=dataList
-                    } else {
-                        val resultList = ArrayList<String>()
-                        for (item in dataList) {
-                            if (item.name.toLowerCase(Locale.ROOT).contains(charSearch.toLowerCase(Locale.ROOT))) {
-                                resultList.add(item)
-                            }
-                        }
-                        filteredList = resultList
-                    }
-                    val filterResults = FilterResults()
-                    filterResults.values = countryFilterList
-                    return filterResults
-                }
 
-                @Suppress("UNCHECKED_CAST")
-                override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
-                    result = results?.values as List<ContactItem>
-                    notifyDataSetChanged()
-                }
-
-            }
-        }
-    }*/
 }
 
 class ContactItemClickListener(val clickListener:(item: ContactItem)->Unit ){

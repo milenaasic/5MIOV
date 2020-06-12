@@ -41,25 +41,19 @@ fun isOnline(application: Application):Boolean{
     return online
 }
 
-fun String.isValidPhoneNumber():Boolean{
-
-    return PhoneNumberUtils.isGlobalPhoneNumber(this)
-
-}
-
 
 
 private val MY_TAG="functions"
 
 fun String.isPhoneNumberValid():Boolean{
+    val normalizedNumber=PhoneNumberUtils.normalizeNumber(this)
+    Log.i(MY_TAG," number:$this, normalized :$normalizedNumber")
+    if(normalizedNumber!=null) return (PhoneNumberUtils.isGlobalPhoneNumber(normalizedNumber ) && this.length> PHONE_NUMBER_MIN_LENGHT)
+    else return false
 
-    return (PhoneNumberUtils.isGlobalPhoneNumber(this) && this.length> PHONE_NUMBER_MIN_LENGHT)
-    //return true
 }
 
 fun String.isPasswordValid():Boolean{
-
-   // val passPattern="^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[*.!@$%^&(){}:;<>,?/~_+-=|]).{8,32}$"
 
     val passPattern="^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[*.!@$%^&(){}:;<>,?/~_+=|'\"-]).{8,32}$"
     val passwordMatcher = Regex(passPattern)
@@ -74,30 +68,11 @@ fun String.removeDoubleZeroAtBegining():String{
     return this.trim().removePrefix(DOUBLE_ZERO)
 }
 
-fun String.removeFirstZeroAddPrefix(prefix:String):String{
+fun String.removeFirstZeroAddPrefix():String{
 
     if(!this.trim().startsWith(ONE_ZERO)) return this
     else return "$NIGERIAN_PREFIX${this.trim().removePrefix(ONE_ZERO)}"
 }
-
-fun convertPhoneListToPhoneArray(phoneList: List<PhoneItem>): Array<String> {
-    val resultList= mutableListOf<String>()
-
-    for(item in phoneList){
-        //noramlizuj broj, ukloni +, ukoloni dve 00 (ako ima), jednu nulu zameni sa 234
-        if(item!=null){
-            if(!item.phoneNumber.isNullOrEmpty() && !item.phoneNumber.isNullOrBlank()){
-                val myPhoneNumber=PhoneNumberUtils.normalizeNumber(item.phoneNumber)
-                resultList.add(myPhoneNumber.removePlus().removeDoubleZeroAtBegining().removeFirstZeroAddPrefix(NIGERIAN_PREFIX))
-            }
-
-        }
-
-    }
-    return resultList.toTypedArray()
-
-}
-
 
 
 fun String.removePlus():String{
@@ -108,8 +83,8 @@ fun String.removePlus():String{
 
 
 fun isVOIPsupported(context:Context):Boolean{
-    Log.i(MYTAG," is voip supoported ${SipManager.isVoipSupported(context)}")
-    Log.i(MYTAG," is sip api supoported ${SipManager.isApiSupported(context)}")
+    Log.i(MYTAG," is voip suported ${SipManager.isVoipSupported(context)}")
+    Log.i(MYTAG," is sip api suported ${SipManager.isApiSupported(context)}")
     return (SipManager.isVoipSupported(context)&& SipManager.isApiSupported(context))
 
 }
@@ -155,7 +130,7 @@ fun formatTimeFromMillis(mytimeInMillis: Long): String {
     return df.format(calendar.time)
 }
 
- fun PackageInfo.getMobAppVersion():String{
+ /*fun PackageInfo.getMobAppVersion():String{
 
     var myversionName=""
     var versionCode=-1L
@@ -174,5 +149,5 @@ fun formatTimeFromMillis(mytimeInMillis: Long): String {
     }
 
     return myversionName
-}
+}*/
 

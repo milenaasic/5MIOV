@@ -67,9 +67,9 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
         viewModelScope.launch {
 
             val user=myRepository.getUser()
-            Log.i(MY_TAG,"user za show acccount dialog je $user")
+
             if(user.userEmail.equals(EMPTY_EMAIL) && !checkForSharedPrefDisclamerShownValue()){
-                Log.i(MY_TAG,"user ima empty email i nije pokazan disclaimer")
+                Log.i(MY_TAG,"user is $user, disclaimer was not shown")
                 _shouldShowSetAccountDisclaimer.value=true}
         }
 
@@ -130,7 +130,7 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
 
         if(sharedPreferences.contains(DISCLAIMER_WAS_SHOWN)){
             wasShown=sharedPreferences.getBoolean(DISCLAIMER_WAS_SHOWN,false)
-            Log.i(MY_TAG," usao u ima disclaimer promenljiva i vrednost je $wasShown")
+            Log.i(MY_TAG," sharedPreferences, dislaimerWasShown: $wasShown")
         }else{
             sharedPreferences.edit().putBoolean(DISCLAIMER_WAS_SHOWN,false).apply()
         }
@@ -140,16 +140,7 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
 
 
 
-    /*private fun removeContactsWithNoPhones(list:List<ContactItemWithInternationalNumbers>):List<ContactItemWithInternationalNumbers>{
-        var resultList= mutableListOf<ContactItemWithInternationalNumbers>()
 
-        for(item in list){
-            if(item.internationalNumbers.isNotEmpty())  resultList.add(item)
-        }
-        Log.i(MY_TAG,"removeContactsWithNoPhones ulazna lista je $list, posle izbacivanja result je $resultList")
-
-        return resultList
-    }*/
 
 
 }

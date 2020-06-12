@@ -15,7 +15,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import java.lang.Exception
 
-private val MYTAG="MY_SIPVIewMOdel"
+private val MYTAG="MY_SIPVIEWMODEL"
 
 class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : AndroidViewModel(application) {
 
@@ -36,18 +36,18 @@ class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : Androi
     val getSipCredentialsNetSuccess=mySipRepo.getSipAccessCredentialsNetSuccess
     val getSipAccessCredentialsNetError=mySipRepo.getSipAccessCredentialsNetError
 
-    //logging out zbog token mismatch
+    //token mismatch logging out
     val loggingOut=mySipRepo.loggingOut
     fun resetLoggingOutToFalse(){
         mySipRepo.resetLoggingOutToFalse()
     }
 
-    // trazi nove sip credentials
+    // new sip credentials
     fun getSipAccountCredentials(){
 
         viewModelScope.launch{
             val deferredUser = viewModelScope.async(IO) {
-                //delay(3000)
+
                 mySipRepo.getUserNoLiveData()
             }
             try {
@@ -55,14 +55,14 @@ class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : Androi
                 if(myUser.userToken.isNotEmpty() && myUser.userPhone.isNotEmpty()) mySipRepo.getSipAccessCredentials(token = myUser.userToken,phone = myUser.userPhone)
 
             } catch (e: Exception) {
-                Log.i(MYTAG,"db greska iz getSipAccountCredentials ${e.message}")
+                Log.i(MYTAG,"db error in GetSipAccountCredentials ${e.message}")
             }
 
 
             }
     }
 
-    //funkcije za resetovanje getCredentials
+    //reset getCredentials
     fun resetgetSipAccountCredentialsNetSuccess(){
         mySipRepo.resetGetSipAccessCredentialsNetSuccess()
     }
@@ -71,7 +71,7 @@ class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : Androi
     }
 
 
-    //resetuj sip credentials
+    //reset sip credentials
     fun resetSipCredentials(){
        mySipRepo.resetSipAccessInBackGround()
     }
@@ -102,7 +102,7 @@ class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : Androi
 
     fun navigateBack(){
         viewModelScope.launch {
-            //delay(1000)
+
             _navigateUp.value=true
         }
     }

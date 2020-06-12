@@ -38,7 +38,7 @@ class AboutFragmentViewModel (val myDatabaseDao: MyDatabaseDao, application: App
                 _webApiVersion.value=webapi
 
              } catch (e: Exception) {
-                 Log.i(MYTAG, " web api greska ${e.message}")
+                 Log.i(MYTAG, " DB error ${e.message}")
              }
          }
 

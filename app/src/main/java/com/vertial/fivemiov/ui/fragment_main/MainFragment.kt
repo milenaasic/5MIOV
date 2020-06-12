@@ -2,6 +2,7 @@ package com.vertial.fivemiov.ui.fragment_main
 
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
@@ -37,6 +38,7 @@ import com.vertial.fivemiov.model.ContactItemWithInternationalNumbers
 import com.vertial.fivemiov.ui.initializeSharedPrefToFalse
 import com.vertial.fivemiov.ui.main_activity.MainActivity
 import com.vertial.fivemiov.ui.main_activity.MainActivityViewModel
+import com.vertial.fivemiov.ui.myapplication.MyApplication
 import com.vertial.fivemiov.utils.*
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
@@ -75,11 +77,11 @@ class MainFragment : Fragment(){
 
         val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
         val apiService= MyAPI.retrofitService
-        val mobileAppVersion=requireActivity().packageManager.getPackageInfo(requireActivity().packageName, 0).getMobAppVersion()
+
         val repo=RepoContacts(requireActivity().contentResolver,
                                 database,
                                 apiService,
-                                resources.getString(R.string.mobile_app_version_header,mobileAppVersion)
+                                resources.getString(R.string.mobile_app_version_header,(requireActivity().application as MyApplication).mobileAppVersion)
                                 )
 
 
@@ -92,11 +94,6 @@ class MainFragment : Fragment(){
 
         initalizeAdapter()
 
-        //ovo radim i onstart
-        /*if(checkForPermissions()) {
-                if(shouldExportPhoneBook()) (requireActivity() as MainActivity).exportPhoneBook()
-        }*/
-
 
         return binding.root
     }
@@ -108,13 +105,13 @@ class MainFragment : Fragment(){
 
        if(sharedPreferences.contains(PHONEBOOK_IS_EXPORTED)){
             val isExported=sharedPreferences.getBoolean(PHONEBOOK_IS_EXPORTED,false)
-           Log.i(MYTAG," usao u ima phoneBookIsExported promenljiva i vrednost je $isExported")
+           Log.i(MYTAG," Shared pref value Phonebook_is_exported: $isExported")
             if(!isExported) return true
             else return false
 
        }else{
             sharedPreferences.edit().putBoolean(PHONEBOOK_IS_EXPORTED,false).apply()
-           Log.i(MYTAG," nema phoneBookIsExported promenljive i sada je napravljena")
+           Log.i(MYTAG," Shared pref value Phonebook_is_exported is created")
            return true
        }
 
@@ -184,19 +181,17 @@ class MainFragment : Fragment(){
 
         mitem.setOnActionExpandListener(object:MenuItem.OnActionExpandListener{
             override fun onMenuItemActionExpand(p0: MenuItem?): Boolean {
-                Log.i(MYTAG,"on search expand listener")
+
                 itemMyAccount.isVisible=false
-                //itemShare.isVisible=false
-                //itemAboutFragment.isVisible=false
+
                 searchViewActionBar.isIconified=false
                 return true
             }
             override fun onMenuItemActionCollapse(p0: MenuItem?): Boolean {
-                Log.i(MYTAG,"on search collapse listener")
+
                 searchViewActionBar.isIconified=true
                 itemMyAccount.isVisible=true
-                //itemShare.isVisible=true
-                //itemAboutFragment.isVisible=true
+
                 searchViewActionBar.clearFocus()
                 return true
             }
@@ -207,11 +202,7 @@ class MainFragment : Fragment(){
 
             override fun onQueryTextSubmit(p0: String?): Boolean {
                 Log.i(MYTAG,"on qerry text submit $p0")
-                /*if(!p0.isNullOrBlank()) {
-                            // u ranijoj varijanti sam slala na ViewMOdel, ali sada treba da ide ne RecyclerView i njegov Filter
-                            //viewModel.populateContactList(p0?:"")
 
-                    }*/
                 return true
             }
 
@@ -227,8 +218,7 @@ class MainFragment : Fragment(){
 
         searchViewActionBar.setOnCloseListener{
             itemMyAccount.isVisible=true
-            //itemDialPad.isVisible=true
-            Log.i(MYTAG,"on search collapse listener")
+
             true
         }
 
@@ -247,28 +237,24 @@ class MainFragment : Fragment(){
                     viewModel.populateContactList()
                     if(shouldExportPhoneBook()) (requireActivity() as MainActivity).exportPhoneBook()
         }
-        //getE1Prenumber()
-        Log.i(MYTAG, "ON START")
+
 
     }
 
 
-    private fun getE1Prenumber() {
-        if(isOnline(requireActivity().application)) viewModel.getE1PrenumberIf24hPassed()
-    }
 
 
-
+    @SuppressLint("ResourceType")
     private fun getColorForHighlightLetters():String{
-        var color=0
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            color= resources.getColor(R.color.colorAccent)
-        }else{
-            color= resources.getColor(R.color.colorAccent,null)
+       var colorStr="#000000"
 
+        try {
+             colorStr=getResources().getString(R.color.colorAccent)
         }
-        Log.i(MYTAG, "boja je ${color.toUInt().toString(16)}")
-        return "#${color.toUInt().toString(16)}"
+        catch (t:Throwable){
+            Log.i(MYTAG, "can not get color as string, ${t.message}")
+        }
+        return colorStr
 
     }
 

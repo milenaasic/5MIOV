@@ -66,7 +66,7 @@ class AuthorizationFragment : Fragment() {
 
         }
 
-        binding.tokenEditText.setOnEditorActionListener { view, action, keyEvent ->
+        binding.tokenEditText.setOnEditorActionListener { view, action, _ ->
             when (action){
                 EditorInfo.IME_ACTION_DONE,EditorInfo.IME_ACTION_UNSPECIFIED-> {
                     hidekeyboard()
@@ -84,22 +84,22 @@ class AuthorizationFragment : Fragment() {
             enableDisableButtons(false)
             showProgressBar(true)
             //resending sms via registration route
-            Log.i(MYTAG,"resend dugme ${activityViewModel.enteredPhoneNumber}, ${activityViewModel.enteredEmail}, ${activityViewModel.enteredPassword}, ${activityViewModel.signInParameter}")
+            Log.i(MYTAG,"resend button ${activityViewModel.enteredPhoneNumber}, ${activityViewModel.enteredEmail}, ${activityViewModel.enteredPassword}, ${activityViewModel.signInParameter}")
             when{
-                //dosao iz fragmenta Registration
+                //came from registrtion fragment
                 activityViewModel.enteredEmail==null && activityViewModel.signInParameter==null->activityViewModel.registerButtonClicked(activityViewModel.enteredPhoneNumber?.removePlus()?:"",smsResend = true)
 
-                //dosao preko fragmenta AddNumberToAccount
+                //came from AddNumberToAccount fragment
                 activityViewModel.enteredEmail!=null && activityViewModel.signInParameter==null->activityViewModel.addNumberToAccountButtonClicked(
                                                                                                     activityViewModel.enteredPhoneNumber?.removePlus()?:"",
                                                                                                     activityViewModel.enteredEmail?:"",
                                                                                                     activityViewModel.enteredPassword?:"",
                                                                                                         smsResend = true)
 
-                //dosao preko NumberExistsInDatabase, create new account
+                //came from NumberExistsInDatabase, create new account
                 activityViewModel.enteredEmail==null && activityViewModel.signInParameter==false->activityViewModel.numberExistsInDb_NoAccount(smsResend = true)
 
-                //dosao preko NumberExistsInDatabase, create new accounte
+                //came from NumberExistsInDatabase, verify account
                 activityViewModel.enteredEmail!=null && activityViewModel.signInParameter==true->activityViewModel.numberExistsInDBVerifyAccount(
                                                                                             activityViewModel.enteredEmail?:"",
                                                                                             activityViewModel.enteredPassword?:"",
@@ -110,10 +110,10 @@ class AuthorizationFragment : Fragment() {
 
         }
 
-        // da se iskljuci greska kada pritisnes ponovo na text edit polje
+
         binding.tokenEditText.apply {
             afterTextChanged { binding.tokenTextInputLayout.error=null }
-            setOnFocusChangeListener { view, hasFocus ->
+            setOnFocusChangeListener { _, hasFocus ->
                 if(hasFocus) binding.tokenTextInputLayout.error=null
 
             }
@@ -128,7 +128,7 @@ class AuthorizationFragment : Fragment() {
 
         activityViewModel.authorizationNetworkSuccess.observe(viewLifecycleOwner, Observer {response->
             if(response!=null){
-                Log.i(MYTAG,"auth success response je $response")
+
                 activityViewModel.resetAuthorization_NetSuccess()
                 showProgressBar(false)
                 enableDisableButtons(true)
@@ -158,7 +158,7 @@ class AuthorizationFragment : Fragment() {
 
         activityViewModel.smsResendNetworkError.observe(viewLifecycleOwner, Observer {
             if(it!=null){
-                Log.i(MYTAG," sms resend success , value $it")
+                Log.i(MYTAG," sms resend error , value $it")
                 activityViewModel.resetSMSResend_NetError()
                 showSnackBar(resources.getString(R.string.something_went_wrong))
                 showProgressBar(false)
@@ -180,27 +180,6 @@ class AuthorizationFragment : Fragment() {
 
 
     }
-
-    /*private fun submitButtonClicked(){
-        hidekeyboard()
-
-        binding.authorizationRootLayout.requestFocus()
-        if(!isOnline(requireActivity().application)) {
-            showSnackBar(resources.getString(R.string.no_internet))
-            return}
-
-
-        if(binding.tokenEditText.text.toString().isBlank()){
-            binding.tokenTextInputLayout.setError(resources.getString(R.string.enter_token))
-
-        } else {
-            enableDisableButtons(false)
-            showProgressBar(true)
-            activityViewModel.submitButtonClicked(binding.tokenEditText.text.toString())
-        }
-
-
-    }*/
 
 
 
@@ -246,42 +225,7 @@ class AuthorizationFragment : Fragment() {
 
     }
 
-    /*private fun showTermsOfUseDailog() {
-        val alertDialog: AlertDialog? = activity?.let {
-            val builder = AlertDialog.Builder(it)
-            val inflater = requireActivity().layoutInflater;
 
-            builder.setView(inflater.inflate(R.layout.terms_of_use_dialog, null))
-            // Add action buttons
-            builder
-                .setPositiveButton("I ACCEPT",
-                    DialogInterface.OnClickListener { dialog, id ->
-                       activityViewModel.areTermsOfServiceAccepted=true
-                       submitButtonClicked()
-                    })
-                .setNegativeButton("CANCEL",
-                    DialogInterface.OnClickListener { dialog, id ->
-                        dialog.cancel()
-                    })
-
-            builder.create()
-
-        }
-        alertDialog?.setOnShowListener {
-            alertDialog.findViewById<TextView>(R.id.termsofusetextView)?.text= HtmlCompat.fromHtml(
-                TERMS_OF_USE, HtmlCompat.FROM_HTML_MODE_LEGACY)
-        }
-
-        alertDialog?.show()
-
-
-    }*/
-
-    private fun networkResenSMSSuccessOrError(){
-        showProgressBar(false)
-        enableDisableButtons(true)
-
-    }
 
     override fun onDestroy() {
         super.onDestroy()

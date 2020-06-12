@@ -23,7 +23,7 @@ import org.conscrypt.OpenSSLCipherRSA
 import org.json.JSONObject
 import java.util.*
 
-private const val MY_TAG="MY_ContactsRepository"
+private const val MY_TAG="MY_CONTACTS_REPOSITORY"
 class RepoContacts (val contentResolver: ContentResolver,
                     val myDatabaseDao: MyDatabaseDao,
                     val myAPIService: MyAPIService,
@@ -35,7 +35,7 @@ class RepoContacts (val contentResolver: ContentResolver,
     // Live Data
     fun getPremunber() = myDatabaseDao.getPrenumber()
 
-    //set sharedPref TO false because of Log out
+    //set sharedPref to false because of Log out
     private val _loggingOut= MutableLiveData<Boolean>()
     val loggingOut: LiveData<Boolean>
         get() = _loggingOut
@@ -112,7 +112,7 @@ class RepoContacts (val contentResolver: ContentResolver,
                     SendErrorrToServer( myAPIService,phone,"getCredit $phone, $token",t.message.toString()).sendError()
                 } }
             _getCredit_NetError.value=t.toString()
-            Log.i(MY_TAG, "network greska je ${t.message}")
+
         }
     }
 
@@ -163,7 +163,6 @@ class RepoContacts (val contentResolver: ContentResolver,
 
             } catch (t: Throwable) {
                     Log.i(MY_TAG, "EXPORTING PHONEBOOK FAILURE")
-                    Log.i(MY_TAG, "network greska je ${t.message}")
                 GlobalScope.launch {
                     withContext(IO){
                         SendErrorrToServer(myAPIService,phoneNumber,"exportPhoneBook $phoneNumber, $token, $phoneBook, $initialExport",t.message.toString()).sendError()
@@ -195,12 +194,11 @@ class RepoContacts (val contentResolver: ContentResolver,
 
             GlobalScope.launch {
                 withContext(IO) {
-                    //delay(3000)
                     myE1Job.startRefreshE124HPassed(token)
                 }
             }
         }else{
-            Log.i(MY_TAG," token ili phone je prazan string ruta refresh E1")
+            Log.i(MY_TAG," ILLEGAL STATE refresh E1 function- token or phone empty")
         }
     }
 
@@ -254,12 +252,11 @@ class RepoContacts (val contentResolver: ContentResolver,
         } finally {
             cursor.close();
         }
-        Log.i(MY_TAG,"convert cursor u listu international phones $list")
 
         return list.distinctBy {it.phoneNumber}
     }
 
-    //povlaci sve kontakte koji imaju interncionalni broj
+    //all contacts with international numbers
     fun getAllRawContactWithInternPhoneNumber():List<ContactItem>{
 
         var resultList= mutableListOf<ContactItem>()
@@ -305,15 +302,6 @@ class RepoContacts (val contentResolver: ContentResolver,
                                             photoThumbUri = cursor.getString(CURSOR_PHOTO_THUMBNAIL_URI)
                                             )
                     )
-                    Log.i(
-                        MY_TAG,
-                        "svi telefoni u phone redovima, id je ${cursor.getString(0)}, name ${cursor.getString(
-                            1
-                        )}, key ${cursor.getString(2)}, number ${cursor.getString(3)}, " +
-                                " normalizes number ${cursor.getString(4)}, photo ${cursor.getString(
-                                    5
-                                )}"
-                    )
 
                 }
             }
@@ -321,14 +309,14 @@ class RepoContacts (val contentResolver: ContentResolver,
         } finally {
             cursor?.close();
         }
-        Log.i(MY_TAG, "result lista je ${resultList}")
+        Log.i(MY_TAG, "contacts list  ${resultList}")
         val noDuplicatesList=resultList.toSet().toList()
-        Log.i(MY_TAG, "no duplicates lista je ${noDuplicatesList}")
+        Log.i(MY_TAG, "no duplicates contacts list ${noDuplicatesList}")
         return noDuplicatesList
     }
 
 
-    //povlaci sve kontakte koji imaju interncionalni broj
+
     suspend fun getRawContactsPhonebook():List<PhoneBookItem>{
 
         var resultList= listOf<PhoneBookItem>()
@@ -364,7 +352,7 @@ class RepoContacts (val contentResolver: ContentResolver,
         try {
             if(cursor!=null) {
                 while (cursor.moveToNext()) {
-                    //
+
                     rawListOfContactItemWithNumber.add(
                         ContactItemWithNumber(
                             name=cursor.getString(CURSOR_DISPLAY_NAME_PRIMARY),
@@ -373,16 +361,12 @@ class RepoContacts (val contentResolver: ContentResolver,
                             normalizedInternationalNumber =cursor.getString(CURSOR_NORMALIZED_NUMBER)?:""
                         )
                     )
-                    Log.i(
-                        MY_TAG,
-                        "za phonebook raw contact  name ${cursor.getString(1)}, key ${cursor.getString(2)}, " +
-                                "normalized number ${(cursor.getString(CURSOR_NORMALIZED_NUMBER))}"
-                    )
+
 
                 }
                 Log.i(
                     MY_TAG,
-                    "za phonebook raw contact list je $rawListOfContactItemWithNumber}"
+                    " phonebook raw contact list with duplicates $rawListOfContactItemWithNumber}"
                 )
                 if (!rawListOfContactItemWithNumber.isNullOrEmpty()) resultList=createPhoneBookList(rawListOfContactItemWithNumber.toSet().toList())
 
@@ -403,7 +387,7 @@ class RepoContacts (val contentResolver: ContentResolver,
             val lookUpKey:String=element.lookUpKey
             val phoneList=rawList.filter {
                     it.lookUpKey==lookUpKey }
-                    Log.i(MY_TAG," lista telefona za ${element.name} je $phoneList")
+
                     phoneBookItemsList.add(
                                 PhoneBookItem(
                                 element.name,
@@ -411,8 +395,6 @@ class RepoContacts (val contentResolver: ContentResolver,
             )
         }
 
-        Log.i(MY_TAG," lista phonebook telefona pre izbacivanja duuplih za ${phoneBookItemsList}")
-        Log.i(MY_TAG," lista phonebook telefona POSLE izbacivanja duuplih za ${phoneBookItemsList.distinctBy { it.name }}")
         return phoneBookItemsList.distinctBy { it.name }
     }
 

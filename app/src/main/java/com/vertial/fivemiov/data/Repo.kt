@@ -16,7 +16,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
     //User Live Data
     fun getUserData()=myDatabaseDao.getUser()
 
-    // registration fragment
+    // Registration fragment
     private val _registrationNetworkError= MutableLiveData<String?>()
     val registrationNetworkError: LiveData<String?>
         get() = _registrationNetworkError
@@ -27,7 +27,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
 
 
 
-    // Assign number to existiong account fragment
+    // Assign number to existing account fragment
     private val _addNumberToAccountNetworkError= MutableLiveData<String?>()
     val addNumberToAccountNetworkError: LiveData<String?>
         get() = _addNumberToAccountNetworkError
@@ -77,7 +77,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
 
 
 
-    // Glavni deo App-a
+    // Main part of the app
     private val _setAccountEmailAndPassError= MutableLiveData<String?>()
     val setAccountEmailAndPassError: LiveData<String?>
         get() = _setAccountEmailAndPassError
@@ -91,7 +91,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
 
     // Registration fragment
     suspend fun sendRegistationToServer(phone:String,smsResend:Boolean){
-        Log.i(MY_TAG,"send registration $phone")
+
         val defResponse=myAPI.sendRegistrationToServer(
                 phoneNumber = phone,
                 signature = produceJWtToken(Pair(Claim.NUMBER.myClaim,phone)),
@@ -101,25 +101,23 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
         try{
 
             val result:NetResponse_Registration=defResponse.await()
-            Log.i(MY_TAG,"uspesna registracija $result")
 
             if(smsResend) _smsResendSuccess.value=result.userMessage
             else _registrationSuccess.value=result
 
         } catch (e:Throwable){
-            val errorMessage:String?=e.message
             GlobalScope.launch {
                 withContext(IO){
                     SendErrorrToServer(myAPI,phone,"sendRegistationToServer,$phone,smsResend_$smsResend",e.message.toString()).sendError()
                 } }
             if(smsResend) _smsResendNetworkError.value=e.message
             else _registrationNetworkError.value=e.toString()
-            Log.i(MY_TAG,"greska $errorMessage, a cela gresak je $e")
+
         }
 
     }
 
-    //Registration fragment  funkcije resetovanja stanja
+    //Registration fragment reset state functions
     fun resetRegistrationNetSuccess(){
         _registrationSuccess.value=null
     }
@@ -135,8 +133,6 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
     // ASSIGN NUMBER TO ACCOUNT
     suspend fun assignPhoneNumberToAccount(phone:String, email:String,password:String,smsResend: Boolean=false){
 
-        Log.i(MY_TAG,"add number to account $phone,$email,$password")
-
         val defResponse=myAPI.sendAddNumberToAccount(
                 phoneNumber = phone,
                 signature = produceJWtToken(
@@ -151,7 +147,6 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
                         password = password ))
         try{
             val result=defResponse.await()
-            Log.i(MY_TAG,"uspesno dodavanje telefona $result")
 
             if(smsResend) _smsResendSuccess.value=result.usermessage
             else _addNumberToAccountNetworkSuccess.value=result
@@ -165,12 +160,12 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
                 } }
             if(smsResend)_smsResendNetworkError.value=errorMessage
             else _addNumberToAccountNetworkError.value=errorMessage
-            Log.i(MY_TAG,"cela greska ${e}")
+
         }
 
     }
 
-    //ASSIGN NUMBER TO ACCOUNT fragment  funkcije resetovanja stanja
+    //ASSIGN NUMBER TO ACCOUNT  reset state functions
     fun resetAssignPhoneNumberToAccountNetSuccess(){
         _addNumberToAccountNetworkSuccess.value=null
     }
@@ -195,7 +190,6 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
                 )
         try{
             val result=defResult.await()
-            Log.i(MY_TAG,"nmb exists in DB user has account $result")
 
             if(smsResend) _smsResendSuccess.value=result.userMessage
             else _nmbExistsInDBUserHasAccountSuccess.value=result
@@ -208,7 +202,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
                 } }
             if(smsResend) _smsResendNetworkError.value=e.message
             else _nmbExistsInDBUserHasAccountError.value=errorMessage
-            Log.i(MY_TAG,"greska nmb exists in DB user has account$e")
+
         }
     }
 
@@ -224,7 +218,6 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
                 )
         try{
             val result=defResult.await()
-            Log.i(MY_TAG,"nmb exists in DB no account $result")
 
             if(smsResend) _smsResendSuccess.value=result.userMessage
             else _nmbExistsInDB_NoAccountSuccess.value=result
@@ -236,11 +229,10 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
                     SendErrorrToServer(myAPI,enteredPhoneNumber,"numberExistsInDB_NOAccount $enteredPhoneNumber, smsResend $smsResend",e.message.toString()).sendError()
                 } }
             _nmbExistsInDB_NoAccountError.value=errorMessage
-            Log.i(MY_TAG,"greska nmb exists in DB no account $e")
         }
     }
 
-    //funkcije za resetovanje stanja za Number Exists in DB
+    // NUMBER EXISTS IN DB reset functions
 
     fun resetNmbExistsInDB_VerifyAccount_NetSuccess(){
         _nmbExistsInDBUserHasAccountSuccess.value=null
@@ -263,7 +255,6 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
     //Authorization fragment
     suspend fun authorizeThisUser(phone:String,smsToken:String,email: String,password: String){
 
-        Log.i(MY_TAG,"send authorization $phone i $smsToken")
         val defResponse=myAPI.authorizeUser(
                 phoneNumber = phone,
                 signature = produceJWtToken(
@@ -277,7 +268,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
                 )
         try{
             val result=defResponse.await()
-            Log.i(MY_TAG,"uspesna autorizacija $result")
+
             if(result.success==true) {
                 val uncancelableJob = UncancelableJob(
                     phone=phone,
@@ -290,7 +281,6 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
 
                 GlobalScope.launch {
                     withContext(Dispatchers.IO) {
-                        //delay(3000)
                         uncancelableJob.startAuthorizationJob()
 
                     }
@@ -316,12 +306,12 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
                     SendErrorrToServer(myAPI,phone,"authorizeThisUser,$phone,$smsToken,$email,$password",e.message.toString()).sendError()
                 } }
             _authorizationNetworkError.value=errorMessage
-            Log.i(MY_TAG,"greska je $e")
+
         }
 
     }
 
-    //Authorization fragment reset funcije
+    //Authorization fragment reset functions
     fun resetAuthorization_NetSuccess(){
         _authorizationSuccess.value=null
     }
@@ -339,9 +329,8 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
     }
 
 
-    // glavni deo app-a, SetAccountAndEmail Fragment
+    //Main part of the app, SetAccountAndEmail Fragment
     suspend fun  setAccountEmailAndPasswordForUser(phoneNumber:String,token: String,email: String,password: String){
-        Log.i(MY_TAG,"setcredentials $phoneNumber,$token,$email,$password")
 
         val defResult=myAPI.setAccountEmailAndPasswordForUser(
             phoneNumber = phoneNumber,
@@ -357,7 +346,6 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
         )
         try {
             val result = defResult.await()
-            Log.i(MY_TAG, "uspesno setovanje accounta $result")
 
                 if (result.success == true) {
                     val myUncancelableJob: UncancelableJob = UncancelableJob(
@@ -371,15 +359,13 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
 
                     GlobalScope.launch {
                         withContext(Dispatchers.IO) {
-                            //delay(3000)
                             myUncancelableJob.startSetAccountEmailAndPassUncancelableJob(token)
                         }
                     }
 
                     GlobalScope.launch {
                         withContext(Dispatchers.IO) {
-                            //delay(3000)
-                            Log.i(MY_TAG, "prosao delay pre upisa u bazu email-a")
+
                             if (result.email.isNotEmpty() && result.email.isNotBlank()) myDatabaseDao.updateUserEmail(result.email)
 
                         }
@@ -396,11 +382,11 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
                     SendErrorrToServer(myAPI,phoneNumber,"setAccountEmailAndPasswordForUser $phoneNumber, $token, $email, $password",e.message.toString()).sendError()
                 } }
             _setAccountEmailAndPassError.value=errorMessage
-            Log.i(MY_TAG,"greska $e")
+
         }
     }
 
-    //Reset Funkcije
+    //Reset functions
     fun resetSetAccountEmailAndPassNetSuccess(){
         _setAccountEmailAndPassSuccess.value=null
     }
@@ -414,19 +400,10 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
 
     }
 
-    fun getPhoneNumberFromDB():String{
-        return myDatabaseDao.getPhone()
-    }
-
-
-    fun getTokenFromDB():String{
-        return myDatabaseDao.getToken()
-
-    }
 
 
     suspend fun insertEmailIntoDatabase(email: String){
-        Log.i(MY_TAG,"insert email into DB $email")
+
         withContext(Dispatchers.IO) {
             myDatabaseDao.updateUserEmail(email)
         }
@@ -449,10 +426,10 @@ class UncancelableJob(
                         val myAPI: MyAPIService,
                         val mobileAppVer: String ){
 
-    val MY_TAG="MY_klasaUncanceJOb"
+    val MY_TAG="MY_UNCANCELABLE_JOB"
 
     suspend fun startAuthorizationJob(){
-        Log.i(MY_TAG,"unceleable job je started $resultAuthorization")
+
         if(resultAuthorization!=null){
 
             if(resultAuthorization.authToken.isNotEmpty() && resultAuthorization.authToken.isNotBlank()) {
@@ -468,12 +445,12 @@ class UncancelableJob(
                         resultAuthorization.e1phone,
                         System.currentTimeMillis()
                     )
-                    Log.i(MY_TAG, "authorize updating e1 phone version in DB")
+                    Log.i(MY_TAG, "Authorize proccess- updating e1 phone version in DB")
                 }
 
                 if (!resultAuthorization.appVersion.isNullOrEmpty() && !resultAuthorization.appVersion.isNullOrBlank()) {
                     myDatabaseDao.updateWebApiVersion(resultAuthorization.appVersion)
-                    Log.i(MY_TAG, "authorize updating web api version in DB")
+                    Log.i(MY_TAG, "Authorize proccess- updating web api version in DB")
                 }
             }
         }
@@ -486,11 +463,11 @@ class UncancelableJob(
 
             if(resultSetAccountEmailAndPass.e1phone.isNullOrEmpty() || resultSetAccountEmailAndPass.e1phone.isNullOrBlank() ) callSetNewE1(phone=phone,token=token)
             else  { myDatabaseDao.updatePrenumber(resultSetAccountEmailAndPass.e1phone,System.currentTimeMillis())
-                Log.i(MY_TAG, "set account updating e1 phone version in DB") }
+                Log.i(MY_TAG, "Set account- updating e1 phone version in DB") }
 
             if(!resultSetAccountEmailAndPass.appVersion.isNullOrEmpty() || !resultSetAccountEmailAndPass.appVersion.isNullOrBlank()) {
                 myDatabaseDao.updateWebApiVersion(resultSetAccountEmailAndPass.appVersion)
-                Log.i(MY_TAG, "set account updating web api version in DB")}
+                Log.i(MY_TAG, "Set account- updating web api version in DB")}
         }
 
     }
@@ -503,7 +480,7 @@ class UncancelableJob(
     private suspend fun resetSipAccess(
         authToken: String
     ) {
-        Log.i(MY_TAG,"usao u resetSipAccess")
+
         val defResult= myAPI.resetSipAccess(
                 phoneNumber = phone,
                 signature = produceJWtToken(
@@ -517,12 +494,16 @@ class UncancelableJob(
         try {
             val result=defResult.await()
         }catch (e:Throwable){
-            Log.i(MY_TAG,"greska resetSipAccess ${e.message}")
+            GlobalScope.launch {
+                withContext(IO){
+                    SendErrorrToServer(myAPI,phone,"resetSIPAccess_from_uncancelable_job,$phone,$authToken",e.message.toString()).sendError()
+                }
+            }
         }
     }
 
     suspend fun callSetNewE1(phone: String,token: String) {
-        Log.i(MY_TAG, "usao u callSetNewE1")
+
 
         val defResult = myAPI.setNewE1(
             phoneNumber = phone,
@@ -548,7 +529,12 @@ class UncancelableJob(
             }
 
         }catch (e:Throwable){
-            Log.i(MY_TAG,"greska callSetNEw E1 ${e.message}")
+
+            GlobalScope.launch {
+                withContext(IO){
+                    SendErrorrToServer(myAPI,phone,"setNewE1_from_uncancelable_job,$phone,$token",e.message.toString()).sendError()
+                }
+            }
         }
 
     }

@@ -33,6 +33,8 @@
 #    *;
 #}
 
+-keep class com.vertial.fivemiov.ui.fragment_recent_calls.**
+
 -keep class io.jsonwebtoken.** {
   public protected private *;
 }

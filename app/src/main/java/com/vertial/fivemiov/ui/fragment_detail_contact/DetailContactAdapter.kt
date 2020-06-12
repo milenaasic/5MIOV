@@ -28,7 +28,7 @@ class DetailContactAdapter(
 
     var dataList= listOf<PhoneItem>()
         set(value) {
-            Log.i(MYTAG,"setvalue $value")
+
             field=value
             notifyDataSetChanged()
 
@@ -59,11 +59,11 @@ class DetailContactAdapter(
                  item: PhoneItem,
                  isOnline:Boolean){
 
-            Log.i("MYTAG","phone item je $item")
+
             if(!isOnline) binding.sipCallButton.isEnabled=false
             else binding.sipCallButton.isEnabled=true
             binding.phoneItem=item
-           // binding.phoneClick=clickListenerNumber
+
             binding.sipClick=clickListenerSip
             binding.prenumberClick=clickListenerPrenumber
 

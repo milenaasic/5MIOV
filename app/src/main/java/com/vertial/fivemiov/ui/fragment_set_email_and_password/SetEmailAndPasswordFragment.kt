@@ -21,9 +21,10 @@ import com.vertial.fivemiov.api.MyAPI
 import com.vertial.fivemiov.data.Repo
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentSetEmailAndPasswordBinding
+import com.vertial.fivemiov.ui.myapplication.MyApplication
 import com.vertial.fivemiov.utils.*
 
-private const val MYTAG="SetEmailAndPasswordFrag"
+private const val MYTAG="MY_SetEmail&PassFragm"
 class SetEmailAndPasswordFragment : Fragment() {
 
     private lateinit var binding: FragmentSetEmailAndPasswordBinding
@@ -43,14 +44,12 @@ class SetEmailAndPasswordFragment : Fragment() {
 
         val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
         val apiService= MyAPI.retrofitService
-        val mobileAppVersion=requireActivity().packageManager.getPackageInfo(requireActivity().packageName, 0).getMobAppVersion()
         val repo= Repo( database,
                         apiService,
-                        resources.getString(R.string.mobile_app_version_header,mobileAppVersion)
+                        resources.getString(R.string.mobile_app_version_header,(requireActivity().application as MyApplication).mobileAppVersion)
                         )
 
-        /*val myApp=requireActivity().application as MyApplication
-        val myAppContanier=myApp.myAppContainer*/
+
 
         viewModel = ViewModelProvider(this, SetEmailPassViewModelFactory(repo,requireActivity().application))
             .get(SetEmailPassFragmentViewModel::class.java)
@@ -69,7 +68,7 @@ class SetEmailAndPasswordFragment : Fragment() {
             if(allEnteredFieldsAreValid()) {
 
                 showProgressBar(true)
-                Log.i(MYTAG,"setCredentials je kliknut")
+
                     viewModel.setAccountAndEmailForUser(
                                 binding.setAccountEmailEditText.text.toString(),
                                 binding.setAccountPassEditText.text.toString()
@@ -79,7 +78,7 @@ class SetEmailAndPasswordFragment : Fragment() {
          }
 
         binding.setAccountConfirmpassEditText.setOnEditorActionListener { view, action, keyEvent ->
-           // Log.i(MY_TAG,"action listener , action je $action")
+
             when (action){
                 EditorInfo.IME_ACTION_DONE, EditorInfo.IME_ACTION_UNSPECIFIED-> {
                     hidekeyboard()

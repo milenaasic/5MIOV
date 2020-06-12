@@ -33,8 +33,7 @@ class DialpadFragmViewModel(val myRepository: RepoContacts, application: Applica
     }
 
     fun getCredit() {
-        Log.i(MYTAG, "get Credit ")
-        //pokupi phone i token iz baze
+
         var myToken = ""
         var myPhoneNumber = ""
         viewModelScope.launch {
@@ -46,12 +45,12 @@ class DialpadFragmViewModel(val myRepository: RepoContacts, application: Applica
                 myToken = user.userToken
                 myPhoneNumber = user.userPhone
             } catch (t: Throwable) {
-                Log.i(MYTAG, "nije pokupio usera iz baze ${t.message} ")
+                Log.i(MYTAG, "DB error ${t.message} ")
             }
 
-            Log.i(MYTAG, "my TOken u get credit je $myToken ")
+
             if (myToken.isNotEmpty() && myPhoneNumber.isNotEmpty()) {
-                Log.i(MYTAG, "my repo get Credit ")
+
                 viewModelScope.launch {
                         myRepository.getCredit(phone = myPhoneNumber, token = myToken)
 

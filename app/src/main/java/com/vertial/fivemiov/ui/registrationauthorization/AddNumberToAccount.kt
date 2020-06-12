@@ -50,7 +50,6 @@ class AddNumberToAccount : Fragment() {
 
         binding.addphoneButton.setOnClickListener {
 
-            //it.isEnabled=false
             binding.rootAddNumberConstrLayout.requestFocus()
             hidekeyboard()
             if(allEnteredFieldsAreValid()){
@@ -59,12 +58,7 @@ class AddNumberToAccount : Fragment() {
                                     binding.addNmbEmailEditText.text.toString(),
                                     binding.addNmbPassEditText.text.toString()
                 )
-                /*showProgressBar(true)
-                activityViewModel?.addNumberToAccountButtonClicked(
-                    (binding.addNmbPhoneEditText.text.toString()).removePlus(),
-                    binding.addNmbEmailEditText.text.toString(),
-                    binding.addNmbPassEditText.text.toString()
-                    )*/
+
             }else{
                 it.isEnabled=true
             }
@@ -72,16 +66,14 @@ class AddNumberToAccount : Fragment() {
         }
 
 
-        binding.addNmbPassEditText.setOnEditorActionListener { view, action, keyEvent ->
+        binding.addNmbPassEditText.setOnEditorActionListener { view, action, _ ->
             when (action){
                 EditorInfo.IME_ACTION_DONE,EditorInfo.IME_ACTION_UNSPECIFIED-> {
                     hidekeyboard()
                     view.clearFocus()
-                    Log.i(MY_TAG," usao u oneditor action listener iz nmbPhoneedittext TRUE")
                     true
                 }
                 else->{
-                    Log.i(MY_TAG," usao u oneditor action listener iz nmbPhoneedittext")
                     false
                 }
 
@@ -89,29 +81,30 @@ class AddNumberToAccount : Fragment() {
 
         }
 
-        //Kada EditTextlayouts imaju fokus treba da se iskljuci greska
+        //if edittextlayout has focus turn off error message
         binding.apply {
 
-            addNmbPhoneEditText.setOnFocusChangeListener { view, hasFocus ->
+            addNmbPhoneEditText.setOnFocusChangeListener { _, hasFocus ->
                 if(hasFocus) binding.addPhoneTextInputLayout.error=null
-                Log.i(MY_TAG,"text input layout ima fokus")
+
             }
             addNmbPhoneEditText.afterTextChanged {binding.addPhoneTextInputLayout.error=null }
 
-            addNmbEmailEditText.setOnFocusChangeListener { view, hasFocus ->
+            addNmbEmailEditText.setOnFocusChangeListener { _, hasFocus ->
                 if(hasFocus) binding.enterEmailTextInputLayout.error=null
-                Log.i(MY_TAG,"text input layout ima fokus")
+
             }
 
             addNmbEmailEditText.afterTextChanged { binding.enterEmailTextInputLayout.error=null }
 
-            addNmbPassEditText.setOnFocusChangeListener { view, hasFocus ->
+            addNmbPassEditText.setOnFocusChangeListener { _, hasFocus ->
                 if(hasFocus) binding.addNmbEnterPassTextInputLayout.error=null
-                Log.i(MY_TAG,"text input layout ima fokus")
+
              }
              addNmbPassEditText.afterTextChanged { binding.addNmbEnterPassTextInputLayout.error=null }
 
          }
+
 
         return binding.root
     }
@@ -131,7 +124,6 @@ class AddNumberToAccount : Fragment() {
 
 
         activityViewModel?.addNumberToAccuntNetworkSuccess?.observe(viewLifecycleOwner,Observer{response->
-            Log.i(MY_TAG,"net response je ${response.toString()}")
 
             if(response!=null) {
                 when {
@@ -157,16 +149,13 @@ class AddNumberToAccount : Fragment() {
     }
 
     override fun onDestroy() {
-        Log.i(MY_TAG,"onDestroy()")
+        Log.i(MY_TAG,"onDestroy(), activityViewModel:${activityViewModel.toString()}")
         if(activityViewModel!=null) activityViewModel?.resetSignUpParameters()
         super.onDestroy()
 
     }
 
-    override fun onDestroyView() {
-        Log.i(MY_TAG,"onDestroyView()")
-        super.onDestroyView()
-    }
+
 
     private fun allEnteredFieldsAreValid(): Boolean {
         var b:Boolean=true
@@ -234,14 +223,14 @@ class AddNumberToAccount : Fragment() {
             // Add action buttons
             builder
                 .setPositiveButton(resources.getString(R.string.terms_of_use_accept),
-                    DialogInterface.OnClickListener { dialog, id ->
+                    DialogInterface.OnClickListener { _, id ->
                         // sign in the user ...
                         startAddNumberToAccount(phone,email,password)
                     })
                 .setNegativeButton(resources.getString(R.string.terms_of_use_cancel),
-                    DialogInterface.OnClickListener { dialog, id ->
+                    DialogInterface.OnClickListener { dialog, _ ->
                         dialog.cancel()
-                        //binding.registerButton.isEnabled = true
+
                     })
 
             builder.create()

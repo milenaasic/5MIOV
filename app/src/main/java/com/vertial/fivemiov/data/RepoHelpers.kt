@@ -17,7 +17,6 @@ private const val MY_TAG="MY_REPO_HELPERS"
 suspend fun logoutAll( myDatabaseDao: MyDatabaseDao){
 
     coroutineScope {
-        Log.i(MY_TAG, "e1 tabele je ${myDatabaseDao.getAllE1()}, sip ${myDatabaseDao.getAllSip()}, webapi ${myDatabaseDao.getWebApiVersion()}")
 
         val deferreds = listOf(
             async(Dispatchers.IO) { myDatabaseDao.logoutE1Table() },
@@ -28,15 +27,14 @@ suspend fun logoutAll( myDatabaseDao: MyDatabaseDao){
 
         try {
             val result=deferreds.awaitAll()
-            Log.i(MY_TAG, "e1 tabele je ${myDatabaseDao.getAllE1()}, sip ${myDatabaseDao.getAllSip()}, webapi ${myDatabaseDao.getWebApiVersion()}")
-            Log.i(MY_TAG, "logour tri tabele je $result")
-            Log.i(MY_TAG,"pre user logouta ${myDatabaseDao.getUserNoLiveData()}")
+
+            Log.i(MY_TAG,"user data before logging out ${myDatabaseDao.getUserNoLiveData()}")
             val defa=async (Dispatchers.IO) {  myDatabaseDao.logoutUser()}
             defa.await()
-            Log.i(MY_TAG,"posle user logouta ${myDatabaseDao.getUserNoLiveData()}")
+            Log.i(MY_TAG,"user data after logging out ${myDatabaseDao.getUserNoLiveData()}")
 
         }catch(t:Throwable){
-            Log.i(MY_TAG, "greska prilikom logaouta 3 tabele je ${t.message}")
+            Log.i(MY_TAG, "Error logging out ${t.message}")
         }
 
     }

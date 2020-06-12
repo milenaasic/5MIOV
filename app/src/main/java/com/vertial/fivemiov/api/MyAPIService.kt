@@ -25,40 +25,6 @@ import java.nio.charset.Charset
 
 private const val NAME="MY_API"
 
-/*val coded= Base64.encodeToString("5miov:tester".toByteArray(),Base64.NO_WRAP)
-const val BASE_URL ="https://5miov.vertial.net/"
-const val HEADER_PHONE_KEY="X-Phone-Number"
-const val HEADER_SIGNATURE="Signature"
-
-
-private val moshi= Moshi.Builder()
-    .add(KotlinJsonAdapterFactory())
-    .build()
-
-val logging=HttpLoggingInterceptor().apply {
-    level=HttpLoggingInterceptor.Level.BODY
- }
-
-val okHttpClient = OkHttpClient.Builder()
-    .addInterceptor(object:Interceptor{
-        override fun intercept(chain: Interceptor.Chain): okhttp3.Response {
-            val requset=chain.request()
-            val newRequest: Request.Builder=requset.newBuilder()
-                .addHeader("Authorization", "Basic $coded")
-            return chain.proceed((newRequest.build()))
-        }
-    })
-    .addInterceptor(logging)
-    .build()
-
-
-private val retrofit= Retrofit.Builder()
-    .client(okHttpClient)
-    .addConverterFactory(MoshiConverterFactory.create(moshi))
-    .addCallAdapterFactory(CoroutineCallAdapterFactory())
-    .baseUrl(BASE_URL)
-    .build()*/
-
 const val HEADER_PHONE_KEY="X-Phone-Number"
 const val HEADER_SIGNATURE="Signature"
 const val HEADER_MOBILE_APP_VERSION="X-App-Version"
@@ -145,7 +111,7 @@ object MyAPI {
 
 
 
-     //registrovan korisnik , net pozivi u okviru glavnog deo app-a
+     //Main part of the app
      @POST("api/user/setCredentials")
      fun setAccountEmailAndPasswordForUser(
          @Header(HEADER_PHONE_KEY) phoneNumber:String,
@@ -161,7 +127,7 @@ object MyAPI {
          @Body request: NetRequest_ExportPhonebook): Deferred<NetResponse_ExportPhonebook>
 
 
-    //E1 prenumber rute
+    //E1 prenumber
     @POST("/api/sip/getE1")
     fun getE1(
         @Header(HEADER_PHONE_KEY) phoneNumber:String,
@@ -178,8 +144,7 @@ object MyAPI {
 
 
 
-     //Sip rute
-
+     //Sip
      @POST("api/sip/getSipCallerIds")
      fun getSipCallerIds(
          @Header(HEADER_PHONE_KEY) phoneNumber:String,
@@ -211,7 +176,8 @@ object MyAPI {
          @Body request: NetRequest_GetSipAccessCredentials): Deferred<NetResponse_GetSipAccessCredentials>
 
 
-    // get Credit ruta
+
+    // get Credit
     @POST("api/account/credit")
     fun getCurrentCredit(
         @Header(HEADER_PHONE_KEY) phoneNumber:String,
@@ -220,7 +186,8 @@ object MyAPI {
         @Body request: NetRequest_GetCurrentCredit): Deferred<NetResponse_GetCurrentCredit>
 
 
-     // posalji gresku na server
+
+     // log error to server
      @PUT("api/mobileLog")
      fun sendErrorToServer(
          @Header(HEADER_PHONE_KEY) phoneNumber:String,

@@ -15,7 +15,7 @@ import com.vertial.fivemiov.model.*
 import com.vertial.fivemiov.utils.*
 
 
-private const val NAME="MY_Database"
+private const val NAME="MY_DATABASE"
 
 @Database(entities = [User::class, E1Prenumber::class,SipAccount::class,WebApiVersion::class,UsersSipCallerIDs::class,RecentCall::class],version = 1,exportSchema = true)
 abstract class MyDatabase:RoomDatabase(){
@@ -27,7 +27,7 @@ abstract class MyDatabase:RoomDatabase(){
         private var INSTANCE: MyDatabase? = null
 
         fun getInstance(context: Context): MyDatabase {
-        Log.i(NAME,"context sa kojimse pravi baza je $context")
+
             synchronized(this) {
 
                 var instance = INSTANCE
@@ -42,7 +42,7 @@ abstract class MyDatabase:RoomDatabase(){
 
                             override fun onCreate(db: SupportSQLiteDatabase) {
                                 super.onCreate(db)
-                                Log.i(NAME,"DB on create")
+                                Log.i(NAME,"DB On create")
 
                                 db.execSQL("CREATE TRIGGER delete_2_callbacks BEFORE INSERT ON recent_calls_table WHEN (select count(*) from recent_calls_table)>2100" +
                                                 " BEGIN  DELETE FROM recent_calls_table WHERE id IN  (SELECT id FROM recent_calls_table ORDER BY id limit (select count(*) -101 from recent_calls_table)); END ")

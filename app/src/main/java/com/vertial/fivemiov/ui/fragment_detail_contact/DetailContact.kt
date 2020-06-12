@@ -43,13 +43,13 @@ import com.vertial.fivemiov.model.PhoneItem
 import com.vertial.fivemiov.model.RecentCall
 import com.vertial.fivemiov.ui.fragment_dial_pad.DialPadFragment
 import com.vertial.fivemiov.ui.fragment_main.MainFragment
-import com.vertial.fivemiov.utils.getMobAppVersion
+import com.vertial.fivemiov.ui.myapplication.MyApplication
+import com.vertial.fivemiov.utils.isPhoneNumberValid
 import com.vertial.fivemiov.utils.isVOIPsupported
-import com.vertial.fivemiov.utils.isValidPhoneNumber
 import java.util.*
 import java.util.Locale.US
 
-private val MYTAG="MY_DetailContact"
+private val MYTAG="MY_DETAIL_CONTACT_FRAGM"
 
 class DetailContact : Fragment() {
 
@@ -69,7 +69,7 @@ class DetailContact : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        args = DetailContactArgs.fromBundle(arguments!!)
+        args = DetailContactArgs.fromBundle(requireArguments())
         setHasOptionsMenu(true)
         getNetworkStatusChangedInfo()
     }
@@ -80,15 +80,14 @@ class DetailContact : Fragment() {
     ): View? {
 
         binding=DataBindingUtil.inflate(inflater,R.layout.fragment_detail_contact,container,false)
-       // val myApp=requireActivity().application as MyApplication
-        //val myAppContanier=myApp.myAppContainer
+
         val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
         val apiService= MyAPI.retrofitService
-        val mobileAppVersion=requireActivity().packageManager.getPackageInfo(requireActivity().packageName, 0).getMobAppVersion()
+
         val repo= RepoContacts(requireActivity().contentResolver,
                                 database,
                                 apiService,
-                                resources.getString(R.string.mobile_app_version_header,mobileAppVersion)
+                            resources.getString(R.string.mobile_app_version_header,(requireActivity().application as MyApplication).mobileAppVersion)
                                 )
 
         viewModel=ViewModelProvider(this,DetailContactViewModelFactory(args.contactLookUpKey,repo,requireActivity().application)).get(DetailContactViewModel::class.java)
@@ -105,7 +104,7 @@ class DetailContact : Fragment() {
                     else  showSnackBar(resources.getString(R.string.VOIP_not_supported))
                 },
                 PrenumberItemClickListener(requireActivity()) {activity, phone ->
-                        if(checkForPermissions()) makePrenumberPhoneCall(activity,phone)
+                        if(checkForPermissions()) makePrenumberPhoneCall(phone)
                     },
                 requireActivity().application
                 )
@@ -133,12 +132,12 @@ class DetailContact : Fragment() {
     }
 
 
-    fun makePrenumberPhoneCall(activity: Activity, myphone:String){
+    fun makePrenumberPhoneCall(myphone:String){
 
 
        val phone = PhoneNumberUtils.normalizeNumber(myphone)
 
-       if (phone.isValidPhoneNumber()) {
+       if (phone.isPhoneNumberValid()) {
            val intentToCall = Intent(Intent.ACTION_CALL).apply {
                setData(Uri.parse(resources.getString(R.string.prenumber_call,myPrefixNumber,phone)))
 
@@ -160,7 +159,7 @@ class DetailContact : Fragment() {
 
         viewModel.phoneList.observe(viewLifecycleOwner, Observer {list->
                 if(list!=null){
-                Log.i(MYTAG," phone lista je $list")
+
                     val formatedNumbersList= mutableListOf<PhoneItem>()
                     for (item in list) {
                         formatedNumbersList.add (
@@ -171,7 +170,7 @@ class DetailContact : Fragment() {
                                     )
                         )
                     }
-                    Log.i(MYTAG," phone lista je $formatedNumbersList")
+                    Log.i(MYTAG," user phone list: $formatedNumbersList")
                     phoneAdapter.dataList=formatedNumbersList
                 }
 
@@ -237,7 +236,7 @@ class DetailContact : Fragment() {
                 if (grantResults.isNotEmpty()) {
 
                     if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                        Log.i(MYTAG,"grantResults 0 je ${grantResults[0]}")
+
                     } else {
                         showSnackBar(resources.getString(R.string.no_permission_make_phone_call))
                     }
@@ -250,7 +249,7 @@ class DetailContact : Fragment() {
                     }
 
                     if (grantResults[2] == PackageManager.PERMISSION_GRANTED) {
-                        Log.i(MYTAG,"grantResults 2 audio je ${grantResults[1]}")
+
                     } else {
                         showSnackBar("no audio permission")
                     }
@@ -274,7 +273,7 @@ class DetailContact : Fragment() {
             .build()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            Log.i(MYTAG, "Build.VERSION.SDK_INT >= 24")
+
             connMgr.registerNetworkCallback(networkRequest,object : ConnectivityManager.NetworkCallback() {
 
                 override fun onAvailable(network: Network) {
@@ -309,13 +308,13 @@ class DetailContact : Fragment() {
 
                 val info:NetworkInfo=ni?.get(ConnectivityManager.EXTRA_NETWORK_INFO) as NetworkInfo
                 if (info != null && info?.state == NetworkInfo.State.CONNECTED) {
-                    Log.i("app", "Network " + info.getTypeName() + " connected")
+                    Log.i(MYTAG, "Network " + info.getTypeName() + " connected")
                     networkAvailabiltyChanged()
                 }
             }
 
             if(intent.getBooleanExtra(ConnectivityManager.EXTRA_NO_CONNECTIVITY,false)) {
-                Log.i("app", "There's no network connectivity ")
+                Log.i(MYTAG, "There's no network connectivity ")
                 networkAvailabiltyChanged()
                 }
         }

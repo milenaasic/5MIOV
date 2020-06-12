@@ -28,7 +28,7 @@ import com.vertial.fivemiov.data.RepoSIPE1
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentSipBinding
 import com.vertial.fivemiov.ui.initializeSharedPrefToFalse
-import com.vertial.fivemiov.utils.getMobAppVersion
+import com.vertial.fivemiov.ui.myapplication.MyApplication
 
 
 private val MYTAG="MY_Sip fragment"
@@ -38,8 +38,7 @@ class SipFragment : Fragment() {
     private lateinit var args:SipFragmentArgs
     private lateinit var viewModel: SipViewModel
 
-    //private lateinit var sensorManager: SensorManager
-   // private var mProximity: Sensor? = null
+
     private lateinit var wl:PowerManager.WakeLock
 
     private var navigationUpInProcess=false
@@ -56,12 +55,8 @@ class SipFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        args= SipFragmentArgs.fromBundle(arguments!!)
+        args= SipFragmentArgs.fromBundle(requireArguments())
         setHasOptionsMenu(true)
-
-        //sensorManager = requireActivity().getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        //mProximity = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY)
-
 
 
     }
@@ -79,10 +74,11 @@ class SipFragment : Fragment() {
 
         val database= MyDatabase.getInstance(requireActivity().application).myDatabaseDao
         val mApi= MyAPI.retrofitService
-        val mobileAppVersion=requireActivity().packageManager.getPackageInfo(requireActivity().packageName, 0).getMobAppVersion()
+
         val mySipRepo=RepoSIPE1(database,
                                 mApi,
-                                resources.getString(R.string.mobile_app_version_header,mobileAppVersion))
+                                resources.getString(R.string.mobile_app_version_header,(requireActivity().application as MyApplication).mobileAppVersion)
+            )
 
 
         viewModel = ViewModelProvider(this, SipViewModelFactory(mySipRepo,requireActivity().application))
@@ -93,7 +89,7 @@ class SipFragment : Fragment() {
 
             binding.sipendbutton.setOnClickListener {
                 startNavigation()
-                Log.i(MYTAG, "end button clicked ")
+                Log.i(MYTAG, "call end button clicked ")
             }
 
             binding.sipMicButton.setOnClickListener {
@@ -115,7 +111,7 @@ class SipFragment : Fragment() {
                toggleSpeakerButton()
                 when (setSpeakerMode) {
                         true -> {
-                            Log.i(MYTAG,"binding.speakerFAB.setOnClickListener setSpekae mode je $setSpeakerMode")
+                            Log.i(MYTAG,"binding.speakerFAB.setOnClickListener setSpekar mode : $setSpeakerMode")
                             sipAudioCall?.setSpeakerMode(true)
                         }
                         false -> {
@@ -138,7 +134,7 @@ class SipFragment : Fragment() {
         if(!navigationUpInProcess) {
             navigationUpInProcess=true
             viewModel.navigateBack()
-            Log.i(MYTAG," start navigation function")
+            Log.i(MYTAG," start navigate back function")
         }
     }
 
@@ -179,7 +175,7 @@ class SipFragment : Fragment() {
                 }else {
                         showToast(resources.getString(R.string.something_went_wrong))
                         viewModel.navigateBack()
-                        Log.i(MYTAG,"getsip credentials success, ali $response")
+                        Log.i(MYTAG,"get sip credentials net success, but response is $response")
 
                 }
 
@@ -229,29 +225,26 @@ class SipFragment : Fragment() {
 
     private fun initalizePeerProfile(sipServer: String) {
 
-        Log.i(MYTAG," broj iz args ${args.contactNumber}, ime je ${args.contactName}")
         val peer=SipProfile.Builder(PhoneNumberUtils.normalizeNumber(args.contactNumber),sipServer)
         peersipProfile=peer.build()
-        Log.i(MYTAG,"peer je ${peersipProfile?.uriString}")
+        Log.i(MYTAG,"peer is ${peersipProfile?.uriString}")
     }
 
     private fun initializeLocalProfile(sipUserName: String,sipPassword: String,sipServer: String,sipCallerId: String) {
 
         if(me!=null) {
-            Log.i(MYTAG,"me nije null, zatvara se profil")
+            Log.i(MYTAG,"initializing local profile, profile was not closed $me")
             closeLocalProfile()
         }
 
-        Log.i(MYTAG,"initialize local profile")
 
 
-        Log.i(MYTAG, "password je $sipPassword")
         val mysipProfileBuilder = SipProfile.Builder(sipUserName, sipServer)
                                             .setPassword(sipPassword)
                                             .setDisplayName(sipCallerId)
 
         me=mysipProfileBuilder.build()
-        Log.i(MYTAG,"me je ${me?.uriString}")
+
 
 
         try {
@@ -261,10 +254,10 @@ class SipFragment : Fragment() {
         }catch (s:SipException) {
             showToast(getString(R.string.sip_failure_message))
             startNavigation()
-            Log.i(MYTAG," open greska ${s.stackTrace}, ${s.cause}")
+            Log.i(MYTAG," open error ${s.stackTrace}, ${s.cause}")
         }
 
-        Log.i(MYTAG,"da li je otvoren ${sipManager?.isOpened(me?.uriString)}")
+        Log.i(MYTAG,"is connection opened ${sipManager?.isOpened(me?.uriString)}")
 
         viewModel.startRegTimeout()
 
@@ -290,7 +283,7 @@ class SipFragment : Fragment() {
                     h.post(Runnable {
                           if(context!=null) {
                             updateCallStatus(getString(R.string.sip_reg_done))
-                              Log.i(MYTAG," da li je registered on reg done callback ${sipManager?.isRegistered(me?.uriString)}")
+                              Log.i(MYTAG," is registered callback: ${sipManager?.isRegistered(me?.uriString)}")
 
                               viewModel.startTimeout()}
                     })
@@ -347,8 +340,7 @@ class SipFragment : Fragment() {
                 h.post(Runnable {
                     if(context!=null){
                     updateCallStatus(getString(R.string.sip_call_established))
-                    //binding.speakerFAB.isEnabled=true
-                    //binding.sipMicButton.isEnabled=true
+
                     }
                 })
                 call?.startAudio()
@@ -387,7 +379,7 @@ class SipFragment : Fragment() {
                     }
                 })
 
-                Log.i(MYTAG,"error, ${call.toString()}, code $errorCode, message $errorMessage")
+                Log.i(MYTAG,"call error, ${call.toString()}, code $errorCode, message $errorMessage")
             }
         },10)
     }
@@ -420,7 +412,7 @@ class SipFragment : Fragment() {
         sipAudioCall?.close()
         closeLocalProfile()
         viewModel.resetSipCredentials()
-        //sensorManager.unregisterListener(this)
+
         Log.i(MYTAG, "ON PAUSE")
     }
 
@@ -436,10 +428,6 @@ class SipFragment : Fragment() {
     override fun onResume() {
         super.onResume()
 
-        //proximity sensor listener
-        /*mProximity?.also { proximity ->
-            sensorManager.registerListener(this, proximity, SensorManager.SENSOR_DELAY_NORMAL)
-        }*/
         Log.i(MYTAG, "ON RESUME")
 
     }
@@ -481,35 +469,8 @@ class SipFragment : Fragment() {
         }
     }
 
-    /*override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-
-    }*/
-
-    /*override fun onSensorChanged(event: SensorEvent?) {
-        val distance = event?.values?.get(0)
-        Log.i(MYTAG," udaljenost od telefona je $distance")
-        val maximumRange=mProximity?.maximumRange
-        Log.i(MYTAG,"maximum range je $maximumRange")
-
-        if(distance!=null && maximumRange!=null) {
-            if (distance >= maximumRange) {
-                //ukljuci ekran
-                Log.i(MYTAG," udaljenost od telefona je $distance , maksimum je $maximumRange")
 
 
-                val mode=requireActivity().windowManager.defaultDisplay.state
-                Log.i(MYTAG," state display a je $mode")
-            } else {
-                //iskljuci ekran
-                Log.i(MYTAG," udaljenost od telefona je $distance , telefon je blizu")
-                val mode=requireActivity().windowManager.defaultDisplay.state
-                Log.i(MYTAG," state display a je $mode")
-
-            }
-
-        }
-
-    }*/
 
     override fun onDestroyView() {
         super.onDestroyView()

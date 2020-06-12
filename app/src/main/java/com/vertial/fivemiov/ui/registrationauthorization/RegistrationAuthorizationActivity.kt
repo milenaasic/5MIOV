@@ -24,7 +24,9 @@ import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.ActivityRegistrationAuthorizationBinding
 import com.vertial.fivemiov.ui.emty_logo_fragment.EmptyLogoFragmentDirections
 import com.vertial.fivemiov.ui.main_activity.MainActivity
+import com.vertial.fivemiov.ui.myapplication.MyApplication
 import com.vertial.fivemiov.utils.*
+import org.acra.ACRA
 
 private val MYTAG="MY_RegAuthActivity"
 
@@ -51,20 +53,19 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
         val myDatabaseDao= MyDatabase.getInstance(this).myDatabaseDao
         val myApi= MyAPI.retrofitService
-        val mobileAppVersion=packageManager.getPackageInfo(packageName, 0).getMobAppVersion()
+        val mobileAppVersion=(application as MyApplication).mobileAppVersion
         val myRepository= Repo(myDatabaseDao,myApi, mobileAppVer = resources.getString(R.string.mobile_app_version_header,mobileAppVersion))
         val mySIPE1Repo=RepoSIPE1(myDatabaseDao,myApi, mobileAppVer =resources.getString(R.string.mobile_app_version_header,mobileAppVersion))
 
         if(!isOnline(application)) showSnackbar(resources.getString(R.string.no_internet))
 
-        /*val myApp=application as MyApplication
-        val myAppContanier=myApp.myAppContainer*/
+
 
         viewModel = ViewModelProvider(this, RegAuthViewModelFactory(myRepository,mySIPE1Repo,application))
             .get(RegAuthActivityViewModel::class.java)
 
         if (savedInstanceState != null) {
-            Log.i(MYTAG, "usao u onSaveInstance nije null")
+
             val rememberedPhone=savedInstanceState.getString(ENTERED_PHONE_NUMBER)
             val rememberedEmail=savedInstanceState.getString(ENTERED_EMAIL)
             val rememberedPassword=savedInstanceState.getString(ENTERED_PASSWORD)
@@ -79,31 +80,31 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
                }
            }
-            Log.i(MYTAG, " prosao kroz savedInst!=null i $rememberedPhone,$rememberedEmail,$rememberedPassword,$rememberedSignInParam")
+            Log.i(MYTAG, " savedInstanceState!=null,its values are $rememberedPhone,$rememberedEmail,$rememberedPassword,$rememberedSignInParam")
 
 
         }
 
 
-        // napravi broadcast receiver
         initializeSMSBroadcastReceiver()
-
 
 
         viewModel.userData.observe(this, Observer {user->
 
-            Log.i(MYTAG,("user u bazi je $user"))
+            Log.i(MYTAG,("User in DB: $user"))
+            ACRA.getErrorReporter().putCustomData("REGISTRATION_AUTHORIZATION_ACTIVITY_observe_user_data_phone",user.userPhone)
+            ACRA.getErrorReporter().putCustomData("REGISTRATION_AUTHORIZATION_ACTIVITY_observe_user_data_token",user.userToken)
 
             if(user!=null) {
                 if (user.userPhone != EMPTY_PHONE_NUMBER && !user.userPhone.isNullOrEmpty() && user.userToken!= EMPTY_TOKEN && !user.userToken.isNullOrEmpty()) {
-                    //zastoj na 1 sec da se vidi splash screen
+                    //halt for splash screen to be seen
                      Handler().postDelayed(Runnable {
                         gotoMainActivity()
                     }, SPLASH_SCREEN_DURATION_IN_MILLIS)
 
 
                 } else {
-                    //Ukoliko ima sacuvano stanje nije u emptyLogoFragment-u nego u fragmentu u kom je bila app kda je unistena
+
                     if(savedInstanceState==null) {
                         Handler().postDelayed(Runnable {
                             findNavController(R.id.registration_navhost_fragment).navigate(
@@ -111,7 +112,9 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
                             )
                         }, SPLASH_SCREEN_DURATION_IN_MILLIS)
 
-                    }else {Log.i(MYTAG, "observeUserData i saved instance state nije null")}
+                    }else {
+                        Log.i(MYTAG, "observeUserData, user phone=EMPTY_PHONE_NUMBER and savedInstanceState!= null")
+                    }
 
                 }
             }
@@ -120,7 +123,7 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
 
          viewModel.startSMSRetreiver.observe(this, Observer {
-             Log.i(MYTAG, "sms breceiver start, nadledanje viewmodela $it")
+
              if(it!=null) {
                  if (it) {
                      startMySMSRetreiver()
@@ -176,7 +179,7 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
         val client = SmsRetriever.getClient(this)
         val task: Task<Void> = client.startSmsRetriever()
-        Log.i(MYTAG,"  started retriever, cekam odgovor 5 minuta")
+
         task.addOnSuccessListener {
             Log.i(MYTAG,"  Successfully started retriever, expect broadcast intent")
             // Successfully started retriever, expect broadcast intent

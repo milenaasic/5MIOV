@@ -33,7 +33,7 @@ class DetailContactViewModel(val contactLookUp:String,val myRepository: RepoCont
 
     fun getContactPhoneNumbers() {
 
-        Log.i(MYTAG, "getPhoneNumberFor Kontakt")
+
         viewModelScope.launch {
 
                 try {

@@ -17,7 +17,7 @@ import com.vertial.fivemiov.ui.fragment_dial_pad.DialpadFragmViewModel
 import com.vertial.fivemiov.ui.fragment_dial_pad.DialpadFragmentViewModelFactory
 import com.vertial.fivemiov.ui.myapplication.MyApplication
 
-private const val MYTAG="MY_AboutFragment"
+private const val MYTAG="MY_ABOUT_FRAGMENT"
 class AboutFragment : Fragment() {
 
     private lateinit var binding: FragmentAboutBinding
@@ -41,7 +41,7 @@ class AboutFragment : Fragment() {
         viewModel = ViewModelProvider(this, AboutFragmentViewModelFactory(database,requireActivity().application))
             .get(AboutFragmentViewModel::class.java)
 
-        binding.mobileAppVerTextView.text=String.format(resources.getString(R.string.mobile_app_version,getMobAppVersion()))
+        binding.mobileAppVerTextView.text=String.format(resources.getString(R.string.mobile_app_version,getMobAppVersionFromApplication()))
 
         return binding.root
     }
@@ -52,7 +52,6 @@ class AboutFragment : Fragment() {
 
         viewModel.webApiVersion.observe(viewLifecycleOwner, Observer {
             if(it!=null) {
-                Log.i(MYTAG," webapi iz baze je $it")
                 binding.webApiVerTextView.text=String.format(resources.getString(R.string.web_api_version,it))
 
             }
@@ -74,30 +73,6 @@ class AboutFragment : Fragment() {
         return myApp.mobileAppVersion
 
     }
-
-
-    private fun getMobAppVersion():String{
-
-        var myversionName=""
-        var versionCode=-1L
-
-            try {
-                val packageInfo:PackageInfo = requireActivity().packageManager.getPackageInfo(requireActivity().packageName, 0);
-                myversionName = packageInfo.versionName
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    versionCode=packageInfo.longVersionCode
-                }else{
-                    versionCode= packageInfo.versionCode.toLong()
-
-                }
-            } catch ( e:Throwable) {
-                Log.i(MYTAG,"package manager $e")
-                e.printStackTrace();
-            }
-
-        return myversionName
-    }
-
 
 
 }
