@@ -20,7 +20,12 @@
         android:name="android.permission.READ_LOGS"
         tools:ignore="ProtectedPermissions" />
 
-    <uses-feature android:name="android.hardware.sip.voip" />
+    <uses-feature android:name="android.hardware.sip.voip" android:required="false"/>
+    <uses-feature android:name="android.hardware.sensor.proximity" android:required="false"/>
+
+    <uses-feature android:name="android.software.webview" android:required="false"/>
+    <uses-feature android:name="android.software.sip" android:required="false"/>
+    <uses-feature android:name="android.software.sip.voip" android:required="false"/>
 
     <application
         android:name=".ui.myapplication.MyApplication"

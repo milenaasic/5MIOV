@@ -66,12 +66,16 @@ class WebViewActivity : AppCompatActivity() {
             .get(WebViewViewModel::class.java)
 
 
+
         binding.myWebView.apply {
             webViewClient = MyWebWievClient()
             settings.javaScriptEnabled = true
             settings.domStorageEnabled=true
 
         }
+
+        CookieManager.getInstance().setAcceptThirdPartyCookies(binding.myWebView,true)
+
 
         viewModel.user.observe(this, Observer {
 

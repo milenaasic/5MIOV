@@ -14,8 +14,8 @@ private val MYTAG="MY_SMSAuthBroadcastRece"
 class SMSAuthorizationBroadcastReceiver : BroadcastReceiver() {
 
     //received SMS Message
-    private val _receivedSMSMessage= MutableLiveData<String?>()
-    val receivedSMSMessage: LiveData<String?>
+    private val _receivedSMSMessage= MutableLiveData<String>()
+    val receivedSMSMessage: LiveData<String>
         get() = _receivedSMSMessage
 
     fun resetReceivedSMSMessage(){
@@ -25,6 +25,7 @@ class SMSAuthorizationBroadcastReceiver : BroadcastReceiver() {
     companion object{
         const val timeout="TIMEOUT"
     }
+
 
     override fun onReceive(context: Context?, intent: Intent) {
 
@@ -37,15 +38,24 @@ class SMSAuthorizationBroadcastReceiver : BroadcastReceiver() {
 
                 CommonStatusCodes.SUCCESS ->  {
                         var  message : String?= extras[SmsRetriever.EXTRA_SMS_MESSAGE] as String?
-                        if(!message.isNullOrEmpty()) _receivedSMSMessage.value=message
+                        if(!message.isNullOrEmpty()) _receivedSMSMessage.value=extractVerificationCode(message)
                     Log.i(MYTAG," on receive success $message")
                 }
 
                 CommonStatusCodes.TIMEOUT -> {
                     Log.i(MYTAG," on receive is TIMEOUT")
                     _receivedSMSMessage.value= timeout
+
                 }
             }
         }
+    }
+
+    private fun extractVerificationCode( fulSMS: String): String {
+
+        val s1=fulSMS.split(":")
+        val verCode=s1[1].trim().substring(startIndex = 0,endIndex = 6)
+        Log.i(MYTAG," extracted code is $verCode")
+        return verCode
     }
 }
