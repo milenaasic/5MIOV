@@ -154,6 +154,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/resend_allowed_2_times_in_24_hours"
                 android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                android:visibility="gone"
                 app:layout_constraintStart_toStartOf="@+id/resend_sms_button"
                 app:layout_constraintTop_toBottomOf="@+id/resend_sms_button" />
 

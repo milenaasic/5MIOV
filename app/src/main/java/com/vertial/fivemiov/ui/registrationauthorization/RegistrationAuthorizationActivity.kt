@@ -22,6 +22,7 @@ import com.vertial.fivemiov.data.Repo
 import com.vertial.fivemiov.data.RepoSIPE1
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.ActivityRegistrationAuthorizationBinding
+import com.vertial.fivemiov.ui.AppSignatureHelper
 import com.vertial.fivemiov.ui.emty_logo_fragment.EmptyLogoFragmentDirections
 import com.vertial.fivemiov.ui.main_activity.MainActivity
 import com.vertial.fivemiov.ui.myapplication.MyApplication
@@ -85,7 +86,8 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
         }
 
-
+        val list=AppSignatureHelper(this).appSignatures
+        Log.i(MYTAG,"app signatures $list")
         initializeSMSBroadcastReceiver()
 
 
@@ -164,19 +166,18 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
         super.onSaveInstanceState(outState)
     }
 
-    // ako ispadne da ne moze da se registruje u manifestu - proveri
-    //TODO proveri da li treba i neka permission kao kada je u manifestu
+
     fun initializeSMSBroadcastReceiver(){
         smsBroadcastReceiver = SMSAuthorizationBroadcastReceiver()
-        val filter = IntentFilter().apply {
+       val filter = IntentFilter().apply {
             addAction(SmsRetriever.SMS_RETRIEVED_ACTION)
         }
-        registerReceiver(smsBroadcastReceiver, filter)
+        application.registerReceiver(smsBroadcastReceiver, filter)
 
     }
 
     private fun startMySMSRetreiver(){
-
+        Log.i(MYTAG,"  entered function start MySMSReceiver")
         val client = SmsRetriever.getClient(this)
         val task: Task<Void> = client.startSmsRetriever()
 
@@ -196,7 +197,7 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
 
     override fun onDestroy() {
-        unregisterReceiver(smsBroadcastReceiver)
+        //application.unregisterReceiver(smsBroadcastReceiver)
          super.onDestroy()
         Log.i(MYTAG,"On Destroy")
 

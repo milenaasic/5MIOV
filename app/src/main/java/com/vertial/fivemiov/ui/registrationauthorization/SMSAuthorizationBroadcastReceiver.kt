@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.auth.api.phone.SmsRetriever
@@ -22,13 +23,25 @@ class SMSAuthorizationBroadcastReceiver : BroadcastReceiver() {
         _receivedSMSMessage.value=null
     }
 
+    val start=Smsreceiverstarted()
+
+    private fun Smsreceiverstarted(): Any {
+        Log.i(MYTAG, "SMS Broadcast started")
+        return 1
+    }
+
+    init {
+        Smsreceiverstarted()
+    }
+
     companion object{
         const val timeout="TIMEOUT"
+
     }
 
 
     override fun onReceive(context: Context?, intent: Intent) {
-
+        Log.i(MYTAG," onReceiveEntered")
         if (SmsRetriever.SMS_RETRIEVED_ACTION == intent.action) {
 
             val extras = intent.extras
@@ -38,7 +51,11 @@ class SMSAuthorizationBroadcastReceiver : BroadcastReceiver() {
 
                 CommonStatusCodes.SUCCESS ->  {
                         var  message : String?= extras[SmsRetriever.EXTRA_SMS_MESSAGE] as String?
-                        if(!message.isNullOrEmpty()) _receivedSMSMessage.value=extractVerificationCode(message)
+                        if(!message.isNullOrEmpty()){
+                            val code=extractVerificationCode(message)
+                             _receivedSMSMessage.value=code
+                        }
+                    Toast.makeText(context,"SMS received:$message",Toast.LENGTH_LONG).show()
                     Log.i(MYTAG," on receive success $message")
                 }
 
@@ -52,7 +69,7 @@ class SMSAuthorizationBroadcastReceiver : BroadcastReceiver() {
     }
 
     private fun extractVerificationCode( fulSMS: String): String {
-
+        Log.i(MYTAG," ful sms message is $fulSMS")
         val s1=fulSMS.split(":")
         val verCode=s1[1].trim().substring(startIndex = 0,endIndex = 6)
         Log.i(MYTAG," extracted code is $verCode")

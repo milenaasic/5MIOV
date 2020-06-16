@@ -80,6 +80,7 @@ class AuthorizationFragment : Fragment() {
 
         binding.resendSmsButton.setOnClickListener{
             hidekeyboard()
+            activityViewModel.startSMSRetreiverFunction()
             binding.authorizationRootLayout.requestFocus()
             enableDisableButtons(false)
             showProgressBar(true)

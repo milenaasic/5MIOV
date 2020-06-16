@@ -87,7 +87,7 @@ fun produceJWtTokenWithArrayInput(inputArray:Pair<String,Array<PhoneBookItem>>, 
 
 private fun getMyWord():String{
     val s1="RTGavqWT"
-    val s2=s1+"^b9H\\bM3"
+    val s2=s1+"^b9H!bM3"
     val s3=s2+"?2C+UuY]"
     return s3
 }
