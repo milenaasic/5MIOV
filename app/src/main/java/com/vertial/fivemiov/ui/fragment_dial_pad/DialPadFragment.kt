@@ -386,7 +386,7 @@ class DialPadFragment : Fragment() {
                     }
 
                     if (grantResults[2] == PackageManager.PERMISSION_GRANTED) {
-                        Log.i(MYTAG,"grantResults 2 audio  ${grantResults[1]}")
+                        Log.i(MYTAG,"grantResults 2 audio  ${grantResults[2]}")
                     } else {
                         showSnackBar(resources.getString(R.string.no_audio_permission))
                     }
@@ -397,6 +397,7 @@ class DialPadFragment : Fragment() {
 
             else -> { }
         }
+
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 

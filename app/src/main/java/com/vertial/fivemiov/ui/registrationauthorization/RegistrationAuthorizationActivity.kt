@@ -22,7 +22,6 @@ import com.vertial.fivemiov.data.Repo
 import com.vertial.fivemiov.data.RepoSIPE1
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.ActivityRegistrationAuthorizationBinding
-import com.vertial.fivemiov.ui.AppSignatureHelper
 import com.vertial.fivemiov.ui.emty_logo_fragment.EmptyLogoFragmentDirections
 import com.vertial.fivemiov.ui.main_activity.MainActivity
 import com.vertial.fivemiov.ui.myapplication.MyApplication
@@ -86,8 +85,8 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
         }
 
-        val list=AppSignatureHelper(this).appSignatures
-        Log.i(MYTAG,"app signatures $list")
+       // val list=AppSignatureHelper(this).appSignatures
+        //Log.i(MYTAG,"app signatures $list")
         initializeSMSBroadcastReceiver()
 
 
