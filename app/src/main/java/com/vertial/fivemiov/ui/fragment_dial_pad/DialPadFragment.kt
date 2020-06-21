@@ -96,17 +96,17 @@ class DialPadFragment : Fragment() {
             button9.setOnClickListener { appendDigit((it as Button).text) }
             button10.setOnClickListener { appendDigit((it as Button).text) }
             button11.setOnClickListener { appendDigit((it as Button).text) }
-            //brisanje
+            //erase
             button12.setOnClickListener { deleteDigit() }
 
-            // prenumber poziv
+            // prenumber call
             buttonPrenumberCallDialpad.setOnClickListener { if(checkForPermissions()) {
                                                                                         binding.editTextEnterNumber.isCursorVisible=false
                                                                                         makePhoneCall()
                                                                                         }
                                                             }
 
-            // sip poziv
+            // sip call
             buttonSipCallDialpadFrag.setOnClickListener {
 
                 binding.editTextEnterNumber.isCursorVisible=false
@@ -346,7 +346,10 @@ class DialPadFragment : Fragment() {
     }
 
     private fun checkForPermissions():Boolean{
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                enableCallButtons(true)
+                return true
+        }
         else {
             if (requireActivity().checkSelfPermission(Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED ||
                 requireActivity().checkSelfPermission(Manifest.permission.USE_SIP) != PackageManager.PERMISSION_GRANTED ||
@@ -391,11 +394,13 @@ class DialPadFragment : Fragment() {
                         showSnackBar(resources.getString(R.string.no_audio_permission))
                     }
                 }
-
+                enableCallButtons(true)
                 return
             }
 
-            else -> { }
+            else -> {
+                enableCallButtons(true)
+            }
         }
 
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)

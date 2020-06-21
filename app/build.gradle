@@ -16,8 +16,8 @@ android {
         applicationId "com.vertial.fivemiov"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 3
-        versionName "1.7.74"
+        versionCode 4
+        versionName "1.7.75"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         javaCompileOptions {

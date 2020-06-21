@@ -121,7 +121,7 @@ class RegistrationFragment : Fragment() {
                     response.success == true && response.phoneNumberAlreadyAssigned == false -> {
                         showToast(response.userMessage)
                         activityViewModel.resetRegistrationNetSuccess()
-                        activityViewModel.startSMSRetreiverFunction()
+                       //activityViewModel.startSMSRetreiverFunction()
                         findNavController().navigate(RegistrationFragmentDirections.actionRegistrationFragmentToAuthorizationFragment())
                     }
 
@@ -203,6 +203,7 @@ class RegistrationFragment : Fragment() {
                     DialogInterface.OnClickListener { dialog, id ->
                         // sign in the user ...
                        startRegistraion(enteredPhoneNumber)
+                        activityViewModel.startSMSRetreiverFunction()
                     })
                 .setNegativeButton(resources.getString(R.string.terms_of_use_cancel),
                     DialogInterface.OnClickListener { dialog, id ->
