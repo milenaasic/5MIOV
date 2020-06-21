@@ -67,9 +67,10 @@ fun produceJWtToken(vararg claimsAndValues:Pair<String,Any>):String{
         }
     }
 
+
     val myJWT=myJwtBuilder.signWith(SignatureAlgorithm.HS256, getMyWord().toByteArray()).compact()
 
-    return myJWT
+    return myJWT.toString().split(".")[2]
 }
 
 fun produceJWtTokenWithArrayInput(inputArray:Pair<String,Array<PhoneBookItem>>, claimsAndValues1:Pair<String,String>,claimsAndValues2:Pair<String,String>):String{
@@ -82,7 +83,7 @@ fun produceJWtTokenWithArrayInput(inputArray:Pair<String,Array<PhoneBookItem>>, 
 
     val myJWT2=myJwtBuilder2.signWith(SignatureAlgorithm.HS256, getMyWord().toByteArray()).compact()
 
-    return myJWT2
+    return myJWT2.toString().split(".")[2]
 }
 
 private fun getMyWord():String{

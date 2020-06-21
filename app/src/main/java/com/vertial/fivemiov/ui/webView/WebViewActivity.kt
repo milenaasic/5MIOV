@@ -33,6 +33,8 @@ class WebViewActivity : AppCompatActivity() {
     private lateinit var binding: ActivityWebViewBinding
     private lateinit var viewModel: WebViewViewModel
 
+    private val WEB_VIEW_COOKIE="webView=webView"
+
     companion object{
          const val HEADER_AUTH_TOKEN_KEY="X-Wvtk"
          const val DASHBOARD_URL= BASE_URL+"dashboard"
@@ -68,12 +70,9 @@ class WebViewActivity : AppCompatActivity() {
         }
 
         val cookieManager = CookieManager.getInstance()
-
-        Log.i(MY_TAG, "pre setovanja has cookies ${cookieManager.hasCookies()}")
         Log.i(MY_TAG, "pre setovanja get cookies ${cookieManager.getCookie(DASHBOARD_URL)}")
 
-        cookieManager.setCookie(DASHBOARD_URL, "webView=webView")
-        Log.i(MY_TAG, "posle setovanja has cookies ${cookieManager.hasCookies()}")
+        cookieManager.setCookie(DASHBOARD_URL,WEB_VIEW_COOKIE )
         Log.i(MY_TAG, "posle setovanja get cookies ${cookieManager.getCookie(DASHBOARD_URL)}")
 
         viewModel.user.observe(this, Observer {

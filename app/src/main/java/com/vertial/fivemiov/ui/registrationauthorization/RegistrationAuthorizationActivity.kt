@@ -85,8 +85,7 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
         }
 
-       // val list=AppSignatureHelper(this).appSignatures
-        //Log.i(MYTAG,"app signatures $list")
+
         initializeSMSBroadcastReceiver()
 
 

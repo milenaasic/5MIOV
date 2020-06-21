@@ -23,17 +23,6 @@ class SMSAuthorizationBroadcastReceiver : BroadcastReceiver() {
         _receivedSMSMessage.value=null
     }
 
-    val start=Smsreceiverstarted()
-
-    private fun Smsreceiverstarted(): Any {
-        Log.i(MYTAG, "SMS Broadcast started")
-        return 1
-    }
-
-    init {
-        Smsreceiverstarted()
-    }
-
     companion object{
         const val timeout="TIMEOUT"
 
@@ -55,7 +44,6 @@ class SMSAuthorizationBroadcastReceiver : BroadcastReceiver() {
                             val code=extractVerificationCode(message)
                              _receivedSMSMessage.value=code
                         }
-                    Toast.makeText(context,"SMS received:$message",Toast.LENGTH_LONG).show()
                     Log.i(MYTAG," on receive success $message")
                 }
 
