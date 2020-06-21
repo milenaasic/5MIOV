@@ -165,13 +165,12 @@ class DialPadFragment : Fragment() {
 
         registerForContextMenu(binding.editTextEnterNumber)
 
-        //requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         configureBottomSlidePanel()
 
         setRecentCallsFragmentHeight()
 
-       binding.dialpadConstrLayout.requestFocus()
+
         return binding.root
     }
 
@@ -243,7 +242,7 @@ class DialPadFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-
+        binding.dialpadConstrLayout.requestFocus()
         if(isOnline(requireActivity().application)) viewModel.getCredit()
         else binding.creditTextView.text="No internet"
 

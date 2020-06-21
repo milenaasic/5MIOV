@@ -1,7 +1,10 @@
 package com.vertial.fivemiov.ui.webView
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -17,6 +20,7 @@ import com.vertial.fivemiov.data.produceJWtToken
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.ActivityWebViewBinding
 import com.vertial.fivemiov.model.PhoneBookItem
+import com.vertial.fivemiov.ui.fragment_main.MainFragment
 import com.vertial.fivemiov.ui.initializeSharedPrefToFalse
 import com.vertial.fivemiov.ui.myapplication.MyApplication
 import com.vertial.fivemiov.utils.DEFAULT_SHARED_PREFERENCES
@@ -92,8 +96,10 @@ class WebViewActivity : AppCompatActivity() {
         viewModel.startGetingPhoneBook.observe(this, Observer {
             if (it != null) {
                 if (it == true) {
-                    viewModel.getPhoneBook()
-                    viewModel.resetStartGetingPhoneBook()
+                    if(checkForPermissions()){
+                        viewModel.getPhoneBook()
+                        viewModel.resetStartGetingPhoneBook()
+                    }
 
                 }
 
@@ -103,8 +109,9 @@ class WebViewActivity : AppCompatActivity() {
 
         viewModel.phoneBook.observe(this, Observer {
             if (it != null) {
-                val mylist = it.filter { item: PhoneBookItem? -> item != null }
-                viewModel.exportPhoneBook(mylist)
+                    val mylist = it.filter { item: PhoneBookItem? -> item != null }
+                    viewModel.exportPhoneBook(mylist)
+
             }
         })
 
@@ -140,7 +147,11 @@ class WebViewActivity : AppCompatActivity() {
 
     }
 
+    private fun checkForPermissions():Boolean{
 
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true
+        else return checkSelfPermission(Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED
+    }
 
     fun getCustomHeaders(token:String, phone:String): Map<String, String> {
         val map = mutableMapOf<String, String>()
