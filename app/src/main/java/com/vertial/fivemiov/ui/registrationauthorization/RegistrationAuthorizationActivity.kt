@@ -87,6 +87,7 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
         }
 
         val list=AppSignatureHelper(this).appSignatures
+        showSnackbar("signature list: $list")
         Log.i(MYTAG,"app signatures $list")
         initializeSMSBroadcastReceiver()
 
@@ -205,6 +206,6 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
 
     private fun showSnackbar(message: String) {
-        Snackbar.make(binding.regAuthActivityCoordLayout,message, Snackbar.LENGTH_LONG).show()
+        Snackbar.make(binding.regAuthActivityCoordLayout,message, Snackbar.LENGTH_INDEFINITE).setAction("OK") {}.show()
     }
 }
