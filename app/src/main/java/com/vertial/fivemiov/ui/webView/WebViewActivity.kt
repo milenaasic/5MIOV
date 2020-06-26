@@ -1,20 +1,15 @@
 package com.vertial.fivemiov.ui.webView
 
-import android.annotation.TargetApi
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.provider.ContactsContract
 import android.util.Log
-import android.view.KeyEvent
 import android.view.View
 import android.webkit.*
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.isVisible
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -25,13 +20,14 @@ import com.vertial.fivemiov.data.produceJWtToken
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.ActivityWebViewBinding
 import com.vertial.fivemiov.model.PhoneBookItem
-import com.vertial.fivemiov.model.User
+import com.vertial.fivemiov.ui.fragment_main.MainFragment
 import com.vertial.fivemiov.ui.initializeSharedPrefToFalse
-import com.vertial.fivemiov.ui.main_activity.MainActivity
 import com.vertial.fivemiov.ui.myapplication.MyApplication
 import com.vertial.fivemiov.utils.DEFAULT_SHARED_PREFERENCES
 import com.vertial.fivemiov.utils.PHONEBOOK_IS_EXPORTED
 import kotlinx.android.synthetic.main.fragment_detail_contact.*
+import okhttp3.Cookie
+import okhttp3.internal.parseCookie
 import org.acra.ACRA
 
 
@@ -40,6 +36,8 @@ class WebViewActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityWebViewBinding
     private lateinit var viewModel: WebViewViewModel
+
+    private val WEB_VIEW_COOKIE="webView=webView"
 
     companion object{
          const val HEADER_AUTH_TOKEN_KEY="X-Wvtk"
@@ -53,12 +51,13 @@ class WebViewActivity : AppCompatActivity() {
 
         val myDatabaseDao = MyDatabase.getInstance(this).myDatabaseDao
         val myApi = MyAPI.retrofitService
-        val mobileAppVersion=(application as MyApplication).mobileAppVersion
-        val myRepository = RepoContacts(contentResolver,
-                                        myDatabaseDao,
-                                        myApi,
-                                        resources.getString(R.string.mobile_app_version_header,mobileAppVersion)
-                                        )
+        val mobileAppVersion = (application as MyApplication).mobileAppVersion
+        val myRepository = RepoContacts(
+            contentResolver,
+            myDatabaseDao,
+            myApi,
+            resources.getString(R.string.mobile_app_version_header, mobileAppVersion)
+        )
 
 
 
@@ -70,38 +69,49 @@ class WebViewActivity : AppCompatActivity() {
         binding.myWebView.apply {
             webViewClient = MyWebWievClient()
             settings.javaScriptEnabled = true
-            settings.domStorageEnabled=true
+            settings.domStorageEnabled = true
 
         }
 
-        CookieManager.getInstance().setAcceptThirdPartyCookies(binding.myWebView,true)
+        val cookieManager = CookieManager.getInstance()
+        Log.i(MY_TAG, "pre setovanja get cookies ${cookieManager.getCookie(DASHBOARD_URL)}")
 
+        cookieManager.setCookie(DASHBOARD_URL,WEB_VIEW_COOKIE )
+        Log.i(MY_TAG, "posle setovanja get cookies ${cookieManager.getCookie(DASHBOARD_URL)}")
 
         viewModel.user.observe(this, Observer {
 
-            ACRA.getErrorReporter().putCustomData("WEBVIEW_ACTIVITY_observe_user_data_phone",it.userPhone)
-            ACRA.getErrorReporter().putCustomData("WEBVIEW_ACTIVITY_observe_user_data_token",it.userToken)
+            ACRA.getErrorReporter()
+                .putCustomData("WEBVIEW_ACTIVITY_observe_user_data_phone", it.userPhone)
+            ACRA.getErrorReporter()
+                .putCustomData("WEBVIEW_ACTIVITY_observe_user_data_token", it.userToken)
 
-            if(it!=null) binding.myWebView.loadUrl(DASHBOARD_URL, getCustomHeaders(token=it.userToken,phone=it.userPhone))
+            if (it != null) binding.myWebView.loadUrl(
+                DASHBOARD_URL,
+                getCustomHeaders(token = it.userToken, phone = it.userPhone)
+            )
 
         })
 
         viewModel.startGetingPhoneBook.observe(this, Observer {
-            if(it!=null){
-                if(it==true){
-                    viewModel.getPhoneBook()
-                    viewModel.resetStartGetingPhoneBook()
+            if (it != null) {
+                if (it == true) {
+                    if(checkForPermissions()){
+                        viewModel.getPhoneBook()
+                        viewModel.resetStartGetingPhoneBook()
+                    }
 
                 }
 
             }
 
-         })
+        })
 
         viewModel.phoneBook.observe(this, Observer {
             if (it != null) {
-                val mylist=it.filter { item:PhoneBookItem?->item!=null }
-                viewModel.exportPhoneBook(mylist)
+                    val mylist = it.filter { item: PhoneBookItem? -> item != null }
+                    viewModel.exportPhoneBook(mylist)
+
             }
         })
 
@@ -125,8 +135,8 @@ class WebViewActivity : AppCompatActivity() {
         })
 
         viewModel.loggingOut.observe(this, Observer {
-            if(it!=null){
-                if(it) {
+            if (it != null) {
+                if (it) {
                     initializeSharedPrefToFalse(application)
                     viewModel.resetLoggingOutToFalse()
                 }
@@ -137,7 +147,11 @@ class WebViewActivity : AppCompatActivity() {
 
     }
 
+    private fun checkForPermissions():Boolean{
 
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true
+        else return checkSelfPermission(Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED
+    }
 
     fun getCustomHeaders(token:String, phone:String): Map<String, String> {
         val map = mutableMapOf<String, String>()

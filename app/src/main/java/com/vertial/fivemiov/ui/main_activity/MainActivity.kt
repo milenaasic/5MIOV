@@ -50,6 +50,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var appUpdateManager: AppUpdateManager
     private val MY_UPDATE_REQUEST_CODE = 10
 
+
     companion object {
         const val CURRENT_FRAGMENT = "current_fragment"
         const val MAIN_FRAGMENT = 0
@@ -372,8 +373,8 @@ class MainActivity : AppCompatActivity() {
             R.id.menu_item_share->{
                     val share = Intent.createChooser(Intent().apply {
                         action = Intent.ACTION_SEND
-                        //TODO change to google play url
-                        putExtra(Intent.EXTRA_TEXT, "https://http://www.5mtelecom.com/")
+                        Log.i(MY_TAG,"google play link ${resources.getString(R.string.google_play_link_to_app,application.packageName)}")
+                        putExtra(Intent.EXTRA_TEXT, resources.getString(R.string.google_play_link_to_app,application.packageName))
 
                         // (Optional) Here we're setting the title of the content
                         //putExtra(Intent.EXTRA_TITLE, "Make cheap international calls")

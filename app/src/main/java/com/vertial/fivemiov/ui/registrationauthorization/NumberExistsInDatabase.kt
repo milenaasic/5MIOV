@@ -55,6 +55,7 @@ class NumberExistsInDatabase : Fragment() {
                     binding.nmbExistsEmailEditText.text.toString(),
                     binding.nmbExistsPassEditText.text.toString()
                 )
+                activityViewModel?.startSMSRetreiverFunction()
             }else{
                 it.isEnabled=true
                 binding.dontHaveAccountButton.isEnabled=true
@@ -80,6 +81,7 @@ class NumberExistsInDatabase : Fragment() {
             showProgressBar(true)
             activityViewModel?.signInParameter=false
             activityViewModel?.numberExistsInDb_NoAccount()
+            activityViewModel?.startSMSRetreiverFunction()
 
          }
 
@@ -112,7 +114,7 @@ class NumberExistsInDatabase : Fragment() {
                     response.success==true->{
                             showToast(response.userMessage)
                             activityViewModel?.resetNmbExistsInDB_VerifyAccount_NetSuccess()
-                            activityViewModel?.startSMSRetreiverFunction()
+                            //activityViewModel?.startSMSRetreiverFunction()
                             findNavController().navigate(NumberExistsInDatabaseDirections.actionNumberExistsInDatabaseToAuthorizationFragment())
                     }
                     response.success==false->{
@@ -143,7 +145,7 @@ class NumberExistsInDatabase : Fragment() {
                 binding.dontHaveAccountButton.isEnabled = true
                 activityViewModel?.resetNmbExistsInDB_NOAccount_NetSuccess()
                 showProgressBar(false)
-                activityViewModel?.startSMSRetreiverFunction()
+                //activityViewModel?.startSMSRetreiverFunction()
                 findNavController().navigate(NumberExistsInDatabaseDirections.actionNumberExistsInDatabaseToAuthorizationFragment())
             }
         })
