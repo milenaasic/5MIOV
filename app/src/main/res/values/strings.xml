@@ -29,7 +29,7 @@
     <string name="enter_token_sent_to_your_phone_number">Enter Verification Code Sent To Your Phone Number</string>
     <string name="token">verification code</string>
     <string name="submit">SUBMIT</string>
-    <string name="resend_sms">RESEND SMS</string>
+    <string name="resend_sms">CALL VERIFICATION</string>
     <string name="or">OR</string>
     <string name="resend_allowed_2_times_in_24_hours">* Resend allowed 2 times in 24 hours</string>
     <string name="token_expires_in_5_minutes">Verification code expires in 5 minutes</string>
@@ -44,6 +44,7 @@
     <string name="i_do_not_have_account">I do not have account</string>
     <string name="_0_contacts">0 contacts</string>
     <string name="set_account_e_mail_and_password">set account e-mail and password</string>
+
 
 
     <string name="to_protect_your_account_enter_e_mail_and_password">To protect your account set e-mail and password</string>
@@ -124,6 +125,7 @@
     <!-- DISCLAIMER-->
     <string name="disclaimer_title_important">Important</string>
     <string name="disclaimer_IUnderstand_button">I Understand</string>
+    <string name="no_sms_try_free_call_verification">*No SMS? Try Free Call Verification.</string>
 
 
 </resources>

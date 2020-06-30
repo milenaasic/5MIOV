@@ -1,9 +1,15 @@
 package com.vertial.fivemiov.ui.registrationauthorization
 
 
+import android.Manifest
 import android.app.Activity
+import android.content.Context
 import android.content.DialogInterface
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.telephony.PhoneStateListener
+import android.telephony.TelephonyManager
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -32,6 +38,15 @@ class AuthorizationFragment : Fragment() {
 
     private lateinit var binding: FragmentAuthorizationBinding
     private lateinit var activityViewModel:RegAuthActivityViewModel
+    private lateinit var telephonyManager:TelephonyManager
+    private lateinit var callStateListener: PhoneStateListener
+    private val VERIFIED_BY_CALL="verifiedByCall"
+    private val OUR_VERIFICATION_NUMBER="+018888420"
+
+    companion object{
+        val MY_PERMISSIONS_REQUEST_READ_PHONE_STATE_and_READ_CALL_LOG=20
+
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -42,6 +57,32 @@ class AuthorizationFragment : Fragment() {
         activityViewModel=requireActivity().run{
             ViewModelProvider(this)[RegAuthActivityViewModel::class.java]
         }
+
+        telephonyManager = requireActivity().getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+
+         callStateListener = object : PhoneStateListener() {
+            override fun onCallStateChanged(state: Int, incomingNumber: String) {
+
+                //  React to incoming call.
+                Log.i(MYTAG,"state $state,  $incomingNumber")
+                // If phone ringing
+                if (state == TelephonyManager.CALL_STATE_RINGING) {
+                    Log.i(MYTAG, "ringing $state,  $incomingNumber")
+                    Toast.makeText(requireContext(), "Phone is Ringing", Toast.LENGTH_LONG).show()
+                    // call create route
+                    if(incomingNumber.equals(OUR_VERIFICATION_NUMBER)) activityViewModel.submitButtonClicked(VERIFIED_BY_CALL)
+                }
+                // If incoming call received
+                if (state == TelephonyManager.CALL_STATE_OFFHOOK) {
+                    //Toast.makeText(requireContext(), "Phone is Currently in A call", Toast.LENGTH_LONG).show()
+                }
+                if (state == TelephonyManager.CALL_STATE_IDLE) {
+                    //Toast.makeText(requireContext(), "phone is neither ringing nor in a call", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+
+        telephonyManager.listen(callStateListener, PhoneStateListener.LISTEN_CALL_STATE)
 
         binding.authPhoneTextView.text=String.format(resources.getString(R.string.add_plus_before_phone,activityViewModel.enteredPhoneNumber))
 
@@ -80,33 +121,14 @@ class AuthorizationFragment : Fragment() {
 
         binding.resendSmsButton.setOnClickListener{
             hidekeyboard()
-            activityViewModel.startSMSRetreiverFunction()
             binding.authorizationRootLayout.requestFocus()
             enableDisableButtons(false)
-            showProgressBar(true)
-            //resending sms via registration route
-            Log.i(MYTAG,"resend button ${activityViewModel.enteredPhoneNumber}, ${activityViewModel.enteredEmail}, ${activityViewModel.enteredPassword}, ${activityViewModel.signInParameter}")
-            when{
-                //came from registrtion fragment
-                activityViewModel.enteredEmail==null && activityViewModel.signInParameter==null->activityViewModel.registerButtonClicked(activityViewModel.enteredPhoneNumber?.removePlus()?:"",smsResend = true)
 
-                //came from AddNumberToAccount fragment
-                activityViewModel.enteredEmail!=null && activityViewModel.signInParameter==null->activityViewModel.addNumberToAccountButtonClicked(
-                                                                                                    activityViewModel.enteredPhoneNumber?.removePlus()?:"",
-                                                                                                    activityViewModel.enteredEmail?:"",
-                                                                                                    activityViewModel.enteredPassword?:"",
-                                                                                                        smsResend = true)
-
-                //came from NumberExistsInDatabase, create new account
-                activityViewModel.enteredEmail==null && activityViewModel.signInParameter==false->activityViewModel.numberExistsInDb_NoAccount(smsResend = true)
-
-                //came from NumberExistsInDatabase, verify account
-                activityViewModel.enteredEmail!=null && activityViewModel.signInParameter==true->activityViewModel.numberExistsInDBVerifyAccount(
-                                                                                            activityViewModel.enteredEmail?:"",
-                                                                                            activityViewModel.enteredPassword?:"",
-                                                                                            smsResend = true)
-
+            if(checkForPermissions()){
+                    showProgressBar(true)
+                    verifyByCallExResend()
             }
+
 
 
         }
@@ -182,6 +204,40 @@ class AuthorizationFragment : Fragment() {
 
     }
 
+    private fun verifyByCallExResend(){
+        //resending sms via registration route
+        Log.i(MYTAG,"call verification button (ex Resend) ${activityViewModel.enteredPhoneNumber}, ${activityViewModel.enteredEmail}, ${activityViewModel.enteredPassword}, ${activityViewModel.signInParameter}")
+        when{
+            //came from registrtion fragment
+            activityViewModel.enteredEmail==null && activityViewModel.signInParameter==null->activityViewModel.registerButtonClicked(activityViewModel.enteredPhoneNumber?.removePlus()?:"",smsResend = true)
+
+            //came from AddNumberToAccount fragment
+            activityViewModel.enteredEmail!=null && activityViewModel.signInParameter==null->activityViewModel.addNumberToAccountButtonClicked(
+                activityViewModel.enteredPhoneNumber?.removePlus()?:"",
+                activityViewModel.enteredEmail?:"",
+                activityViewModel.enteredPassword?:"",
+                smsResend = true)
+
+            //came from NumberExistsInDatabase, create new account
+            activityViewModel.enteredEmail==null && activityViewModel.signInParameter==false->activityViewModel.numberExistsInDb_NoAccount(smsResend = true)
+
+            //came from NumberExistsInDatabase, verify account
+            activityViewModel.enteredEmail!=null && activityViewModel.signInParameter==true->activityViewModel.numberExistsInDBVerifyAccount(
+                activityViewModel.enteredEmail?:"",
+                activityViewModel.enteredPassword?:"",
+                smsResend = true)
+
+        }
+
+
+
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+    }
+
 
 
     private fun showSnackBar(message: String) {
@@ -224,6 +280,58 @@ class AuthorizationFragment : Fragment() {
 
          }
 
+    }
+
+    private fun checkForPermissions():Boolean{
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true
+        else {
+            if (requireActivity().checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED ||
+                requireActivity().checkSelfPermission(Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED
+
+            ) {
+                requestPermissions(arrayOf(
+                    Manifest.permission.READ_PHONE_STATE,
+                    Manifest.permission.READ_CALL_LOG),
+                    MY_PERMISSIONS_REQUEST_READ_PHONE_STATE_and_READ_CALL_LOG
+                )
+                return false
+            } else return true
+        }
+
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+
+        when (requestCode) {
+            MY_PERMISSIONS_REQUEST_READ_PHONE_STATE_and_READ_CALL_LOG-> {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.isNotEmpty()) {
+
+                    if(grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED){
+                        showProgressBar(true)
+                        verifyByCallExResend()
+
+                    }else {
+                        showSnackBar("Unable to verify account by phone call - permissions not granted")
+                        enableDisableButtons(true)
+                    }
+
+                    //if (grantResults[0] != PackageManager.PERMISSION_GRANTED) showSnackBar("Need READ PHONE STATE permission to verify your account by phone call")
+
+                    //if (grantResults[1] != PackageManager.PERMISSION_GRANTED) showSnackBar("Need READ CALL LOG permission to verify your account by phone call")
+
+                }
+
+                return
+            }
+
+            else -> {  }
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
 
