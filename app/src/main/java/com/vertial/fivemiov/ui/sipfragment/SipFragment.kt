@@ -3,10 +3,9 @@ package com.vertial.fivemiov.ui.sipfragment
 
 
 import android.content.Context
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
+import android.media.RingtoneManager
+import android.media.ToneGenerator
+import android.net.Uri
 import android.net.sip.*
 import android.os.Bundle
 import android.os.Handler
@@ -23,7 +22,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.vertial.fivemiov.R
 import com.vertial.fivemiov.api.MyAPI
-import com.vertial.fivemiov.data.Repo
 import com.vertial.fivemiov.data.RepoSIPE1
 import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentSipBinding
@@ -50,6 +48,8 @@ class SipFragment : Fragment() {
     private var sipAudioCall:SipAudioCall?=null
     private var setSpeakerMode:Boolean=false
     private var setMicMode:Boolean=true
+
+    //private var toneGenerator: ToneGenerator?=null
 
 
 
@@ -88,19 +88,26 @@ class SipFragment : Fragment() {
         wl=pwm.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK,"com.vertial.fivemiov:SipCall")
 
             binding.sipendbutton.setOnClickListener {
+                Log.i(MYTAG,"end button clicked, before endCall command call state is ${sipAudioCall?.state}")
+                sipAudioCall?.endCall()
+                Log.i(MYTAG,"end button clicked, after endCall command call state is ${sipAudioCall?.state}")
+
                 startNavigation()
                 Log.i(MYTAG, "call end button clicked ")
             }
 
             binding.sipMicButton.setOnClickListener {
-               toggleSipMicButton()
-                    if (setMicMode == true) {
+                if(sipAudioCall!=null){
+                        sipAudioCall?.toggleMute()
+                        toggleSipMicButton()
+                }
+                   /* if (setMicMode == true) {
                         if (sipAudioCall?.isMuted==true) sipAudioCall?.toggleMute()
 
                     } else {
                         if (sipAudioCall?.isMuted==false) sipAudioCall?.toggleMute()
                         Log.i(MYTAG, "mute button set to true ")
-                    }
+                    }*/
 
 
             }
@@ -312,32 +319,62 @@ class SipFragment : Fragment() {
     }
 
     private fun makeSipAudioCall() {
+
+        viewModel.logCredentialsForSipCall(sipUsername  = me?.userName,
+                                            sipPassword = me?.password,
+                                            sipDisplayname = me?.displayName,
+                                            sipServer = me?.sipDomain)
        sipAudioCall=sipManager?.makeAudioCall(me,peersipProfile,object: SipAudioCall.Listener(){
 
             override fun onCalling(call: SipAudioCall?) {
-                Log.i(MYTAG,"makeSipAudioCall, on Calling callback")
-                super.onCalling(call)
-                val h=Handler(Looper.getMainLooper())
-                h.post(Runnable {
-                    if(context!=null) updateCallStatus(getString(R.string.sip_calling))
-                 })
-
-            }
-
-           override fun onCallBusy(call: SipAudioCall?) {
-               super.onCallBusy(call)
+               Log.i(MYTAG,"makeSipAudioCall, on Calling")
+               super.onCalling(call)
                val h=Handler(Looper.getMainLooper())
                h.post(Runnable {
-                   if(context!=null) updateCallStatus(getString(R.string.sip_busy))
+                   if(context!=null) updateCallStatus(getString(R.string.sip_calling))
+                   //showToast("Calling, ${me?.uriString},${me?.password}")
                })
 
            }
 
 
+
+           override fun onRingingBack(call: SipAudioCall?) {
+               Log.i(MYTAG,"makeSipAudioCall, on RingingBack")
+               //startToneCallWaiting()
+               super.onRingingBack(call)
+
+           }
+
+           override fun onCallBusy(call: SipAudioCall?) {
+               Log.i(MYTAG,"makeSipAudioCall, on CallBusy")
+               super.onCallBusy(call)
+               /*toneGenerator?.apply {
+                   stopTone()
+                   release()
+
+               }*/
+               val h=Handler(Looper.getMainLooper())
+               h.post(Runnable {
+                   //showToast("Busy, ${me?.uriString},${me?.password}")
+                   if(context!=null) updateCallStatus(getString(R.string.sip_busy))
+               })
+               //todo prekinivezu
+
+           }
+
+
             override fun onCallEstablished(call: SipAudioCall?) {
+                Log.i(MYTAG,"makeSipAudioCall, on CallEstablished")
                 super.onCallEstablished(call)
+                /*toneGenerator?.apply {
+                    stopTone()
+                    release()
+
+                }*/
                 val h=Handler(Looper.getMainLooper())
                 h.post(Runnable {
+                   // showToast("On Call Established, ${me?.uriString},${me?.password}")
                     if(context!=null){
                     updateCallStatus(getString(R.string.sip_call_established))
 
@@ -345,20 +382,27 @@ class SipFragment : Fragment() {
                 })
                 call?.startAudio()
                 call?.setSpeakerMode(setSpeakerMode)
-                if(setMicMode==true){
+                //call?.toggleMute()
+               /* if(setMicMode==true){
                     if(call?.isMuted!=true) call?.toggleMute()
                 }else{
                     if(call?.isMuted!=false) call?.toggleMute()
-                }
+                }*/
 
             }
 
            override fun onCallEnded(call: SipAudioCall?) {
                super.onCallEnded(call)
                Log.i(MYTAG,"call ended listener")
+               /*toneGenerator?.apply {
+                   stopTone()
+                   release()
+
+               }*/
                val h=Handler(Looper.getMainLooper())
                h.post(Runnable {
                    if(context!=null) {
+                       //showToast(" Call Ended, ${me?.uriString},${me?.password}")
                         updateCallStatus(getString(R.string.sip_call_ended))
                        Log.i(MYTAG,"call ended listener runnable")
                        startNavigation()
@@ -369,12 +413,18 @@ class SipFragment : Fragment() {
 
             override fun onError(call: SipAudioCall?, errorCode: Int, errorMessage: String?) {
                 super.onError(call, errorCode, errorMessage)
+               /* toneGenerator?.apply {
+                    stopTone()
+                    release()
+
+                }*/
                 call?.close()
                 val h=Handler(Looper.getMainLooper())
 
                 h.post(Runnable {
                     if(context!=null) {
-                        showToast(getString(R.string.sip_failure_message))
+                        updateCallStatus(getString(R.string.sip_failure_message))
+                        //showToast("Error, code $errorCode, message $errorMessage, user and pass: ${me?.uriString}, ${me?.password}")
                         startNavigation()
                     }
                 })
@@ -409,7 +459,13 @@ class SipFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
+        if(sipAudioCall?.state==SipSession.State.IN_CALL) sipAudioCall?.endCall()
         sipAudioCall?.close()
+        /*toneGenerator?.apply {
+            stopTone()
+            release()
+
+        }*/
         closeLocalProfile()
         viewModel.resetSipCredentials()
 
@@ -481,4 +537,27 @@ class SipFragment : Fragment() {
         super.onDestroy()
         Log.i(MYTAG,"on DESTROY")
     }
+
+    private fun playRingingSound(){
+
+        val ringtone: Uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+        val r = RingtoneManager.getRingtone(
+            requireContext(),
+            ringtone
+        )
+        r.play()
+    }
+    /*private fun startToneCallWaiting(){
+        toneGenerator = ToneGenerator(6, 50)
+        //while(sipAudioCall?.state==SipSession.State.OUTGOING_CALL_RING_BACK){
+            toneGenerator?.startTone(ToneGenerator.TONE_SUP_CALL_WAITING)
+           // tg.startTone(48,1000)
+            //Thread.sleep(2000)
+
+
+
+
+    }*/
+
+
 }

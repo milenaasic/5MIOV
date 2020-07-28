@@ -63,7 +63,7 @@
     <string name="add_plus_before_phone">+%1$s</string>
     <string name="current_credit">Current credit %1$s %2$s</string>
     <string name="mobile_app_version_header">Android-v%1$s</string>
-    <string name="google_play_link_to_app">http://play.google.com/store/apps/details?id=%1$s</string>
+    <string name="google_play_link_to_app">http://play.google.com/store/apps/details?id=%1$255</string>
 
     <!-- layout items messages errors-->
     <string name="not_valid_phone_number">Invalid phone number </string>

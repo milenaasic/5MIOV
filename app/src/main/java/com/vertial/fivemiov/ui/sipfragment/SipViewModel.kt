@@ -18,6 +18,7 @@ import java.lang.Exception
 private val MYTAG="MY_SIPVIEWMODEL"
 
 class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : AndroidViewModel(application) {
+    val TIMEOUT_IN_MILLIS=500L
 
     private val _timeout= MutableLiveData<Boolean>()
     val timeout:LiveData<Boolean>
@@ -79,7 +80,7 @@ class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : Androi
 
     fun startTimeout(){
         viewModelScope.launch {
-            delay(500)
+            delay(TIMEOUT_IN_MILLIS)
             _timeout.value=true
          }
 
@@ -91,7 +92,7 @@ class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : Androi
 
     fun startRegTimeout(){
         viewModelScope.launch {
-            delay(500)
+            delay(TIMEOUT_IN_MILLIS)
             _timeoutReg.value=true
         }
     }
@@ -102,7 +103,7 @@ class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : Androi
 
     fun navigateBack(){
         viewModelScope.launch {
-
+            delay(2000)
             _navigateUp.value=true
         }
     }
@@ -110,4 +111,11 @@ class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : Androi
     fun navigateBackFinished(){
         _navigateUp.value=false
     }
+
+    fun logCredentialsForSipCall(sipUsername:String?,sipPassword:String?,sipDisplayname:String?,sipServer:String?){
+        mySipRepo.logCredentialsForSipCall(sipUsername = sipUsername,sipPassword = sipPassword,
+            sipDisplayname = sipDisplayname,sipServer = sipServer)
+
+    }
 }
+

@@ -79,7 +79,12 @@ class NumberExistsInDatabase : Fragment() {
             it.isEnabled=false
             binding.nmbExistsSubmitButton.isEnabled=false
             showProgressBar(true)
-            activityViewModel?.signInParameter=false
+            activityViewModel?.apply {
+                signInParameter=false
+                enteredEmail=null
+                enteredPassword=null
+
+            }
             activityViewModel?.numberExistsInDb_NoAccount()
             activityViewModel?.startSMSRetreiverFunction()
 

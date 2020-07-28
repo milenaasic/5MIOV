@@ -90,6 +90,21 @@ class RepoSIPE1 (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIService,val m
         _getSipAccessCredentialsNetError.value=null
     }
 
+    fun logCredentialsForSipCall(sipUsername:String?,sipPassword:String?,sipDisplayname:String?,sipServer:String?){
+        GlobalScope.launch {
+            withContext(Dispatchers.IO){
+                val def=myAPI.sendErrorToServer(phoneNumber = "$sipUsername",process="make sip call function",
+                    errorMsg= "credentials: $sipUsername,$sipPassword,$sipDisplayname,$sipServer")
+                try {
+                    val defResponse=def.await()
+                }catch (t:Throwable){
+                    Log.i("MY_Send Error To Server","${t.message}")
+
+                }
+            } }
+
+    }
+
 }
 
 class UncancelableJobSip(val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService,val mobileAppVer: String) {
