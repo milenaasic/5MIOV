@@ -365,29 +365,23 @@ class SipFragment : Fragment() {
 
 
             override fun onCallEstablished(call: SipAudioCall?) {
-                Log.i(MYTAG,"makeSipAudioCall, on CallEstablished")
-                super.onCallEstablished(call)
-                /*toneGenerator?.apply {
-                    stopTone()
-                    release()
 
-                }*/
+                //super.onCallEstablished(call)
+
+                call?.startAudio()
+                call?.setSpeakerMode(setSpeakerMode)
+
                 val h=Handler(Looper.getMainLooper())
                 h.post(Runnable {
                    // showToast("On Call Established, ${me?.uriString},${me?.password}")
+
                     if(context!=null){
                     updateCallStatus(getString(R.string.sip_call_established))
 
                     }
                 })
-                call?.startAudio()
-                call?.setSpeakerMode(setSpeakerMode)
-                //call?.toggleMute()
-               /* if(setMicMode==true){
-                    if(call?.isMuted!=true) call?.toggleMute()
-                }else{
-                    if(call?.isMuted!=false) call?.toggleMute()
-                }*/
+
+                Log.i(MYTAG,"makeSipAudioCall, on CallEstablished")
 
             }
 
