@@ -27,6 +27,8 @@ import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentSipBinding
 import com.vertial.fivemiov.ui.initializeSharedPrefToFalse
 import com.vertial.fivemiov.ui.myapplication.MyApplication
+import java.util.*
+import org.linphone.core.*
 
 
 private val MYTAG="MY_Sip fragment"
@@ -39,18 +41,53 @@ class SipFragment : Fragment() {
 
     private lateinit var wl:PowerManager.WakeLock
 
+    //Linphone
+    private var mCore:Core?=null
+    private var mListener: CoreListenerStub? = null
+    private var mProxyConfig:ProxyConfig?=null
+    private var mTimer: Timer=Timer("Linphone scheduler")
+
+    var mCall: Call? = null
+    var mIsMicMuted = false;
+    var mIsSpeakerEnabled = false;
+
     private var navigationUpInProcess=false
 
-
-    private var sipManager: SipManager?=null
-    private var me:SipProfile? = null
-    private var peersipProfile:SipProfile?=null
-    private var sipAudioCall:SipAudioCall?=null
     private var setSpeakerMode:Boolean=false
     private var setMicMode:Boolean=true
 
-    //private var toneGenerator: ToneGenerator?=null
+    private val sHandler: Handler = Handler(Looper.getMainLooper())
 
+    private val myLoggingServiceListener =
+        LoggingServiceListener { logService, domain, lev, message ->
+            when (lev) {
+                LogLevel.Debug -> {Log.d(domain, message)
+                    Log.d(MYTAG,"$domain, $message") }
+
+                LogLevel.Message -> {Log.i(domain, message)
+                    Log.i(MYTAG,"$domain, $message")   }
+                LogLevel.Warning -> {Log.w(domain, message)
+                    Log.w(MYTAG,"$domain, $message")  }
+                LogLevel.Error -> {Log.e(domain, message)
+                    Log.e(MYTAG,"$domain, $message")    }
+                LogLevel.Fatal -> Log.wtf(domain, message)
+                else -> Log.wtf(domain, message)
+
+            }
+        }
+
+    val mIterateRunnable = Runnable {
+        if (mCore != null) {
+            mCore?.iterate()
+            Log.i(MYTAG," u iterate")
+        }
+    }
+
+    val lTask: TimerTask = object : TimerTask() {
+        override fun run() {
+            dispatchOnUIThread(mIterateRunnable)
+        }
+    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -88,19 +125,14 @@ class SipFragment : Fragment() {
         wl=pwm.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK,"com.vertial.fivemiov:SipCall")
 
             binding.sipendbutton.setOnClickListener {
-                Log.i(MYTAG,"end button clicked, before endCall command call state is ${sipAudioCall?.state}")
-                sipAudioCall?.endCall()
-                Log.i(MYTAG,"end button clicked, after endCall command call state is ${sipAudioCall?.state}")
+
 
                 startNavigation()
                 Log.i(MYTAG, "call end button clicked ")
             }
 
             binding.sipMicButton.setOnClickListener {
-                if(sipAudioCall!=null){
-                        sipAudioCall?.toggleMute()
-                        toggleSipMicButton()
-                }
+
                    /* if (setMicMode == true) {
                         if (sipAudioCall?.isMuted==true) sipAudioCall?.toggleMute()
 
@@ -119,16 +151,20 @@ class SipFragment : Fragment() {
                 when (setSpeakerMode) {
                         true -> {
                             Log.i(MYTAG,"binding.speakerFAB.setOnClickListener setSpekar mode : $setSpeakerMode")
-                            sipAudioCall?.setSpeakerMode(true)
+
                         }
                         false -> {
-                            sipAudioCall?.setSpeakerMode(false)
+
 
                         }
                     }
 
             }
 
+
+            if(mListener==null){
+                initializeCoreListener()
+            }
 
 
             viewModel.getSipAccountCredentials()
@@ -149,12 +185,12 @@ class SipFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.timeoutReg.observe(viewLifecycleOwner, Observer {
+       /* viewModel.timeoutReg.observe(viewLifecycleOwner, Observer {
             if(it){
                 register()
                 viewModel.timeoutRegFinished()
             }
-        })
+        })*/
 
         viewModel.timeout.observe(viewLifecycleOwner, Observer {
             if(it){
@@ -177,7 +213,7 @@ class SipFragment : Fragment() {
                         && response.sipPassword.isNotEmpty() && response.sipPassword.isNotBlank()
                         && response.sipServer.isNotEmpty() && response.sipServer.isNotBlank()
                 ){
-                    initializeManager(sipUserName = response.sipUserName,sipPassword = response.sipPassword,sipServer = response.sipServer,sipCallerId = response.sipCallerId)
+                    initializeCore(sipUserName = response.sipUserName,sipPassword = response.sipPassword,sipServer = response.sipServer,sipCallerId = response.sipCallerId)
                     viewModel.resetgetSipAccountCredentialsNetSuccess()
                 }else {
                         showToast(resources.getString(R.string.something_went_wrong))
@@ -205,11 +241,8 @@ class SipFragment : Fragment() {
                     initializeSharedPrefToFalse(requireActivity().application)
                     viewModel.resetLoggingOutToFalse()
                 }
-
             }
         })
-
-
 
     }
 
@@ -222,223 +255,64 @@ class SipFragment : Fragment() {
         menu.findItem(R.id.aboutFragment).isVisible=false
     }
 
-    private fun initializeManager(sipUserName:String, sipPassword:String, sipServer:String,sipCallerId:String) {
-        sipManager=SipManager.newInstance(requireContext())
-        if(sipManager!=null) {
-            initalizePeerProfile(sipServer)
-            initializeLocalProfile(sipUserName,sipPassword,sipServer,sipCallerId)
-        }else showToast("Sip Manager is $sipManager")
-    }
+    private fun initializeCore(sipUserName:String, sipPassword:String, sipServer:String,sipCallerId:String) {
+        Log.i(MYTAG, "INITIALIZE CORE funkcija")
+        mCore =
+            Factory.instance()
+                .createCore(
+                    null,
+                    null,
+                    requireActivity().applicationContext)
 
-    private fun initalizePeerProfile(sipServer: String) {
+        configureCore()
+        configureLogging()
 
-        val peer=SipProfile.Builder(PhoneNumberUtils.normalizeNumber(args.contactNumber),sipServer)
-        peersipProfile=peer.build()
-        Log.i(MYTAG,"peer is ${peersipProfile?.uriString}")
-    }
+        mProxyConfig= mCore?.createProxyConfig()
+        configureProxy()
+        mCore?.addProxyConfig(mProxyConfig)
+        mCore?.defaultProxyConfig=mProxyConfig
 
-    private fun initializeLocalProfile(sipUserName: String,sipPassword: String,sipServer: String,sipCallerId: String) {
+        /*use schedule instead of scheduleAtFixedRate to avoid iterate from being call in burst after cpu wake up*/
+        mTimer = Timer("Linphone scheduler")
+        // mTimer.schedule(lTask, 0, 20)
+        mCore?.start()
+        mTimer.schedule(lTask, 0, 20)
 
-        if(me!=null) {
-            Log.i(MYTAG,"initializing local profile, profile was not closed $me")
-            closeLocalProfile()
-        }
+        //start a call
+        Log.i(MYTAG," proxy config list je ${mCore?.proxyConfigList?.size}")
+        Log.i(MYTAG," username je ${mCore?.defaultProxyConfig?.identityAddress?.username}")
+        Log.i(MYTAG,"stanje registracije ${mCore?.defaultProxyConfig?.state} ")
+        Log.i(MYTAG," avpf mode iz Call ${mCore?.defaultProxyConfig?.avpfMode}, enabled ${mCore?.defaultProxyConfig?.avpfEnabled()} ")
+        Log.i(MYTAG," media encryption iz Call je ${mCore?.mediaEncryption}")
 
-
-
-        val mysipProfileBuilder = SipProfile.Builder(sipUserName, sipServer)
-                                            .setPassword(sipPassword)
-                                            .setDisplayName(sipCallerId)
-
-        me=mysipProfileBuilder.build()
-
-
-
-        try {
-            sipManager?.open(me)
-            updateCallStatus("Opening connection...")
-            Log.i(MYTAG," open ")
-        }catch (s:SipException) {
-            showToast(getString(R.string.sip_failure_message))
-            startNavigation()
-            Log.i(MYTAG," open error ${s.stackTrace}, ${s.cause}")
-        }
-
-        Log.i(MYTAG,"is connection opened ${sipManager?.isOpened(me?.uriString)}")
-
-        viewModel.startRegTimeout()
+        mCall=mCore?.invite("sip:+381643292202@45.63.117.19")
 
 
     }
 
-    private fun register() {
-        try {
-            sipManager?.register(me, 10, object : SipRegistrationListener {
-                override fun onRegistering(p0: String?) {
-                    Log.i(MYTAG, "registgering $p0")
 
-                        val h = Handler(Looper.getMainLooper())
-                        h.post(Runnable {
-                            if(context!=null) updateCallStatus(getString(R.string.sip_registering))
-                        })
 
-                }
 
-                override fun onRegistrationDone(p0: String?, p1: Long) {
-                    Log.i(MYTAG, "registration done $p0, $p1")
-                    val h = Handler(Looper.getMainLooper())
-                    h.post(Runnable {
-                          if(context!=null) {
-                            updateCallStatus(getString(R.string.sip_reg_done))
-                              Log.i(MYTAG," is registered callback: ${sipManager?.isRegistered(me?.uriString)}")
 
-                              viewModel.startTimeout()}
-                    })
-                }
 
-                override fun onRegistrationFailed(p0: String?, p1: Int, p2: String?) {
-                    Log.i(MYTAG, "registration FAILED $p0, $p1,$p2")
-                    val h = Handler(Looper.getMainLooper())
-                    h.post(Runnable {
-                        if(context!=null) {
-                            updateCallStatus(getString(R.string.sip_reg_failed))
-                            showToast(resources.getString(R.string.sip_reg_failed))
-
-                            startNavigation()
-                        }
-
-                    })
-                }
-            })
-        }catch (e:SipException){
-            Log.i(MYTAG,"Registration SIP Exception, ${e.message}")
-            showToast(resources.getString(R.string.something_went_wrong))
-
-            startNavigation()
-        }
-    }
 
     private fun makeSipAudioCall() {
 
-        viewModel.logCredentialsForSipCall(sipUsername  = me?.userName,
+        /*viewModel.logCredentialsForSipCall(sipUsername  = me?.userName,
                                             sipPassword = me?.password,
                                             sipDisplayname = me?.displayName,
-                                            sipServer = me?.sipDomain)
-       sipAudioCall=sipManager?.makeAudioCall(me,peersipProfile,object: SipAudioCall.Listener(){
-
-            override fun onCalling(call: SipAudioCall?) {
-               Log.i(MYTAG,"makeSipAudioCall, on Calling")
-               super.onCalling(call)
-               val h=Handler(Looper.getMainLooper())
-               h.post(Runnable {
-                   if(context!=null) updateCallStatus(getString(R.string.sip_calling))
-                   //showToast("Calling, ${me?.uriString},${me?.password}")
-               })
-
-           }
+                                            sipServer = me?.sipDomain)*/
 
 
-
-           override fun onRingingBack(call: SipAudioCall?) {
-               Log.i(MYTAG,"makeSipAudioCall, on RingingBack")
-               //startToneCallWaiting()
-               super.onRingingBack(call)
-
-           }
-
-           override fun onCallBusy(call: SipAudioCall?) {
-               Log.i(MYTAG,"makeSipAudioCall, on CallBusy")
-               super.onCallBusy(call)
-               /*toneGenerator?.apply {
-                   stopTone()
-                   release()
-
-               }*/
-               val h=Handler(Looper.getMainLooper())
-               h.post(Runnable {
-                   //showToast("Busy, ${me?.uriString},${me?.password}")
-                   if(context!=null) updateCallStatus(getString(R.string.sip_busy))
-               })
-               //todo prekinivezu
-
-           }
-
-
-            override fun onCallEstablished(call: SipAudioCall?) {
-
-                //super.onCallEstablished(call)
-
-                call?.startAudio()
-                call?.setSpeakerMode(setSpeakerMode)
-
-                val h=Handler(Looper.getMainLooper())
-                h.post(Runnable {
-                   // showToast("On Call Established, ${me?.uriString},${me?.password}")
-
-                    if(context!=null){
-                    updateCallStatus(getString(R.string.sip_call_established))
-
-                    }
-                })
-
-                Log.i(MYTAG,"makeSipAudioCall, on CallEstablished")
-
-            }
-
-           override fun onCallEnded(call: SipAudioCall?) {
-               super.onCallEnded(call)
-               Log.i(MYTAG,"call ended listener")
-               /*toneGenerator?.apply {
-                   stopTone()
-                   release()
-
-               }*/
-               val h=Handler(Looper.getMainLooper())
-               h.post(Runnable {
-                   if(context!=null) {
-                       //showToast(" Call Ended, ${me?.uriString},${me?.password}")
-                        updateCallStatus(getString(R.string.sip_call_ended))
-                       Log.i(MYTAG,"call ended listener runnable")
-                       startNavigation()
-                   }
-               })
-
-           }
-
-            override fun onError(call: SipAudioCall?, errorCode: Int, errorMessage: String?) {
-                super.onError(call, errorCode, errorMessage)
-               /* toneGenerator?.apply {
-                    stopTone()
-                    release()
-
-                }*/
-                call?.close()
-                val h=Handler(Looper.getMainLooper())
-
-                h.post(Runnable {
-                    if(context!=null) {
-                        updateCallStatus(getString(R.string.sip_failure_message))
-                        //showToast("Error, code $errorCode, message $errorMessage, user and pass: ${me?.uriString}, ${me?.password}")
-                        startNavigation()
-                    }
-                })
-
-                Log.i(MYTAG,"call error, ${call.toString()}, code $errorCode, message $errorMessage")
-            }
-        },10)
     }
 
 
+    fun dispatchOnUIThread(r: Runnable) {
 
-
-    private fun closeLocalProfile() {
-        try {
-            sipManager?.close(me?.uriString)
-            Log.d(MYTAG, "closing profile me")
-        } catch (ee: Throwable) {
-            Log.d(MYTAG, "Failed to close local profile, $ee, ${ee.message}")
-        }
+        sHandler.post(r)
     }
+
+
 
     private fun updateCallStatus(status: String?) {
         binding.statustextView.text=status
@@ -448,20 +322,21 @@ class SipFragment : Fragment() {
         super.onStart()
         requireActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         if(!wl.isHeld) wl.acquire()
+        //mCore?.start()
+        //mTimer.schedule(lTask, 0, 20)
+        Log.i(MYTAG, "ON PAUSE")
     }
 
 
+    override fun onResume() {
+        super.onResume()
+
+        Log.i(MYTAG, "ON RESUME")
+
+    }
+
     override fun onPause() {
         super.onPause()
-        if(sipAudioCall?.state==SipSession.State.IN_CALL) sipAudioCall?.endCall()
-        sipAudioCall?.close()
-        /*toneGenerator?.apply {
-            stopTone()
-            release()
-
-        }*/
-        closeLocalProfile()
-        viewModel.resetSipCredentials()
 
         Log.i(MYTAG, "ON PAUSE")
     }
@@ -472,19 +347,188 @@ class SipFragment : Fragment() {
         requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         if(wl.isHeld) wl.release()
 
+        mTimer.cancel()
+        mCore?.stop()
+        mCore?.removeListener(mListener)
+    }
+
+
+
+    private fun configureCore(){
+        val myAuthInfo=Factory.instance().createAuthInfo("381646408513","381646408513","1dd1c051df981",null,null,null)
+
+        mCore?.apply {
+            addListener(mListener)
+            enableIpv6(true)
+            setAudioPortRange(10000,20000)
+            mediaEncryption=MediaEncryption.None
+            isMediaEncryptionMandatory=false
+            avpfMode=AVPFMode.Enabled
+            enableWifiOnly(false)
+            addAuthInfo(myAuthInfo)
+            enableLogCollection(LogCollectionState.Enabled)
+
+        }
+
+        // set only GSM codec
+        for(item in mCore?.audioPayloadTypes?.toList()!!){
+
+            if(item.mimeType=="GSM") item.enable(true)
+            else item.enable(false)
+            Log.i(
+                MYTAG,"audio payload types : ${item.mimeType},${item.enabled()}" +
+                    " ${item.description},${item.isUsable}")
+        }
 
     }
 
-    override fun onResume() {
-        super.onResume()
+    private fun configureLogging(){
+        Factory.instance().setDebugMode(true, "MY_LIN");
+        //val loggingService=Factory.instance().loggingService
+        Factory.instance().loggingService.addListener(myLoggingServiceListener)
+    }
 
-        Log.i(MYTAG, "ON RESUME")
+    private fun configureProxy(){
+
+        var fromAdress=mCore?.createAddress("sip:381646408513@45.63.117.19")
+        fromAdress?.password="1dd1c051df981"
+
+        mProxyConfig?.apply {
+            serverAddr="45.63.117.19"
+            expires=90
+            setIdentityAddress(fromAdress)
+            enableRegister(true)
+        }
 
     }
 
-    private fun showToast(message: String) {
-        Toast.makeText(requireActivity(),message, Toast.LENGTH_LONG).show()
+    private fun initializeCoreListener(){
+        mListener = object : CoreListenerStub() {
+
+            override fun onRegistrationStateChanged(
+                lc: Core?,
+                cfg: ProxyConfig?,
+                cstate: RegistrationState?,
+                message: String?
+            ) {
+                when (cstate){
+
+                    RegistrationState.None->{
+                        updateCallStatus("$message")
+                        Log.i(MYTAG," registration state NONE, $message,$cstate")
+                    }
+
+                    RegistrationState.Cleared->{
+                        updateCallStatus("$message")
+                        Log.i(MYTAG," registration state Cleared, $message,$cstate")
+                    }
+
+                    RegistrationState.Failed->{
+                        updateCallStatus("$message")
+                        Log.i(MYTAG," registration state FAILED,$message,$cstate ")
+                    }
+
+                    RegistrationState.Ok->{
+                        updateCallStatus("$message")
+                        Log.i(MYTAG," registration state OK,$message, $cstate")
+                    }
+
+                    RegistrationState.Progress->{
+                        updateCallStatus("$message")
+                        Log.i(MYTAG," registration state PROGRESS,$message, $cstate")
+                    }
+
+
+                }
+                //super.onRegistrationStateChanged(lc, cfg, cstate, message)
+            }
+
+            override fun onCallStateChanged(
+                lc: Core?,
+                call: Call?,
+                cstate: Call.State?,
+                message: String?
+            ) {
+                when (cstate) {
+
+                    Call.State.Idle->{
+                        Log.i(MYTAG,"idle, $message")
+                        updateCallStatus("Idle")
+                    }
+
+                    Call.State.OutgoingInit->{
+                        Log.i(MYTAG, "$message")
+                        updateCallStatus(message)
+                    }
+
+                    Call.State.OutgoingProgress->{
+                        Log.i(MYTAG, "$message")
+                        updateCallStatus(message)
+                    }
+
+                    Call.State.OutgoingRinging->{
+                        Log.i(MYTAG, "$message")
+                        updateCallStatus(message)
+                    }
+
+                    Call.State.OutgoingEarlyMedia->{
+                        Log.i(MYTAG, "$message")
+                        updateCallStatus(message)
+                    }
+
+                    Call.State.Connected->{
+                        Log.i(MYTAG, "$message")
+                        updateCallStatus(message)
+                    }
+
+                    Call.State.Error -> {
+                        Log.i(MYTAG,"call state error $message")
+                        if (call?.getErrorInfo()?.getReason() == Reason.Declined) {
+                            updateCallStatus("call declined")
+
+                        } else if (call?.getErrorInfo()?.getReason() == Reason.NotFound) {
+                            updateCallStatus("Not Found")
+
+                        } else if (call?.getErrorInfo()?.getReason() == Reason.NotAcceptable) {
+                            updateCallStatus("Not Acceptable")
+
+                        } else if (call?.getErrorInfo()?.getReason() == Reason.Busy) {
+                            updateCallStatus("Busy")
+
+                        } else if (message != null) {
+                            updateCallStatus(message)
+                        }
+                    }
+
+                    Call.State.End-> {
+                        // Convert Core message for internalization
+                        Log.i(MYTAG," $message")
+                        if (call?.getErrorInfo()?.getReason() == Reason.Declined) {
+                            updateCallStatus(message)
+                            Log.i(MYTAG,"error_call_declined $message")
+
+                        }
+                        updateCallStatus(message)
+
+                    }
+
+                    Call.State.Paused->{
+                        Log.i(MYTAG, "$message")
+                        updateCallStatus(message)
+                    }
+
+                    Call.State.Resuming->{
+                        Log.i(MYTAG, "$message")
+                        updateCallStatus(message)
+                    }
+
+                }
+            }
+
+        }
+
     }
+
 
     private fun toggleSpeakerButton(){
         if(setSpeakerMode) {
@@ -519,8 +563,9 @@ class SipFragment : Fragment() {
         }
     }
 
-
-
+    private fun showToast(message: String) {
+        Toast.makeText(requireActivity(),message, Toast.LENGTH_LONG).show()
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()
@@ -530,28 +575,10 @@ class SipFragment : Fragment() {
     override fun onDestroy() {
         super.onDestroy()
         Log.i(MYTAG,"on DESTROY")
+        if(mCore!=null) mCore=null
+
     }
 
-    private fun playRingingSound(){
-
-        val ringtone: Uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-        val r = RingtoneManager.getRingtone(
-            requireContext(),
-            ringtone
-        )
-        r.play()
-    }
-    /*private fun startToneCallWaiting(){
-        toneGenerator = ToneGenerator(6, 50)
-        //while(sipAudioCall?.state==SipSession.State.OUTGOING_CALL_RING_BACK){
-            toneGenerator?.startTone(ToneGenerator.TONE_SUP_CALL_WAITING)
-           // tg.startTone(48,1000)
-            //Thread.sleep(2000)
-
-
-
-
-    }*/
 
 
 }
