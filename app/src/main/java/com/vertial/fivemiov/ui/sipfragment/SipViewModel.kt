@@ -103,7 +103,7 @@ class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : Androi
 
     fun navigateBack(){
         viewModelScope.launch {
-            delay(1000)
+            delay(1500)
             _navigateUp.value=true
         }
     }

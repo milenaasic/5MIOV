@@ -5,8 +5,6 @@ package com.vertial.fivemiov.ui.sipfragment
 import android.content.Context
 import android.media.RingtoneManager
 import android.media.ToneGenerator
-import android.net.Uri
-import android.net.sip.*
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -38,7 +36,6 @@ class SipFragment : Fragment() {
     private lateinit var binding:FragmentSipBinding
     private lateinit var args:SipFragmentArgs
     private lateinit var viewModel: SipViewModel
-
 
     private lateinit var wl:PowerManager.WakeLock
 
@@ -96,7 +93,6 @@ class SipFragment : Fragment() {
         args= SipFragmentArgs.fromBundle(requireArguments())
         setHasOptionsMenu(true)
 
-
     }
 
     override fun onCreateView(
@@ -126,9 +122,9 @@ class SipFragment : Fragment() {
         wl=pwm.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK,"com.vertial.fivemiov:SipCall")
 
             binding.sipendbutton.setOnClickListener {
-                val cal=mCore?.currentCall
-                if (mCall != null && cal != null) cal.terminate()
-                startNavigation()
+                val currentcall=mCore?.currentCall
+                if (mCall != null && currentcall != null) currentcall.terminate()
+                //startNavigation()
                 Log.i(MYTAG, "call end button clicked ")
             }
 
@@ -144,7 +140,6 @@ class SipFragment : Fragment() {
 
 
             }
-
 
             binding.speakerFAB.setOnClickListener {
                /* Log.i(MYTAG,"binding.speakerFAB.setOnClickListener")
@@ -185,8 +180,6 @@ class SipFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
-
         viewModel.timeout.observe(viewLifecycleOwner, Observer {
             if(it){
                 makeSipAudioCall()
@@ -214,9 +207,7 @@ class SipFragment : Fragment() {
                         showToast(resources.getString(R.string.something_went_wrong))
                         viewModel.navigateBack()
                         Log.i(MYTAG,"get sip credentials net success, but response is $response")
-
                 }
-
             }
          })
 
@@ -273,9 +264,6 @@ class SipFragment : Fragment() {
         mCore?.start()
         mTimer.schedule(lTask, 0, 20)
 
-
-
-
     }
 
     private fun makeSipAudioCall() {
@@ -286,14 +274,27 @@ class SipFragment : Fragment() {
         Log.i(MYTAG," avpf mode iz Call ${mCore?.defaultProxyConfig?.avpfMode}, enabled ${mCore?.defaultProxyConfig?.avpfEnabled()} ")
         Log.i(MYTAG," media encryption iz Call je ${mCore?.mediaEncryption}")
 
-        mCall=mCore?.invite("sip:${args.contactNumber}@45.63.117.19")
-        var callParams=mCore?.createCallParams(mCall)
-        Log.i(MYTAG," call params ${callParams?.usedAudioPayloadType},${callParams?.audioEnabled()}, early media enabled ${callParams?.earlyMediaSendingEnabled()} ")
-        callParams?.enableEarlyMediaSending(true)
-        Log.i(MYTAG," call params posle setovanja ${callParams?.usedAudioPayloadType},${callParams?.audioEnabled()}, early media enabled ${callParams?.earlyMediaSendingEnabled()} ")
-        var callParams2=mCore?.createCallParams(mCall)
-        Log.i(MYTAG," call params2 posle setovanja ${callParams?.usedAudioPayloadType},${callParams?.audioEnabled()}, early media enabled ${callParams?.earlyMediaSendingEnabled()} ")
-
+        Log.i(MYTAG,"broj koji zovem je ${args.contactNumber}")
+        val numberToCall=PhoneNumberUtils.normalizeNumber(args.contactNumber)
+        Log.i(MYTAG,"broj koji zovem normalizovan je ${numberToCall}")
+        if(numberToCall!=null) {
+            mCall = mCore?.invite("sip:$numberToCall@45.63.117.19")
+            var callParams = mCore?.createCallParams(mCall)
+            Log.i(
+                MYTAG,
+                " call params ${callParams?.usedAudioPayloadType},${callParams?.audioEnabled()}, early media enabled ${callParams?.earlyMediaSendingEnabled()} "
+            )
+            callParams?.enableEarlyMediaSending(true)
+            Log.i(
+                MYTAG,
+                " call params posle setovanja ${callParams?.usedAudioPayloadType},${callParams?.audioEnabled()}, early media enabled ${callParams?.earlyMediaSendingEnabled()} "
+            )
+            var callParams2 = mCore?.createCallParams(mCall)
+            Log.i(
+                MYTAG,
+                " call params2 posle setovanja ${callParams?.usedAudioPayloadType},${callParams?.audioEnabled()}, early media enabled ${callParams?.earlyMediaSendingEnabled()} "
+            )
+        }
 
     }
 
@@ -314,21 +315,32 @@ class SipFragment : Fragment() {
         requireActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         if(!wl.isHeld) wl.acquire()
 
-        if(mCore!=null) mCore?.start()
-        //mTimer.schedule(lTask, 0, 20)
-        Log.i(MYTAG, "ON PAUSE")
+        Log.i(MYTAG, "ON START")
     }
 
 
     override fun onResume() {
         super.onResume()
         Log.i(MYTAG, "ON RESUME")
+        if(mCore!=null ){
+            if(mCore?.currentCall!=null) {
+                mCall=mCore?.currentCall
+                mCore?.addListener(mListener)
+                Factory.instance().loggingService.addListener(myLoggingServiceListener)
+            }
+        }
 
     }
 
     override fun onPause() {
         super.onPause()
         Log.i(MYTAG, "ON PAUSE")
+        if(mCore!=null ){
+            if(mListener!=null) {
+                mCore?.removeListener(mListener)
+                Factory.instance().loggingService.removeListener(myLoggingServiceListener)
+            }
+        }
     }
 
     override fun onStop() {
@@ -337,9 +349,6 @@ class SipFragment : Fragment() {
         requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         if(wl.isHeld) wl.release()
 
-        mTimer.cancel()
-        mCore?.stop()
-        mCore?.removeListener(mListener)
     }
 
 
@@ -429,7 +438,6 @@ class SipFragment : Fragment() {
                         Log.i(MYTAG," registration state PROGRESS,$message, $cstate")
                     }
 
-
                 }
                 //super.onRegistrationStateChanged(lc, cfg, cstate, message)
             }
@@ -501,6 +509,7 @@ class SipFragment : Fragment() {
                         if (call?.getErrorInfo()?.getReason() == Reason.Declined) {
                             updateCallStatus(message)
                             Log.i(MYTAG,"error_call_declined $message")
+
                         }
 
                     }
@@ -574,10 +583,14 @@ class SipFragment : Fragment() {
     override fun onDestroy() {
         super.onDestroy()
         Log.i(MYTAG,"on DESTROY")
-        if(mCore!=null) mCore=null
+        if(mTimer!=null) mTimer.cancel()
+        if(mCore!=null){
+            mCore?.stop()
+            mCore=null
+        }
+        if(mCall!=null) mCall=null
+        if(mListener!=null) mListener=null
 
     }
-
-
 
 }
