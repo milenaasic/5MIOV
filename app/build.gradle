@@ -17,7 +17,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 29
         versionCode 7
-        versionName "1.7.79"
+        versionName "1.7.80"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         javaCompileOptions {
@@ -125,8 +125,8 @@ dependencies {
     implementation "ch.acra:acra-mail:5.5.0"
 
     //linphone
-    debugImplementation "org.linphone.minimal:linphone-sdk-android-debug:4.3+"
-    releaseImplementation "org.linphone.minimal:linphone-sdk-android:4.3+"
+    debugImplementation "org.linphone.no-video:linphone-sdk-android-debug:4.3+"
+    releaseImplementation "org.linphone.no-video:linphone-sdk-android:4.3+"
 
     testImplementation 'junit:junit:4.13'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'

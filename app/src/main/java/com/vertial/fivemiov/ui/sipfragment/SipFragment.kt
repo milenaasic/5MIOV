@@ -31,6 +31,7 @@ import java.util.*
 import org.linphone.core.*
 
 
+
 private val MYTAG="MY_Sip fragment"
 class SipFragment : Fragment() {
 
@@ -125,8 +126,8 @@ class SipFragment : Fragment() {
         wl=pwm.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK,"com.vertial.fivemiov:SipCall")
 
             binding.sipendbutton.setOnClickListener {
-
-
+                val cal=mCore?.currentCall
+                if (mCall != null && cal != null) cal.terminate()
                 startNavigation()
                 Log.i(MYTAG, "call end button clicked ")
             }
@@ -146,7 +147,7 @@ class SipFragment : Fragment() {
 
 
             binding.speakerFAB.setOnClickListener {
-                Log.i(MYTAG,"binding.speakerFAB.setOnClickListener")
+               /* Log.i(MYTAG,"binding.speakerFAB.setOnClickListener")
                toggleSpeakerButton()
                 when (setSpeakerMode) {
                         true -> {
@@ -157,7 +158,7 @@ class SipFragment : Fragment() {
 
 
                         }
-                    }
+                    }*/
 
             }
 
@@ -166,8 +167,7 @@ class SipFragment : Fragment() {
                 initializeCoreListener()
             }
 
-
-            viewModel.getSipAccountCredentials()
+            if(mCore==null) viewModel.getSipAccountCredentials()
 
             return binding.root
 
@@ -185,12 +185,7 @@ class SipFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-       /* viewModel.timeoutReg.observe(viewLifecycleOwner, Observer {
-            if(it){
-                register()
-                viewModel.timeoutRegFinished()
-            }
-        })*/
+
 
         viewModel.timeout.observe(viewLifecycleOwner, Observer {
             if(it){
@@ -264,11 +259,11 @@ class SipFragment : Fragment() {
                     null,
                     requireActivity().applicationContext)
 
-        configureCore()
+        configureCore(sipUserName,sipPassword)
         configureLogging()
 
         mProxyConfig= mCore?.createProxyConfig()
-        configureProxy()
+        configureProxy(sipUserName,sipPassword)
         mCore?.addProxyConfig(mProxyConfig)
         mCore?.defaultProxyConfig=mProxyConfig
 
@@ -278,6 +273,12 @@ class SipFragment : Fragment() {
         mCore?.start()
         mTimer.schedule(lTask, 0, 20)
 
+
+
+
+    }
+
+    private fun makeSipAudioCall() {
         //start a call
         Log.i(MYTAG," proxy config list je ${mCore?.proxyConfigList?.size}")
         Log.i(MYTAG," username je ${mCore?.defaultProxyConfig?.identityAddress?.username}")
@@ -285,23 +286,13 @@ class SipFragment : Fragment() {
         Log.i(MYTAG," avpf mode iz Call ${mCore?.defaultProxyConfig?.avpfMode}, enabled ${mCore?.defaultProxyConfig?.avpfEnabled()} ")
         Log.i(MYTAG," media encryption iz Call je ${mCore?.mediaEncryption}")
 
-        mCall=mCore?.invite("sip:+381643292202@45.63.117.19")
-
-
-    }
-
-
-
-
-
-
-
-    private fun makeSipAudioCall() {
-
-        /*viewModel.logCredentialsForSipCall(sipUsername  = me?.userName,
-                                            sipPassword = me?.password,
-                                            sipDisplayname = me?.displayName,
-                                            sipServer = me?.sipDomain)*/
+        mCall=mCore?.invite("sip:${args.contactNumber}@45.63.117.19")
+        var callParams=mCore?.createCallParams(mCall)
+        Log.i(MYTAG," call params ${callParams?.usedAudioPayloadType},${callParams?.audioEnabled()}, early media enabled ${callParams?.earlyMediaSendingEnabled()} ")
+        callParams?.enableEarlyMediaSending(true)
+        Log.i(MYTAG," call params posle setovanja ${callParams?.usedAudioPayloadType},${callParams?.audioEnabled()}, early media enabled ${callParams?.earlyMediaSendingEnabled()} ")
+        var callParams2=mCore?.createCallParams(mCall)
+        Log.i(MYTAG," call params2 posle setovanja ${callParams?.usedAudioPayloadType},${callParams?.audioEnabled()}, early media enabled ${callParams?.earlyMediaSendingEnabled()} ")
 
 
     }
@@ -322,7 +313,8 @@ class SipFragment : Fragment() {
         super.onStart()
         requireActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         if(!wl.isHeld) wl.acquire()
-        //mCore?.start()
+
+        if(mCore!=null) mCore?.start()
         //mTimer.schedule(lTask, 0, 20)
         Log.i(MYTAG, "ON PAUSE")
     }
@@ -330,14 +322,12 @@ class SipFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-
         Log.i(MYTAG, "ON RESUME")
 
     }
 
     override fun onPause() {
         super.onPause()
-
         Log.i(MYTAG, "ON PAUSE")
     }
 
@@ -354,8 +344,8 @@ class SipFragment : Fragment() {
 
 
 
-    private fun configureCore(){
-        val myAuthInfo=Factory.instance().createAuthInfo("381646408513","381646408513","1dd1c051df981",null,null,null)
+    private fun configureCore(username:String,password:String){
+        val myAuthInfo=Factory.instance().createAuthInfo(username,username,password,null,null,null)
 
         mCore?.apply {
             addListener(mListener)
@@ -388,10 +378,10 @@ class SipFragment : Fragment() {
         Factory.instance().loggingService.addListener(myLoggingServiceListener)
     }
 
-    private fun configureProxy(){
+    private fun configureProxy(username: String,password: String){
 
-        var fromAdress=mCore?.createAddress("sip:381646408513@45.63.117.19")
-        fromAdress?.password="1dd1c051df981"
+        var fromAdress=mCore?.createAddress("sip:$username@45.63.117.19")
+        fromAdress?.password=password
 
         mProxyConfig?.apply {
             serverAddr="45.63.117.19"
@@ -430,6 +420,7 @@ class SipFragment : Fragment() {
 
                     RegistrationState.Ok->{
                         updateCallStatus("$message")
+                        makeSipAudioCall()
                         Log.i(MYTAG," registration state OK,$message, $cstate")
                     }
 
@@ -484,16 +475,20 @@ class SipFragment : Fragment() {
                     Call.State.Error -> {
                         Log.i(MYTAG,"call state error $message")
                         if (call?.getErrorInfo()?.getReason() == Reason.Declined) {
-                            updateCallStatus("call declined")
+                            updateCallStatus("Call declined")
+                            showToast("Call declined")
 
                         } else if (call?.getErrorInfo()?.getReason() == Reason.NotFound) {
                             updateCallStatus("Not Found")
+                            showToast("Not Found")
 
                         } else if (call?.getErrorInfo()?.getReason() == Reason.NotAcceptable) {
                             updateCallStatus("Not Acceptable")
+                            showToast("Not Acceptable")
 
                         } else if (call?.getErrorInfo()?.getReason() == Reason.Busy) {
                             updateCallStatus("Busy")
+                            showToast("Busy")
 
                         } else if (message != null) {
                             updateCallStatus(message)
@@ -506,22 +501,26 @@ class SipFragment : Fragment() {
                         if (call?.getErrorInfo()?.getReason() == Reason.Declined) {
                             updateCallStatus(message)
                             Log.i(MYTAG,"error_call_declined $message")
-
                         }
-                        updateCallStatus(message)
 
                     }
 
                     Call.State.Paused->{
                         Log.i(MYTAG, "$message")
                         updateCallStatus(message)
+                        showToast("Paused")
                     }
 
                     Call.State.Resuming->{
                         Log.i(MYTAG, "$message")
                         updateCallStatus(message)
+                        showToast("Resuming")
                     }
 
+                }
+
+                if (cstate == Call.State.End || cstate == Call.State.Released) {
+                    startNavigation()
                 }
             }
 
