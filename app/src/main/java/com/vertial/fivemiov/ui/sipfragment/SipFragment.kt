@@ -46,6 +46,7 @@ class SipFragment : Fragment() {
     private var mTimer: Timer=Timer("Linphone scheduler")
 
     var mCall: Call? = null
+    var callAlreadyStartedAfterRegistration=false
     var mIsMicMuted = false;
     var mIsSpeakerEnabled = false;
 
@@ -285,6 +286,7 @@ class SipFragment : Fragment() {
                 " call params ${callParams?.usedAudioPayloadType},${callParams?.audioEnabled()}, early media enabled ${callParams?.earlyMediaSendingEnabled()} "
             )
             callParams?.enableEarlyMediaSending(true)
+            //mCall?.update(callParams)
             Log.i(
                 MYTAG,
                 " call params posle setovanja ${callParams?.usedAudioPayloadType},${callParams?.audioEnabled()}, early media enabled ${callParams?.earlyMediaSendingEnabled()} "
@@ -322,13 +324,13 @@ class SipFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         Log.i(MYTAG, "ON RESUME")
-        if(mCore!=null ){
+        /*if(mCore!=null ){
             if(mCore?.currentCall!=null) {
                 mCall=mCore?.currentCall
                 mCore?.addListener(mListener)
                 Factory.instance().loggingService.addListener(myLoggingServiceListener)
             }
-        }
+        }*/
 
     }
 
@@ -396,7 +398,7 @@ class SipFragment : Fragment() {
             serverAddr="45.63.117.19"
             expires=90
             setIdentityAddress(fromAdress)
-            enableRegister(true)
+            //enableRegister(true)
         }
 
     }
@@ -429,7 +431,10 @@ class SipFragment : Fragment() {
 
                     RegistrationState.Ok->{
                         updateCallStatus("$message")
-                        makeSipAudioCall()
+                        if(!callAlreadyStartedAfterRegistration){
+                            callAlreadyStartedAfterRegistration=true
+                            viewModel.startTimeout()
+                        }
                         Log.i(MYTAG," registration state OK,$message, $cstate")
                     }
 
@@ -496,6 +501,7 @@ class SipFragment : Fragment() {
 
                         } else if (call?.getErrorInfo()?.getReason() == Reason.Busy) {
                             updateCallStatus("Busy")
+                            call.terminate()
                             showToast("Busy")
 
                         } else if (message != null) {
@@ -586,10 +592,13 @@ class SipFragment : Fragment() {
         if(mTimer!=null) mTimer.cancel()
         if(mCore!=null){
             mCore?.stop()
+            mCore?.removeListener(mListener)
             mCore=null
         }
         if(mCall!=null) mCall=null
         if(mListener!=null) mListener=null
+
+
 
     }
 
