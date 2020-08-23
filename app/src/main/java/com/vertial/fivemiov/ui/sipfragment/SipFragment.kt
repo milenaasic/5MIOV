@@ -3,8 +3,8 @@ package com.vertial.fivemiov.ui.sipfragment
 
 
 import android.content.Context
-import android.media.RingtoneManager
-import android.media.ToneGenerator
+import android.media.AudioManager
+import android.media.AudioManager.STREAM_VOICE_CALL
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -25,9 +25,8 @@ import com.vertial.fivemiov.database.MyDatabase
 import com.vertial.fivemiov.databinding.FragmentSipBinding
 import com.vertial.fivemiov.ui.initializeSharedPrefToFalse
 import com.vertial.fivemiov.ui.myapplication.MyApplication
-import java.util.*
 import org.linphone.core.*
-
+import java.util.*
 
 
 private val MYTAG="MY_Sip fragment"
@@ -45,15 +44,15 @@ class SipFragment : Fragment() {
     private var mProxyConfig:ProxyConfig?=null
     private var mTimer: Timer=Timer("Linphone scheduler")
 
-    var mCall: Call? = null
-    var callAlreadyStartedAfterRegistration=false
-    var mIsMicMuted = false;
-    var mIsSpeakerEnabled = false;
+    private var mCall: Call? = null
+    private var callAlreadyStartedAfterRegistration=false
+
+    private var mAudioManager:AudioManager? = null
+    private var mAudioFocused:Boolean=false
+    private var mIsMicMuted = false
+    private var mIsSpeakerEnabled = false
 
     private var navigationUpInProcess=false
-
-    private var setSpeakerMode:Boolean=false
-    private var setMicMode:Boolean=true
 
     private val sHandler: Handler = Handler(Looper.getMainLooper())
 
@@ -93,14 +92,14 @@ class SipFragment : Fragment() {
         super.onCreate(savedInstanceState)
         args= SipFragmentArgs.fromBundle(requireArguments())
         setHasOptionsMenu(true)
-
+        Log.i(MYTAG, "ONLIFE onCreate")
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
+        Log.i(MYTAG, "ONLIFE onCreateView")
         binding= DataBindingUtil.inflate(inflater, R.layout.fragment_sip,container,false)
         binding.nametextView.text=args.contactName
 
@@ -130,34 +129,15 @@ class SipFragment : Fragment() {
             }
 
             binding.sipMicButton.setOnClickListener {
-
-                   /* if (setMicMode == true) {
-                        if (sipAudioCall?.isMuted==true) sipAudioCall?.toggleMute()
-
-                    } else {
-                        if (sipAudioCall?.isMuted==false) sipAudioCall?.toggleMute()
-                        Log.i(MYTAG, "mute button set to true ")
-                    }*/
-
-
+                toggleSipMicButton()
             }
 
             binding.speakerFAB.setOnClickListener {
-               /* Log.i(MYTAG,"binding.speakerFAB.setOnClickListener")
                toggleSpeakerButton()
-                when (setSpeakerMode) {
-                        true -> {
-                            Log.i(MYTAG,"binding.speakerFAB.setOnClickListener setSpekar mode : $setSpeakerMode")
-
-                        }
-                        false -> {
-
-
-                        }
-                    }*/
-
             }
 
+            val activity=requireActivity()
+            mAudioManager= (activity.getSystemService(Context.AUDIO_SERVICE)) as AudioManager
 
             if(mListener==null){
                 initializeCoreListener()
@@ -180,6 +160,7 @@ class SipFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        Log.i(MYTAG, "ONLIFE onViewCreated")
 
         viewModel.timeout.observe(viewLifecycleOwner, Observer {
             if(it){
@@ -187,6 +168,15 @@ class SipFragment : Fragment() {
                 viewModel.timeoutFinished()
             }
         })
+
+       /* viewModel.setMicMode.observe(viewLifecycleOwner, Observer {
+            if(it){
+                Log.i(MYTAG, "ONLIFE VIEW created,lokalna promenljiva $mIsMicMuted isMIcEnabled ${mCore?.micEnabled()}")
+               // mCore?.enableMic(mIsMicMuted)
+
+                viewModel.setMicroophoneModeFinished()
+            }
+        })*/
 
 
         viewModel.navigateUp.observe(viewLifecycleOwner, Observer {
@@ -261,7 +251,6 @@ class SipFragment : Fragment() {
 
         /*use schedule instead of scheduleAtFixedRate to avoid iterate from being call in burst after cpu wake up*/
         mTimer = Timer("Linphone scheduler")
-        // mTimer.schedule(lTask, 0, 20)
         mCore?.start()
         mTimer.schedule(lTask, 0, 20)
 
@@ -286,7 +275,7 @@ class SipFragment : Fragment() {
                 " call params ${callParams?.usedAudioPayloadType},${callParams?.audioEnabled()}, early media enabled ${callParams?.earlyMediaSendingEnabled()} "
             )
             callParams?.enableEarlyMediaSending(true)
-            //mCall?.update(callParams)
+            mCall?.update(callParams)
             Log.i(
                 MYTAG,
                 " call params posle setovanja ${callParams?.usedAudioPayloadType},${callParams?.audioEnabled()}, early media enabled ${callParams?.earlyMediaSendingEnabled()} "
@@ -317,37 +306,50 @@ class SipFragment : Fragment() {
         requireActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         if(!wl.isHeld) wl.acquire()
 
-        Log.i(MYTAG, "ON START")
+        Log.i(MYTAG, "ONLIFE START")
     }
 
 
     override fun onResume() {
         super.onResume()
-        Log.i(MYTAG, "ON RESUME")
+        Log.i(MYTAG, "ONLIFE RESUME, mCore= $mCore")
         /*if(mCore!=null ){
-            if(mCore?.currentCall!=null) {
-                mCall=mCore?.currentCall
-                mCore?.addListener(mListener)
-                Factory.instance().loggingService.addListener(myLoggingServiceListener)
-            }
+                val call=mCore?.currentCall
+            Log.i(MYTAG, "ONLIFE RESUME,currentCallState $currentCallState, call je $call}")
+                if(call!=null) {
+                    Log.i(MYTAG, "ONLIFE RESUME,currentCallState $currentCallState, call state ${call.state}")
+                    if(call.state== Call.State.Paused) {
+                        mCore?.addListener(mListener)
+                        call.resume()
+                        Factory.instance().loggingService.addListener(myLoggingServiceListener)
+                    }
+
+                }
         }*/
+
 
     }
 
     override fun onPause() {
         super.onPause()
-        Log.i(MYTAG, "ON PAUSE")
-        if(mCore!=null ){
-            if(mListener!=null) {
-                mCore?.removeListener(mListener)
-                Factory.instance().loggingService.removeListener(myLoggingServiceListener)
+        Log.i(MYTAG, "ONLIFE PAUSE,  mCore= $mCore")
+       /* if(mCore!=null ){
+            val call=mCore?.currentCall
+            Log.i(MYTAG, "ONLIFE PAUSE, current call je $call, state je ${call?.state} ")
+            if(call!=null) {
+                if (call.state == Call.State.StreamsRunning) {
+                    val succes =call.pause()
+                    Log.i(MYTAG, "ONLIFE PAUSE, ${call.state}, ${succes}")
+                    mCore?.removeListener(mListener)
+                    Factory.instance().loggingService.removeListener(myLoggingServiceListener)
+                }
             }
-        }
+        }*/
     }
 
     override fun onStop() {
         super.onStop()
-
+        Log.i(MYTAG, "ONLIFE STOP,")
         requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         if(wl.isHeld) wl.release()
 
@@ -385,7 +387,6 @@ class SipFragment : Fragment() {
 
     private fun configureLogging(){
         Factory.instance().setDebugMode(true, "MY_LIN");
-        //val loggingService=Factory.instance().loggingService
         Factory.instance().loggingService.addListener(myLoggingServiceListener)
     }
 
@@ -398,7 +399,7 @@ class SipFragment : Fragment() {
             serverAddr="45.63.117.19"
             expires=90
             setIdentityAddress(fromAdress)
-            //enableRegister(true)
+            enableRegister(true)
         }
 
     }
@@ -435,6 +436,7 @@ class SipFragment : Fragment() {
                             callAlreadyStartedAfterRegistration=true
                             viewModel.startTimeout()
                         }
+
                         Log.i(MYTAG," registration state OK,$message, $cstate")
                     }
 
@@ -444,7 +446,7 @@ class SipFragment : Fragment() {
                     }
 
                 }
-                //super.onRegistrationStateChanged(lc, cfg, cstate, message)
+                super.onRegistrationStateChanged(lc, cfg, cstate, message)
             }
 
             override fun onCallStateChanged(
@@ -462,6 +464,9 @@ class SipFragment : Fragment() {
 
                     Call.State.OutgoingInit->{
                         Log.i(MYTAG, "$message")
+                        // ringback is heard normally in earpiece or bluetooth receiver.
+                        setAudioManagerInCallMode();
+                        requestAudioFocus(STREAM_VOICE_CALL);
                         updateCallStatus(message)
                     }
 
@@ -473,6 +478,7 @@ class SipFragment : Fragment() {
                     Call.State.OutgoingRinging->{
                         Log.i(MYTAG, "$message")
                         updateCallStatus(message)
+
                     }
 
                     Call.State.OutgoingEarlyMedia->{
@@ -483,6 +489,12 @@ class SipFragment : Fragment() {
                     Call.State.Connected->{
                         Log.i(MYTAG, "$message")
                         updateCallStatus(message)
+                    }
+
+                    Call.State.StreamsRunning->{
+                        setAudioManagerInCallMode()
+                        Log.i(MYTAG, "$message")
+
                     }
 
                     Call.State.Error -> {
@@ -501,12 +513,12 @@ class SipFragment : Fragment() {
 
                         } else if (call?.getErrorInfo()?.getReason() == Reason.Busy) {
                             updateCallStatus("Busy")
-                            call.terminate()
                             showToast("Busy")
 
                         } else if (message != null) {
                             updateCallStatus(message)
                         }
+
                     }
 
                     Call.State.End-> {
@@ -516,6 +528,7 @@ class SipFragment : Fragment() {
                             updateCallStatus(message)
                             Log.i(MYTAG,"error_call_declined $message")
 
+
                         }
 
                     }
@@ -524,6 +537,7 @@ class SipFragment : Fragment() {
                         Log.i(MYTAG, "$message")
                         updateCallStatus(message)
                         showToast("Paused")
+
                     }
 
                     Call.State.Resuming->{
@@ -532,6 +546,23 @@ class SipFragment : Fragment() {
                         showToast("Resuming")
                     }
 
+                    else->{  Log.i(MYTAG, "else branch:$message")}
+
+                }
+
+                if(cstate == Call.State.End || cstate == Call.State.Error){
+
+                    if (mCore?.getCallsNb() == 0) {
+                        if (mAudioFocused) {
+                            val res = mAudioManager?.abandonAudioFocus(null)
+                            /*Log.d(
+                                MYTAG,
+                                "[Audio Manager] Audio focus released a bit later: "
+                                        + (res == AudioManager.AUDIOFOCUS_REQUEST_GRANTED? "Granted": "Denied"))*/
+                            mAudioFocused = false
+                        }
+
+                    }
                 }
 
                 if (cstate == Call.State.End || cstate == Call.State.Released) {
@@ -545,35 +576,39 @@ class SipFragment : Fragment() {
 
 
     private fun toggleSpeakerButton(){
-        if(setSpeakerMode) {
+
+        if(mIsSpeakerEnabled) {
+                    mAudioManager?.isSpeakerphoneOn=false
                     binding.speakerFAB.apply {
-                        setImageResource(R.drawable.ic_volume_off)
+                        setImageResource(R.drawable.ic_speaker_disabled)
                         elevation=1F
                      }
-                    setSpeakerMode=false
+                    mIsSpeakerEnabled=false
         } else {
-
+            mAudioManager?.isSpeakerphoneOn=true
             binding.speakerFAB.apply {
-                setImageResource(R.drawable.ic_volume_mute)
+                setImageResource(R.drawable.ic_speaker_enabled)
                 elevation=12F
              }
-            setSpeakerMode=true
+            mIsSpeakerEnabled=true
         }
     }
 
     private fun toggleSipMicButton(){
-        if(setMicMode) {
+        if(!mIsMicMuted) {
             binding.sipMicButton.apply {
                 setImageResource(R.drawable.ic_mic_off)
                 elevation=1F
             }
-            setMicMode=false
+            mCore?.enableMic(false)
+            mIsMicMuted=true
         } else {
             binding.sipMicButton.apply {
                 setImageResource(R.drawable.ic_mic_on)
                 elevation=12F
             }
-            setMicMode=true
+            mCore?.enableMic(true)
+            mIsMicMuted=false
         }
     }
 
@@ -583,23 +618,47 @@ class SipFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        Log.i(MYTAG,"on DESTROY VIEW")
+        Log.i(MYTAG,"ONLIFE DESTROY VIEW")
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.i(MYTAG,"on DESTROY")
+        Log.i(MYTAG,"ONLIFE DESTROY")
         if(mTimer!=null) mTimer.cancel()
         if(mCore!=null){
             mCore?.stop()
             mCore?.removeListener(mListener)
             mCore=null
         }
+        Factory.instance().loggingService.removeListener(myLoggingServiceListener)
         if(mCall!=null) mCall=null
         if(mListener!=null) mListener=null
 
 
 
+    }
+
+    private fun setAudioManagerInCallMode() {
+        if (mAudioManager?.mode == AudioManager.MODE_IN_COMMUNICATION) {
+            Log.w(MYTAG,"[Audio Manager] already in MODE_IN_COMMUNICATION, skipping...")
+            return
+        }
+        Log.d(MYTAG,"[Audio Manager] Mode: MODE_IN_COMMUNICATION")
+        mAudioManager?.mode = AudioManager.MODE_IN_COMMUNICATION
+    }
+
+    private fun requestAudioFocus(stream: Int) {
+        if (!mAudioFocused) {
+            val res = mAudioManager!!.requestAudioFocus(
+                null, stream, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE
+            )
+            Log.d(
+                MYTAG,
+                "[Audio Manager] Audio focus requested: "
+                        + if (res == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) "Granted" else "Denied"
+            )
+            if (res == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) mAudioFocused = true
+        }
     }
 
 }

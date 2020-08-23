@@ -19,15 +19,19 @@ private val MYTAG="MY_SIPVIEWMODEL"
 
 class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : AndroidViewModel(application) {
     val TIMEOUT_IN_MILLIS=500L
+    //val TIMEOUT_IN_MILLIS_FOR_SETTING_MIC_MODE=200L
 
     private val _timeout= MutableLiveData<Boolean>()
     val timeout:LiveData<Boolean>
         get() = _timeout
 
-    private val _timeoutReg= MutableLiveData<Boolean>()
+    /*private val _timeoutReg= MutableLiveData<Boolean>()
     val timeoutReg:LiveData<Boolean>
-        get() = _timeoutReg
+        get() = _timeoutReg*/
 
+    private val _setMicMode= MutableLiveData<Boolean>()
+    val setMicMode:LiveData<Boolean>
+        get() = _setMicMode
 
     private val _navigateUp= MutableLiveData<Boolean>()
     val navigateUp:LiveData<Boolean>
@@ -83,14 +87,13 @@ class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : Androi
             delay(TIMEOUT_IN_MILLIS)
             _timeout.value=true
          }
-
     }
 
     fun timeoutFinished(){
         _timeout.value=false
     }
 
-    fun startRegTimeout(){
+    /*fun startRegTimeout(){
         viewModelScope.launch {
             delay(TIMEOUT_IN_MILLIS)
             _timeoutReg.value=true
@@ -99,7 +102,19 @@ class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : Androi
 
     fun timeoutRegFinished(){
         _timeoutReg.value=false
+    }*/
+
+    /*fun setMicroophoneMode(){
+        viewModelScope.launch {
+            delay(TIMEOUT_IN_MILLIS_FOR_SETTING_MIC_MODE)
+            _setMicMode.value=true
+        }
     }
+
+    fun setMicroophoneModeFinished(){
+        _setMicMode.value=false
+    }*/
+
 
     fun navigateBack(){
         viewModelScope.launch {
