@@ -26,6 +26,7 @@ class AboutFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
+        Log.i(MYTAG, "ONLIFE ONCREATE")
     }
 
 
@@ -33,7 +34,7 @@ class AboutFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
+        Log.i(MYTAG, "ONLIFE ONCREATEVIEW")
         binding= DataBindingUtil.inflate(inflater, R.layout.fragment_about,container,false)
 
         val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
@@ -74,5 +75,32 @@ class AboutFragment : Fragment() {
 
     }
 
+
+    override fun onResume() {
+        super.onResume()
+        Log.i(MYTAG, "ONLIFE RESUME")
+    }
+
+
+    override fun onPause() {
+        super.onPause()
+        Log.i(MYTAG, "ONLIFE PAUSE")
+
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Log.i(MYTAG, "ONLIFE START")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.i(MYTAG, "ONLIFE STOP")
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        Log.i(MYTAG, "ONLIFE ONDESTROYVIEW")
+    }
 
 }

@@ -43,6 +43,7 @@ class SipFragment : Fragment() {
     private var mListener: CoreListenerStub? = null
     private var mProxyConfig:ProxyConfig?=null
     private var mTimer: Timer=Timer("Linphone scheduler")
+    private var mSipServer:String?=null
 
     private var mCall: Call? = null
     private var callAlreadyStartedAfterRegistration=false
@@ -122,10 +123,11 @@ class SipFragment : Fragment() {
         wl=pwm.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK,"com.vertial.fivemiov:SipCall")
 
             binding.sipendbutton.setOnClickListener {
-                val currentcall=mCore?.currentCall
-                if (mCall != null && currentcall != null) currentcall.terminate()
-                //startNavigation()
                 Log.i(MYTAG, "call end button clicked ")
+                val currentcall=mCore?.currentCall
+                if (currentcall != null) currentcall.terminate()
+                else startNavigation()
+
             }
 
             binding.sipMicButton.setOnClickListener {
@@ -234,6 +236,8 @@ class SipFragment : Fragment() {
 
     private fun initializeCore(sipUserName:String, sipPassword:String, sipServer:String,sipCallerId:String) {
         Log.i(MYTAG, "INITIALIZE CORE funkcija")
+        viewModel.logCredentialsForSipCall(sipUsername =sipUserName,sipPassword = sipPassword,sipDisplayname =sipCallerId,sipServer = sipServer)
+        mSipServer=sipServer
         mCore =
             Factory.instance()
                 .createCore(
@@ -241,11 +245,11 @@ class SipFragment : Fragment() {
                     null,
                     requireActivity().applicationContext)
 
-        configureCore(sipUserName,sipPassword)
+        configureCore(sipUserName,sipPassword,sipCallerId)
         configureLogging()
 
         mProxyConfig= mCore?.createProxyConfig()
-        configureProxy(sipUserName,sipPassword)
+        configureProxy(sipUserName,sipPassword,sipServer)
         mCore?.addProxyConfig(mProxyConfig)
         mCore?.defaultProxyConfig=mProxyConfig
 
@@ -263,28 +267,22 @@ class SipFragment : Fragment() {
         Log.i(MYTAG,"stanje registracije ${mCore?.defaultProxyConfig?.state} ")
         Log.i(MYTAG," avpf mode iz Call ${mCore?.defaultProxyConfig?.avpfMode}, enabled ${mCore?.defaultProxyConfig?.avpfEnabled()} ")
         Log.i(MYTAG," media encryption iz Call je ${mCore?.mediaEncryption}")
+        Log.i(MYTAG,"broj koji zovem je ${args.contactNumber}, server je $mSipServer")
 
-        Log.i(MYTAG,"broj koji zovem je ${args.contactNumber}")
         val numberToCall=PhoneNumberUtils.normalizeNumber(args.contactNumber)
         Log.i(MYTAG,"broj koji zovem normalizovan je ${numberToCall}")
+
         if(numberToCall!=null) {
-            mCall = mCore?.invite("sip:$numberToCall@45.63.117.19")
-            var callParams = mCore?.createCallParams(mCall)
-            Log.i(
-                MYTAG,
-                " call params ${callParams?.usedAudioPayloadType},${callParams?.audioEnabled()}, early media enabled ${callParams?.earlyMediaSendingEnabled()} "
-            )
+            var callParams = mCore?.createCallParams(null)
             callParams?.enableEarlyMediaSending(true)
-            mCall?.update(callParams)
-            Log.i(
-                MYTAG,
-                " call params posle setovanja ${callParams?.usedAudioPayloadType},${callParams?.audioEnabled()}, early media enabled ${callParams?.earlyMediaSendingEnabled()} "
-            )
+            Log.i(MYTAG," call params ${callParams?.usedAudioPayloadType},audio enabled ${callParams?.audioEnabled()}, early media enabled ${callParams?.earlyMediaSendingEnabled()} ")
+            if(mSipServer!=null) mCall = mCore?.inviteWithParams("sip:$numberToCall@$mSipServer",callParams)
+
+
+            /*mCall?.update(callParams)
+            Log.i(MYTAG,"call params posle setovanja ${callParams?.usedAudioPayloadType},${callParams?.audioEnabled()}, early media enabled ${callParams?.earlyMediaSendingEnabled()} ")
             var callParams2 = mCore?.createCallParams(mCall)
-            Log.i(
-                MYTAG,
-                " call params2 posle setovanja ${callParams?.usedAudioPayloadType},${callParams?.audioEnabled()}, early media enabled ${callParams?.earlyMediaSendingEnabled()} "
-            )
+            Log.i( MYTAG," call params2 posle setovanja ${callParams?.usedAudioPayloadType},${callParams?.audioEnabled()}, early media enabled ${callParams?.earlyMediaSendingEnabled()} ")*/
         }
 
     }
@@ -305,8 +303,8 @@ class SipFragment : Fragment() {
         super.onStart()
         requireActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         if(!wl.isHeld) wl.acquire()
-
         Log.i(MYTAG, "ONLIFE START")
+        mCore?.enterForeground()
     }
 
 
@@ -352,12 +350,13 @@ class SipFragment : Fragment() {
         Log.i(MYTAG, "ONLIFE STOP,")
         requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         if(wl.isHeld) wl.release()
+        mCore?.enterBackground()
 
     }
 
 
 
-    private fun configureCore(username:String,password:String){
+    private fun configureCore(username:String,password:String,callerID:String){
         val myAuthInfo=Factory.instance().createAuthInfo(username,username,password,null,null,null)
 
         mCore?.apply {
@@ -370,6 +369,10 @@ class SipFragment : Fragment() {
             enableWifiOnly(false)
             addAuthInfo(myAuthInfo)
             enableLogCollection(LogCollectionState.Enabled)
+            logCollectionUploadServerUrl="https://5miov.vertial.net/api/mobileLog"
+            Log.i(MYTAG," media device is ${mCore?.mediaDevice}, noRTP Timeout ${mCore?.nortpTimeout}, sdp200AckEnabled ${mCore?.sdp200AckEnabled()}," +
+                    "soud device list ${mCore?.soundDevicesList?.size}")
+
 
         }
 
@@ -390,13 +393,13 @@ class SipFragment : Fragment() {
         Factory.instance().loggingService.addListener(myLoggingServiceListener)
     }
 
-    private fun configureProxy(username: String,password: String){
+    private fun configureProxy(username: String,password: String,sipServer: String){
 
-        var fromAdress=mCore?.createAddress("sip:$username@45.63.117.19")
+        var fromAdress=mCore?.createAddress("sip:$username@$sipServer")
         fromAdress?.password=password
 
         mProxyConfig?.apply {
-            serverAddr="45.63.117.19"
+            serverAddr=sipServer
             expires=90
             setIdentityAddress(fromAdress)
             enableRegister(true)
@@ -465,8 +468,8 @@ class SipFragment : Fragment() {
                     Call.State.OutgoingInit->{
                         Log.i(MYTAG, "$message")
                         // ringback is heard normally in earpiece or bluetooth receiver.
-                        setAudioManagerInCallMode();
-                        requestAudioFocus(STREAM_VOICE_CALL);
+                        //setAudioManagerInCallMode();
+                       // requestAudioFocus(STREAM_VOICE_CALL);
                         updateCallStatus(message)
                     }
 
@@ -492,7 +495,7 @@ class SipFragment : Fragment() {
                     }
 
                     Call.State.StreamsRunning->{
-                        setAudioManagerInCallMode()
+                        //setAudioManagerInCallMode()
                         Log.i(MYTAG, "$message")
 
                     }
@@ -550,7 +553,7 @@ class SipFragment : Fragment() {
 
                 }
 
-                if(cstate == Call.State.End || cstate == Call.State.Error){
+               /* if(cstate == Call.State.End || cstate == Call.State.Error){
 
                     if (mCore?.getCallsNb() == 0) {
                         if (mAudioFocused) {
@@ -563,7 +566,7 @@ class SipFragment : Fragment() {
                         }
 
                     }
-                }
+                }*/
 
                 if (cstate == Call.State.End || cstate == Call.State.Released) {
                     startNavigation()
@@ -576,7 +579,8 @@ class SipFragment : Fragment() {
 
 
     private fun toggleSpeakerButton(){
-
+        Log.i(MYTAG,"AudioManager is $mAudioManager")
+        if(mAudioManager==null) return
         if(mIsSpeakerEnabled) {
                     mAudioManager?.isSpeakerphoneOn=false
                     binding.speakerFAB.apply {
@@ -595,6 +599,8 @@ class SipFragment : Fragment() {
     }
 
     private fun toggleSipMicButton(){
+        Log.i(MYTAG,"toggleSipMicButton, mCore is $mCore")
+       if(mCore==null) return
         if(!mIsMicMuted) {
             binding.sipMicButton.apply {
                 setImageResource(R.drawable.ic_mic_off)
@@ -618,6 +624,7 @@ class SipFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        viewModel.resetSipCredentials()
         Log.i(MYTAG,"ONLIFE DESTROY VIEW")
     }
 
@@ -626,6 +633,7 @@ class SipFragment : Fragment() {
         Log.i(MYTAG,"ONLIFE DESTROY")
         if(mTimer!=null) mTimer.cancel()
         if(mCore!=null){
+            mCore?.enableMic(true)
             mCore?.stop()
             mCore?.removeListener(mListener)
             mCore=null
@@ -633,8 +641,8 @@ class SipFragment : Fragment() {
         Factory.instance().loggingService.removeListener(myLoggingServiceListener)
         if(mCall!=null) mCall=null
         if(mListener!=null) mListener=null
-
-
+        mAudioManager?.isSpeakerphoneOn=false
+        mAudioManager=null
 
     }
 

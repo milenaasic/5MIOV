@@ -19,7 +19,7 @@ private val MYTAG="MY_SIPVIEWMODEL"
 
 class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : AndroidViewModel(application) {
     val TIMEOUT_IN_MILLIS=500L
-    //val TIMEOUT_IN_MILLIS_FOR_SETTING_MIC_MODE=200L
+    val TIMEOUT_IN_MILLIS_NAVIGATE_BACK=1000L
 
     private val _timeout= MutableLiveData<Boolean>()
     val timeout:LiveData<Boolean>
@@ -118,7 +118,7 @@ class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : Androi
 
     fun navigateBack(){
         viewModelScope.launch {
-            delay(1500)
+            delay(TIMEOUT_IN_MILLIS_NAVIGATE_BACK)
             _navigateUp.value=true
         }
     }

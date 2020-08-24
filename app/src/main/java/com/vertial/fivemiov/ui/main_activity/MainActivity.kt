@@ -149,7 +149,7 @@ class MainActivity : AppCompatActivity() {
 
                 SIP_FRAGMENT -> {
                    navController.navigateUp()
-                   // setSipFragmentUI()
+                    //setSipFragmentUI()
                 }
 
                 ABOUT_FRAGMENT ->{
@@ -239,7 +239,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-
+        Log.i(MY_TAG, " onResume")
        checkIfUpdateInProcess()
 
     }
