@@ -99,6 +99,7 @@ class RepoContacts (val contentResolver: ContentResolver,
                    coroutineScope {
                        withContext(Dispatchers.IO){
                                 myDatabaseDao.updatePrenumber(result.e1phone, System.currentTimeMillis())
+                                if(!result.appVersion.isNullOrEmpty())  myDatabaseDao.updateWebApiVersion(result.appVersion)
                        }
                    }
                 }
