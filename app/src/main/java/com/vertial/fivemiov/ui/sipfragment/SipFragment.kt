@@ -431,6 +431,8 @@ class SipFragment : Fragment() {
                     RegistrationState.Failed->{
                         updateCallStatus("$message")
                         Log.i(MYTAG," registration state FAILED,$message,$cstate ")
+                        showToast("$message")
+                        viewModel.navigateUp
                     }
 
                     RegistrationState.Ok->{
@@ -530,7 +532,7 @@ class SipFragment : Fragment() {
                         if (call?.getErrorInfo()?.getReason() == Reason.Declined) {
                             updateCallStatus(message)
                             Log.i(MYTAG,"error_call_declined $message")
-
+                            showToast("Call declined")
 
                         }
 

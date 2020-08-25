@@ -52,7 +52,7 @@ class DialPadFragment : Fragment() {
     private lateinit var bsb:BottomSheetBehavior<FragmentContainerView>
 
     companion object{
-        val MY_PERMISSIONS_REQUEST_MAKE_CALL_and_SIP_and_AUDIO_DIALPAD=11
+        val MY_PERMISSIONS_REQUEST_MAKE_CALL_and_AUDIO_DIALPAD=11
         val FORMATTING_COUNTRY_CODE="US"
         val NOTHING=""
         val MAX_CHARS_ALLOWED_IN_LAYOUT=25
@@ -244,7 +244,7 @@ class DialPadFragment : Fragment() {
         super.onStart()
         binding.dialpadConstrLayout.requestFocus()
         if(isOnline(requireActivity().application)) viewModel.getCredit()
-        else binding.creditTextView.text="No internet"
+        else binding.creditTextView.text=" "
 
     }
 
@@ -351,11 +351,10 @@ class DialPadFragment : Fragment() {
         }
         else {
             if (requireActivity().checkSelfPermission(Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED ||
-                requireActivity().checkSelfPermission(Manifest.permission.USE_SIP) != PackageManager.PERMISSION_GRANTED ||
                 requireActivity().checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED
             ) {
-                requestPermissions(arrayOf(Manifest.permission.CALL_PHONE,Manifest.permission.USE_SIP,Manifest.permission.RECORD_AUDIO),
-                    MY_PERMISSIONS_REQUEST_MAKE_CALL_and_SIP_and_AUDIO_DIALPAD
+                requestPermissions(arrayOf(Manifest.permission.CALL_PHONE,Manifest.permission.RECORD_AUDIO),
+                    MY_PERMISSIONS_REQUEST_MAKE_CALL_and_AUDIO_DIALPAD
                 )
                 return false
             } else return true
@@ -370,7 +369,7 @@ class DialPadFragment : Fragment() {
     ) {
 
         when (requestCode) {
-            MY_PERMISSIONS_REQUEST_MAKE_CALL_and_SIP_and_AUDIO_DIALPAD-> {
+            MY_PERMISSIONS_REQUEST_MAKE_CALL_and_AUDIO_DIALPAD-> {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.isNotEmpty()) {
 
@@ -380,15 +379,8 @@ class DialPadFragment : Fragment() {
                         showSnackBar(resources.getString(R.string.no_permission_make_phone_call))
                     }
 
-
                     if (grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-                        Log.i(MYTAG,"grantResults 1  ${grantResults[1]}")
-                    } else {
-                        showSnackBar(resources.getString(R.string.no_SIP_permission))
-                    }
-
-                    if (grantResults[2] == PackageManager.PERMISSION_GRANTED) {
-                        Log.i(MYTAG,"grantResults 2 audio  ${grantResults[2]}")
+                        Log.i(MYTAG,"grantResults 1 audio  ${grantResults[1]}")
                     } else {
                         showSnackBar(resources.getString(R.string.no_audio_permission))
                     }

@@ -119,18 +119,21 @@ class SetEmailAndPasswordFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.setAccountEmailAndPassSuccess.observe(viewLifecycleOwner, Observer {message->
-            if(message!=null){
-                viewModel.resetSetEmailAndPassNetSuccess()
-                showToast(message)
+        viewModel.setAccountEmailAndPassSuccess.observe(viewLifecycleOwner, Observer {response->
+            if(response!=null){
                 showProgressBar(false)
-                findNavController().navigate(SetEmailAndPasswordFragmentDirections.actionSetEmailAndPasswordFragmentToDialPadFragment())
+                showToast(response.userMsg)
+                if(response.success==true){
+                    findNavController().navigate(SetEmailAndPasswordFragmentDirections.actionSetEmailAndPasswordFragmentToDialPadFragment())
+                }else binding.setAccountSubmitButton.isEnabled=true
+                viewModel.resetSetEmailAndPassNetSuccess()
             }
          })
 
          viewModel.setAccountEmailAndPassError.observe(viewLifecycleOwner, Observer {
              if(it!=null){
                 viewModel.resetSetEmailAndPasstNetErrorr()
+
                  showSnackBar(getString(R.string.something_went_wrong))
                  showProgressBar(false)
                  binding.setAccountSubmitButton.isEnabled=true

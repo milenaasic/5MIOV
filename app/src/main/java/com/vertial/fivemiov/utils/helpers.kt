@@ -83,10 +83,8 @@ fun String.removePlus():String{
 
 
 fun isVOIPsupported(context:Context):Boolean{
-    Log.i(MYTAG," is voip suported ${SipManager.isVoipSupported(context)}")
-    Log.i(MYTAG," is sip api suported ${SipManager.isApiSupported(context)}")
-    return (SipManager.isVoipSupported(context)&& SipManager.isApiSupported(context))
-
+    //return (SipManager.isVoipSupported(context)&& SipManager.isApiSupported(context))
+    return true
 }
 
 fun did24HoursPass(currentTime:Long, databaseE1Timestamp:Long):Boolean{

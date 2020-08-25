@@ -82,8 +82,8 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
     val setAccountEmailAndPassError: LiveData<String?>
         get() = _setAccountEmailAndPassError
 
-    private val _setAccountEmailAndPassSuccess= MutableLiveData<String?>()
-    val setAccountEmailAndPassSuccess: LiveData<String?>
+    private val _setAccountEmailAndPassSuccess= MutableLiveData<NetResponse_SetAccountEmailAndPass?>()
+    val setAccountEmailAndPassSuccess: LiveData<NetResponse_SetAccountEmailAndPass?>
         get() = _setAccountEmailAndPassSuccess
 
 
@@ -346,7 +346,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
         )
         try {
             val result = defResult.await()
-
+                Log.i(MY_TAG,"NetRequest_SetAccountEmailAndPass $result")
                 if (result.success == true) {
                     val myUncancelableJob: UncancelableJob = UncancelableJob(
                         phone = phoneNumber,
@@ -372,10 +372,11 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
                     }
 
                 }
-                _setAccountEmailAndPassSuccess.value = result.userMsg
+                _setAccountEmailAndPassSuccess.value = result
 
         }
         catch (e:Throwable){
+            Log.i(MY_TAG,"NetRequest_SetAccountEmailAndPass error ${e.message}")
             val errorMessage:String?=e.message
             GlobalScope.launch {
                 withContext(IO){

@@ -63,7 +63,7 @@ class DetailContact : Fragment() {
     private var br: BroadcastReceiver?=null
 
     companion object{
-        val MY_PERMISSIONS_REQUEST_MAKE_PHONE_CALL_and_SIP_and_AUDIO=15
+        val MY_PERMISSIONS_REQUEST_MAKE_PHONE_CALL_and_AUDIO=15
 
     }
 
@@ -183,10 +183,6 @@ class DetailContact : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        val number="9000"
-
-        val resultPhoneNumber=PhoneNumberUtils.normalizeNumber(number)
-        Log.i(MYTAG, "normalizacija broja 9000 je $resultPhoneNumber")
 
     }
 
@@ -212,11 +208,10 @@ class DetailContact : Fragment() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true
         else {
             if (requireActivity().checkSelfPermission(Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED ||
-                requireActivity().checkSelfPermission(Manifest.permission.USE_SIP) != PackageManager.PERMISSION_GRANTED ||
                 requireActivity().checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED
             ) {
-                requestPermissions(arrayOf(Manifest.permission.CALL_PHONE,Manifest.permission.USE_SIP,Manifest.permission.RECORD_AUDIO),
-                    MY_PERMISSIONS_REQUEST_MAKE_PHONE_CALL_and_SIP_and_AUDIO
+                requestPermissions(arrayOf(Manifest.permission.CALL_PHONE,Manifest.permission.RECORD_AUDIO),
+                    MY_PERMISSIONS_REQUEST_MAKE_PHONE_CALL_and_AUDIO
                 )
                 return false
             } else return true
@@ -231,7 +226,7 @@ class DetailContact : Fragment() {
     ) {
 
         when (requestCode) {
-            MY_PERMISSIONS_REQUEST_MAKE_PHONE_CALL_and_SIP_and_AUDIO-> {
+            MY_PERMISSIONS_REQUEST_MAKE_PHONE_CALL_and_AUDIO-> {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.isNotEmpty()) {
 
@@ -243,15 +238,9 @@ class DetailContact : Fragment() {
 
 
                     if (grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-                        Log.i(MYTAG,"grantResults 1 je ${grantResults[1]}")
-                    } else {
-                        showSnackBar(resources.getString(R.string.no_SIP_permission))
-                    }
-
-                    if (grantResults[2] == PackageManager.PERMISSION_GRANTED) {
 
                     } else {
-                        showSnackBar("no audio permission")
+                        showSnackBar(resources.getString(R.string.no_audio_permission))
                     }
                 }
 
