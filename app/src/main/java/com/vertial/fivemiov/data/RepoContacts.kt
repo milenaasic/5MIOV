@@ -414,6 +414,27 @@ class RepoContacts (val contentResolver: ContentResolver,
 
     fun insertRecentCall(call:RecentCall)=myDatabaseDao.insertRecentCall(call)
 
+    //Log state to our server
+    fun logStateToServer(process:String="No_Process_Defined",state:String="No_State_Defined"){
+        GlobalScope.launch {
+            with(Dispatchers.IO){
+                val phoneNumberDef=async {
+                    myDatabaseDao.getPhone()
+                }
+                try {
+                    val phoneNumber=phoneNumberDef.await()
+                    SendErrorrToServer(myAPIService = myAPIService,phoneNumber = phoneNumber,
+                        process = process,errorMsg = state).sendError()
+
+                }catch (t:Throwable){
+                    Log.i(MY_TAG, "error in logStateToServer ${t.message}")
+
+                }
+            }
+        }
+
+    }
+
 }
 
 

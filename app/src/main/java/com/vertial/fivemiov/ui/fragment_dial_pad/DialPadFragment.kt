@@ -122,6 +122,8 @@ class DialPadFragment : Fragment() {
                             }
                             else {
                                 showSnackBar(resources.getString(R.string.not_valid_phone_number))
+                                viewModel.logStateToMyServer("buttonSipCallDialpadFrag.setOnClickListener",
+                                    "normPhoneNumber.isPhoneNumberValid(),entered phone $phoneNumber, normalized $normPhoneNumber")
                                 enableCallButtons(true)
                             }
                         }
@@ -461,5 +463,7 @@ class DialPadFragment : Fragment() {
     private fun showSnackBar(s:String) {
         Snackbar.make(binding.coordLayDialpadFragment,s, Snackbar.LENGTH_INDEFINITE).setAction("OK"){}.show()
     }
+
+
 
 }

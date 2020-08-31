@@ -3,16 +3,16 @@ package com.vertial.fivemiov.ui.sipfragment
 
 
 import android.content.Context
+import android.media.AudioAttributes
+import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.media.AudioManager.STREAM_VOICE_CALL
-import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.os.PowerManager
+import android.os.*
 import android.telephony.PhoneNumberUtils
 import android.util.Log
 import android.view.*
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -50,6 +50,7 @@ class SipFragment : Fragment() {
 
     private var mAudioManager:AudioManager? = null
     private var mAudioFocused:Boolean=false
+    private lateinit var audioFocusRequest: AudioFocusRequest
     private var mIsMicMuted = false
     private var mIsSpeakerEnabled = false
 
@@ -78,7 +79,7 @@ class SipFragment : Fragment() {
     val mIterateRunnable = Runnable {
         if (mCore != null) {
             mCore?.iterate()
-            Log.i(MYTAG," u iterate")
+            //Log.i(MYTAG," u iterate")
         }
     }
 
@@ -470,8 +471,8 @@ class SipFragment : Fragment() {
                     Call.State.OutgoingInit->{
                         Log.i(MYTAG, "$message")
                         // ringback is heard normally in earpiece or bluetooth receiver.
-                        //setAudioManagerInCallMode();
-                       // requestAudioFocus(STREAM_VOICE_CALL);
+                        setAudioManagerInCallMode()
+                        requestAudioFocus()
                         updateCallStatus(message)
                     }
 
@@ -497,13 +498,14 @@ class SipFragment : Fragment() {
                     }
 
                     Call.State.StreamsRunning->{
-                        //setAudioManagerInCallMode()
+                        setAudioManagerInCallMode()
                         Log.i(MYTAG, "$message")
 
                     }
 
                     Call.State.Error -> {
-                        Log.i(MYTAG,"call state error $message")
+                        Log.i(MYTAG,"call state error message:$message")
+
                         if (call?.getErrorInfo()?.getReason() == Reason.Declined) {
                             updateCallStatus("Call declined")
                             showToast("Call declined")
@@ -528,7 +530,7 @@ class SipFragment : Fragment() {
 
                     Call.State.End-> {
                         // Convert Core message for internalization
-                        Log.i(MYTAG," $message")
+                        Log.i(MYTAG,"call state End message:$message")
                         if (call?.getErrorInfo()?.getReason() == Reason.Declined) {
                             updateCallStatus(message)
                             Log.i(MYTAG,"error_call_declined $message")
@@ -551,7 +553,7 @@ class SipFragment : Fragment() {
                         showToast("Resuming")
                     }
 
-                    else->{  Log.i(MYTAG, "else branch:$message")}
+                    else->{  Log.i(MYTAG, "Call State Else branch:$message")}
 
                 }
 
@@ -644,7 +646,12 @@ class SipFragment : Fragment() {
         if(mCall!=null) mCall=null
         if(mListener!=null) mListener=null
         mAudioManager?.isSpeakerphoneOn=false
-        mAudioManager=null
+        mAudioManager?.setMode(AudioManager.MODE_NORMAL)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            mAudioManager?.abandonAudioFocusRequest(audioFocusRequest)
+        }else{
+            mAudioManager?.abandonAudioFocus(null)
+        }
 
     }
 
@@ -657,17 +664,46 @@ class SipFragment : Fragment() {
         mAudioManager?.mode = AudioManager.MODE_IN_COMMUNICATION
     }
 
-    private fun requestAudioFocus(stream: Int) {
+
+    private fun requestAudioFocus() {
         if (!mAudioFocused) {
-            val res = mAudioManager!!.requestAudioFocus(
-                null, stream, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE
+
+            var audioFocusReqResult:Int? = null
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val audioAttr = AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                    .build()
+
+                audioFocusRequest =
+                    AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
+                        .setAudioAttributes(audioAttr)
+                        .build()
+
+            audioFocusReqResult= mAudioManager?.requestAudioFocus(audioFocusRequest)
+            }
+
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+                audioFocusReqResult = mAudioManager?.requestAudioFocus(
+                    null,
+                    // Use the  stream.
+                    AudioManager.STREAM_VOICE_CALL,
+                    // Requestfocus.
+                    AudioManager.AUDIOFOCUS_GAIN_TRANSIENT
+                )
+                /*val res = mAudioManager?.requestAudioFocus(
+               null, stream, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE)*/
+            }
+
+            Log.d(MYTAG,"[Audio Manager] Audio focus requested: "
+                    + if (audioFocusReqResult == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) "Granted" else "Denied"
             )
-            Log.d(
-                MYTAG,
-                "[Audio Manager] Audio focus requested: "
-                        + if (res == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) "Granted" else "Denied"
-            )
-            if (res == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) mAudioFocused = true
+
+            if(audioFocusReqResult == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                mAudioFocused = true
+            }
+
         }
     }
 

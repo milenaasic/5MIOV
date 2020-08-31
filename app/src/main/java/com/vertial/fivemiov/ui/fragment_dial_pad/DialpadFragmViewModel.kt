@@ -81,4 +81,8 @@ class DialpadFragmViewModel(val myRepository: RepoContacts, application: Applica
     }
 
 
+    fun logStateToMyServer(process:String,state:String){
+        myRepository.logStateToServer(process = process,state = state)
+    }
+
 }
