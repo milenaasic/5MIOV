@@ -60,6 +60,10 @@ class DetailContactViewModel(val contactLookUp:String,val myRepository: RepoCont
 
     }
 
+    fun logStateToMyServer(process:String,state:String){
+        myRepository.logStateToServer(process = process,state = state)
+    }
+
 
 
 }

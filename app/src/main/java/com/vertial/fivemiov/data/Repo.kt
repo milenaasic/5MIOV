@@ -417,6 +417,27 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
         }
     }
 
+    //Log state to our server
+    fun logStateToServer(process:String="No_Process_Defined",state:String="No_State_Defined"){
+        GlobalScope.launch {
+            with(Dispatchers.IO){
+                val phoneNumberDef=async {
+                    myDatabaseDao.getPhone()
+                }
+                try {
+                    val phoneNumber=phoneNumberDef.await()
+                    SendErrorrToServer(myAPIService = myAPI,phoneNumber = phoneNumber,
+                        process = process,errorMsg = state).sendError()
+
+                }catch (t:Throwable){
+                    Log.i(MY_TAG, "error in logStateToServer ${t.message}")
+
+                }
+            }
+        }
+
+    }
+
 }
 
 class UncancelableJob(

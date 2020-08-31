@@ -410,6 +410,7 @@ class DialPadFragment : Fragment() {
             val intentToCall = Intent(Intent.ACTION_CALL).apply {
                 setData(Uri.parse(resources.getString(R.string.prenumber_call,myPrenumber,phone)))
                 Log.i(MYTAG, "uri is ${resources.getString(R.string.prenumber_call,myPrenumber,phone)} ")
+                viewModel.logStateToMyServer("SIM Card Call from Dialpad","calling number: ${resources.getString(R.string.prenumber_call,myPrenumber,phone)}")
             }
 
             if (intentToCall.resolveActivity(requireActivity().packageManager) != null) {

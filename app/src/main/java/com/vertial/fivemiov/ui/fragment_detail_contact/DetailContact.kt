@@ -140,6 +140,8 @@ class DetailContact : Fragment() {
        if (phone.isPhoneNumberValid()) {
            val intentToCall = Intent(Intent.ACTION_CALL).apply {
                setData(Uri.parse(resources.getString(R.string.prenumber_call,myPrefixNumber,phone)))
+               Log.i(MYTAG,"sim phone call uri :${resources.getString(R.string.prenumber_call,myPrefixNumber,phone)} ")
+               viewModel.logStateToMyServer("SIM Card Call from Contacs", "calling number ${resources.getString(R.string.prenumber_call,myPrefixNumber,phone)}")
 
            }
 

@@ -132,5 +132,9 @@ class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : Androi
             sipDisplayname = sipDisplayname,sipServer = sipServer)
 
     }
+
+    fun logStateToMyServer(process:String,state:String){
+        mySipRepo.logStateToServer(process = process,state = state)
+    }
 }
 
