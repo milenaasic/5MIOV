@@ -3,16 +3,16 @@ package com.vertial.fivemiov.ui.sipfragment
 
 
 import android.content.Context
-import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
-import android.media.AudioManager.STREAM_VOICE_CALL
-import android.os.*
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.os.PowerManager
 import android.telephony.PhoneNumberUtils
 import android.util.Log
 import android.view.*
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -27,6 +27,7 @@ import com.vertial.fivemiov.ui.initializeSharedPrefToFalse
 import com.vertial.fivemiov.ui.myapplication.MyApplication
 import org.linphone.core.*
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 
 private val MYTAG="MY_Sip fragment"
@@ -42,22 +43,51 @@ class SipFragment : Fragment() {
     private var mCore:Core?=null
     private var mListener: CoreListenerStub? = null
     private var mProxyConfig:ProxyConfig?=null
-    private var mTimer: Timer=Timer("Linphone scheduler")
     private var mSipServer:String?=null
 
     private var mCall: Call? = null
     private var callAlreadyStartedAfterRegistration=false
+    private var isAlreadyRegisteredOnce=false
 
     private var mAudioManager:AudioManager? = null
     private var mAudioFocused:Boolean=false
-    private lateinit var audioFocusRequest: AudioFocusRequest
+    private var audioFocusRequest: AudioFocusRequest?=null
     private var mIsMicMuted = false
     private var mIsSpeakerEnabled = false
 
     private var navigationUpInProcess=false
 
+    //Linphone process
     private val sHandler: Handler = Handler(Looper.getMainLooper())
+    private var mTimer: Timer=Timer("Linphone scheduler")
+    val mIterateRunnable = Runnable {
+        if (mCore != null) {
+            mCore?.iterate()
+            //Log.i(MYTAG," u iterate")
+        }
+    }
 
+    val lTask: TimerTask = object : TimerTask() {
+        override fun run() {
+            dispatchOnUIThread(mIterateRunnable)
+        }
+    }
+
+    //Call timer
+    private val timerHandler: Handler = Handler(Looper.getMainLooper())
+    private val callDurationTimer=Timer("Call Duration")
+    private var callStartTime:Long=0L
+    val callTimerRunnable = Runnable {
+      updateTimer()
+    }
+
+    val callTimerTask: TimerTask = object : TimerTask() {
+        override fun run() {
+            dispatchOnUIThread(callTimerRunnable)
+        }
+    }
+
+    //Linphone Logging
     private val myLoggingServiceListener =
         LoggingServiceListener { logService, domain, lev, message ->
             when (lev) {
@@ -77,18 +107,7 @@ class SipFragment : Fragment() {
             }
         }
 
-    val mIterateRunnable = Runnable {
-        if (mCore != null) {
-            mCore?.iterate()
-            //Log.i(MYTAG," u iterate")
-        }
-    }
 
-    val lTask: TimerTask = object : TimerTask() {
-        override fun run() {
-            dispatchOnUIThread(mIterateRunnable)
-        }
-    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -103,6 +122,7 @@ class SipFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         Log.i(MYTAG, "ONLIFE onCreateView")
+        Log.i("SIP_FLOW"," Sip Fragment ONLIFE onCreateView")
         binding= DataBindingUtil.inflate(inflater, R.layout.fragment_sip,container,false)
         binding.nametextView.text=args.contactName
 
@@ -126,6 +146,8 @@ class SipFragment : Fragment() {
 
             binding.sipendbutton.setOnClickListener {
                 Log.i(MYTAG, "call end button clicked ")
+                Log.i("SIP_FLOW"," call end button clicked")
+
                 val currentcall=mCore?.currentCall
                 viewModel.logStateToMyServer("SIP:END BUTTON CLICKED","current call: ${mCore?.currentCall}")
                 if (currentcall != null) currentcall.terminate()
@@ -159,6 +181,7 @@ class SipFragment : Fragment() {
             navigationUpInProcess=true
             viewModel.navigateBack()
             Log.i(MYTAG," start navigate back function")
+            Log.i("SIP_FLOW"," start navigate back function")
         }
     }
 
@@ -166,6 +189,7 @@ class SipFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Log.i(MYTAG, "ONLIFE onViewCreated")
+        Log.i("SIP_FLOW"," Sip Fragment ONLIFE onViewCreated")
 
         viewModel.timeout.observe(viewLifecycleOwner, Observer {
             if(it){
@@ -249,7 +273,7 @@ class SipFragment : Fragment() {
         mCore?.defaultProxyConfig=mProxyConfig
 
         /*use schedule instead of scheduleAtFixedRate to avoid iterate from being call in burst after cpu wake up*/
-        mTimer = Timer("Linphone scheduler")
+        //mTimer = Timer("Linphone scheduler")
         mCore?.start()
         mTimer.schedule(lTask, 0, 20)
 
@@ -297,6 +321,7 @@ class SipFragment : Fragment() {
         requireActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         if(!wl.isHeld) wl.acquire()
         Log.i(MYTAG, "ONLIFE START")
+        Log.i("SIP_FLOW"," Sip Fragment ONLIFE onStart,mCore= $mCore")
         mCore?.enterForeground()
     }
 
@@ -304,6 +329,7 @@ class SipFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         Log.i(MYTAG, "ONLIFE RESUME, mCore= $mCore")
+        Log.i("SIP_FLOW"," Sip Fragment ONLIFE onResume,mCore= $mCore")
 
 
     }
@@ -311,12 +337,14 @@ class SipFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         Log.i(MYTAG, "ONLIFE PAUSE,  mCore= $mCore")
+        Log.i("SIP_FLOW"," Sip Fragment ONLIFE onPause,mCore= $mCore")
 
     }
 
     override fun onStop() {
         super.onStop()
         Log.i(MYTAG, "ONLIFE STOP,")
+        Log.i("SIP_FLOW"," Sip Fragment ONLIFE onStop,mCore= $mCore")
         requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         if(wl.isHeld) wl.release()
         mCore?.enterBackground()
@@ -388,39 +416,52 @@ class SipFragment : Fragment() {
                 when (cstate){
 
                     RegistrationState.None->{
-                        updateCallStatus("$message")
+                        if(!isAlreadyRegisteredOnce) updateCallStatus("$message")
                         Log.i(MYTAG," registration state NONE, $message,$cstate")
-                        viewModel.logStateToMyServer("SIP:onRegistrationStateChanged"," $cstate,$message")
+                        viewModel.logStateToMyServer("SIP onRegistrationStateChanged"," $cstate,$message")
+                        Log.i("SIP_FLOW"," registration  $message,$cstate")
                     }
 
                     RegistrationState.Cleared->{
                         updateCallStatus("$message")
                         Log.i(MYTAG," registration state Cleared, $message,$cstate")
-                        viewModel.logStateToMyServer("SIP:onRegistrationStateChanged"," $cstate,$message")
+                        viewModel.logStateToMyServer("SIP onRegistrationStateChanged"," $cstate,$message")
+                        Log.i("SIP_FLOW"," registration  $message,$cstate")
                     }
 
                     RegistrationState.Failed->{
-                        updateCallStatus("$message")
+                        if(!isAlreadyRegisteredOnce) {
+                            updateCallStatus("$message")
+                            showToast("$message")
+                        }
                         Log.i(MYTAG," registration state FAILED,$message,$cstate ")
                         viewModel.logStateToMyServer("SIP:onRegistrationStateChanged"," $cstate,$message")
-                        //showToast("$message")
+
                         viewModel.navigateUp
+                        Log.i("SIP_FLOW"," registration  $message,$cstate")
                     }
 
                     RegistrationState.Ok->{
-                        updateCallStatus("$message")
+
                         if(!callAlreadyStartedAfterRegistration){
                             callAlreadyStartedAfterRegistration=true
                             viewModel.startTimeout()
                         }
+
+                        if(!isAlreadyRegisteredOnce){
+                            updateCallStatus("$message")
+                            isAlreadyRegisteredOnce=true
+                        }
                         viewModel.logStateToMyServer("SIP:onRegistrationStateChanged"," $cstate,$message")
                         Log.i(MYTAG," registration state OK,$message, $cstate")
+                        Log.i("SIP_FLOW"," registration $message,$cstate")
                     }
 
                     RegistrationState.Progress->{
-                        updateCallStatus("$message")
+                        if(!isAlreadyRegisteredOnce) updateCallStatus("$message")
                         viewModel.logStateToMyServer("SIP:onRegistrationStateChanged"," $cstate,$message")
                         Log.i(MYTAG," registration state PROGRESS,$message, $cstate")
+                        Log.i("SIP_FLOW"," registration, $message,$cstate")
                     }
 
                 }
@@ -437,27 +478,31 @@ class SipFragment : Fragment() {
 
                     Call.State.Idle->{
                         Log.i(MYTAG,"idle, $message")
+                        Log.i("SIP_FLOW"," onCallStateChanged $cstate,$message")
                         viewModel.logStateToMyServer("SIP:onCallStateChanged"," $cstate,$message")
                         updateCallStatus("Idle")
                     }
 
                     Call.State.OutgoingInit->{
                         Log.i(MYTAG, "$message")
+                        Log.i("SIP_FLOW"," onCallStateChanged $cstate,$message")
                         viewModel.logStateToMyServer("SIP:onCallStateChanged"," $cstate,$message")
                         // ringback is heard normally in earpiece or bluetooth receiver.
-                        setAudioManagerInCallMode()
-                        requestAudioFocus()
+                        //setAudioManagerInCallMode()
+                        //requestAudioFocus()
                         updateCallStatus(message)
                     }
 
                     Call.State.OutgoingProgress->{
                         viewModel.logStateToMyServer("SIP:onCallStateChanged"," $cstate,$message")
+                        Log.i("SIP_FLOW"," onCallStateChanged $cstate,$message")
                         Log.i(MYTAG, "$message")
                         updateCallStatus(message)
                     }
 
                     Call.State.OutgoingRinging->{
                         viewModel.logStateToMyServer("SIP:onCallStateChanged"," $cstate,$message")
+                        Log.i("SIP_FLOW"," onCallStateChanged $cstate,$message")
                         Log.i(MYTAG, "$message")
                         updateCallStatus(message)
 
@@ -465,45 +510,58 @@ class SipFragment : Fragment() {
 
                     Call.State.OutgoingEarlyMedia->{
                         viewModel.logStateToMyServer("SIP:onCallStateChanged"," $cstate,$message")
+                        Log.i("SIP_FLOW"," onCallStateChanged $cstate,$message")
                         Log.i(MYTAG, "$message")
-                        updateCallStatus(message)
+                        //updateCallStatus(message)
                     }
 
                     Call.State.Connected->{
                         viewModel.logStateToMyServer("SIP:onCallStateChanged"," $cstate,$message")
+                        Log.i("SIP_FLOW"," onCallStateChanged $cstate,$message")
                         Log.i(MYTAG, "$message")
                         updateCallStatus(message)
+                        callStartTime=System.currentTimeMillis()
+                        callDurationTimer.schedule(callTimerTask, 0, 500)
+
+
                     }
 
                     Call.State.StreamsRunning->{
                         viewModel.logStateToMyServer("SIP:onCallStateChanged"," $cstate,$message")
-                        setAudioManagerInCallMode()
+                        Log.i("SIP_FLOW"," onCallStateChanged $cstate,$message")
+                        //setAudioManagerInCallMode()
                         Log.i(MYTAG, "$message")
 
                     }
 
                     Call.State.Error -> {
                         Log.i(MYTAG,"call state error message:$message")
+                        Log.i("SIP_FLOW"," onCallStateChanged, cim udje u error $cstate,$message")
                         viewModel.logStateToMyServer("SIP:onCallStateChanged"," $cstate,$message,${call?.getErrorInfo()?.getReason()}")
 
                         if (call?.getErrorInfo()?.getReason() == Reason.Declined) {
                             updateCallStatus("Call declined")
                             showToast("Call declined")
+                            Log.i("SIP_FLOW"," onCallStateChanged $cstate,$message")
 
                         } else if (call?.getErrorInfo()?.getReason() == Reason.NotFound) {
                             updateCallStatus("Not Found")
                             showToast("Not Found")
+                            Log.i("SIP_FLOW"," onCallStateChanged $cstate,$message")
 
                         } else if (call?.getErrorInfo()?.getReason() == Reason.NotAcceptable) {
                             updateCallStatus("Not Acceptable")
                             showToast("Not Acceptable")
+                            Log.i("SIP_FLOW"," onCallStateChanged $cstate,$message")
 
                         } else if (call?.getErrorInfo()?.getReason() == Reason.Busy) {
                             updateCallStatus("Busy")
                             showToast("Busy")
+                            Log.i("SIP_FLOW"," onCallStateChanged $cstate,$message")
 
                         } else if (message != null) {
                             updateCallStatus(message)
+                            Log.i("SIP_FLOW"," onCallStateChanged $cstate,$message")
                         }
 
                     }
@@ -511,13 +569,23 @@ class SipFragment : Fragment() {
                     Call.State.End-> {
                         // Convert Core message for internalization
                         Log.i(MYTAG,"call state End message:$message")
+                        Log.i("SIP_FLOW"," onCallStateChanged cim udje u end $cstate,$message")
                         viewModel.logStateToMyServer("SIP:onCallStateChanged"," $cstate,$message,${call?.getErrorInfo()?.getReason()}")
                         if (call?.getErrorInfo()?.getReason() == Reason.Declined) {
                             updateCallStatus(message)
                             Log.i(MYTAG,"error_call_declined $message")
                             showToast("Call declined")
+                            Log.i("SIP_FLOW"," onCallStateChanged end i declined $cstate,$message")
 
                         }
+
+                    }
+
+                    Call.State.Released->{
+                        Log.i(MYTAG, "$message")
+                        viewModel.logStateToMyServer("SIP:onCallStateChanged"," $cstate,$message")
+                        updateCallStatus(message)
+                        Log.i("SIP_FLOW"," onCallStateChanged  $cstate,$message")
 
                     }
 
@@ -526,6 +594,7 @@ class SipFragment : Fragment() {
                         viewModel.logStateToMyServer("SIP:onCallStateChanged"," $cstate,$message")
                         updateCallStatus(message)
                         showToast("Paused")
+                        Log.i("SIP_FLOW"," onCallStateChanged  $cstate,$message")
 
                     }
 
@@ -534,10 +603,12 @@ class SipFragment : Fragment() {
                         viewModel.logStateToMyServer("SIP:onCallStateChanged"," $cstate,$message")
                         updateCallStatus(message)
                         showToast("Resuming")
+                        Log.i("SIP_FLOW"," onCallStateChanged  $cstate,$message")
                     }
 
                     else->{  Log.i(MYTAG, "Call State Else branch:$message")
                             viewModel.logStateToMyServer("SIP:onCallStateChanged"," ELSE BRANCH:$cstate,$message")
+                        Log.i("SIP_FLOW"," onCallStateChanged else branch  $cstate,$message")
                     }
 
                 }
@@ -545,7 +616,9 @@ class SipFragment : Fragment() {
 
                 if (cstate == Call.State.End || cstate == Call.State.Released) {
                     viewModel.logStateToMyServer("SIP:state == Call.State.End || state == Call.State.Released","navigateUpFromFragment")
+                    callDurationTimer.cancel()
                     startNavigation()
+                    Log.i("SIP_FLOW"," onCallStateChanged cstate == Call.State.End || cstate == Call.State.Released  $cstate,$message")
                 }
             }
 
@@ -602,11 +675,13 @@ class SipFragment : Fragment() {
         super.onDestroyView()
         viewModel.resetSipCredentials()
         Log.i(MYTAG,"ONLIFE DESTROY VIEW")
+        Log.i("SIP_FLOW"," Sip Fragment ONLIFE onDestroyView,mCore= $mCore")
     }
 
     override fun onDestroy() {
         super.onDestroy()
         Log.i(MYTAG,"ONLIFE DESTROY")
+        Log.i("SIP_FLOW"," Sip Fragment ONLIFE onDestroy,mCore= $mCore")
         if(mTimer!=null) mTimer.cancel()
         if(mCore!=null){
             mCore?.enableMic(true)
@@ -618,26 +693,58 @@ class SipFragment : Fragment() {
         if(mCall!=null) mCall=null
         if(mListener!=null) mListener=null
         mAudioManager?.isSpeakerphoneOn=false
-        mAudioManager?.setMode(AudioManager.MODE_NORMAL)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            mAudioManager?.abandonAudioFocusRequest(audioFocusRequest)
+
+        //release Audio resources
+        /*mAudioManager?.setMode(AudioManager.MODE_NORMAL)
+        if(audioFocusRequest!=null){
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+                mAudioManager?.abandonAudioFocusRequest(audioFocusRequest)
+            }else{
+                mAudioManager?.abandonAudioFocus(null)
+            }
+        }*/
+
+    }
+
+    private fun updateTimer(){
+        val timePassedSinceCallStarted=System.currentTimeMillis()-callStartTime
+        //val timePassedSinceCallStarted=3603000L
+        var allseconds = (timePassedSinceCallStarted / 1000)
+
+        //call lasts more or less than an hour formating is different
+        val minutes = allseconds / 60
+        if(minutes<60){
+            val seconds = allseconds % 60
+            Log.i("MTIMER","timePassed:$timePassedSinceCallStarted, allsecond $allseconds, minutes $minutes, seconds $seconds")
+            Log.i("MTIMER","timePassed:${String.format("%d:%02d", minutes, seconds)}")
+            binding.callTimerTextView.text=String.format("%d:%02d", minutes, seconds)
         }else{
-            mAudioManager?.abandonAudioFocus(null)
+            val timePassed=String.format("%02d:%02d:%02d",
+                TimeUnit.MILLISECONDS.toHours(timePassedSinceCallStarted),
+                TimeUnit.MILLISECONDS.toMinutes(timePassedSinceCallStarted) -
+                        TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(timePassedSinceCallStarted)),
+                TimeUnit.MILLISECONDS.toSeconds(timePassedSinceCallStarted) -
+                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timePassedSinceCallStarted)));
+            binding.callTimerTextView.text=timePassed
+            Log.i("MTIMER","timePassed: $timePassed")
         }
 
     }
 
-    private fun setAudioManagerInCallMode() {
+
+
+    /*private fun setAudioManagerInCallMode() {
         if (mAudioManager?.mode == AudioManager.MODE_IN_COMMUNICATION) {
             Log.w(MYTAG,"[Audio Manager] already in MODE_IN_COMMUNICATION, skipping...")
             return
         }
         Log.d(MYTAG,"[Audio Manager] Mode: MODE_IN_COMMUNICATION")
         mAudioManager?.mode = AudioManager.MODE_IN_COMMUNICATION
-    }
+    }*/
 
 
-    private fun requestAudioFocus() {
+    /*private fun requestAudioFocus() {
         if (!mAudioFocused) {
 
             var audioFocusReqResult:Int? = null
@@ -677,6 +784,6 @@ class SipFragment : Fragment() {
             }
 
         }
-    }
+    }*/
 
 }

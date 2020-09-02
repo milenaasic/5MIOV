@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
@@ -231,9 +232,9 @@ class MainActivity : AppCompatActivity() {
     override fun onRestart() {
 
        Log.i(MY_TAG, " Restart, saved state is ${mySavedInstanceState?.get(CURRENT_FRAGMENT)}")
-       if(navController.currentDestination?.id==R.id.sipFragment) {
+      /* if(navController.currentDestination?.id==R.id.sipFragment) {
            navController.navigateUp()
-       }
+       }*/
         super.onRestart()
     }
 
@@ -325,7 +326,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun setSipFragmentUI() {
         binding.toolbarMain.apply {
-            navigationIcon = null
+            //navigationIcon = null
+            navigationIcon=resources.getDrawable(R.drawable.new_logo_cropped, null)
             elevation = 0f
             title = resources.getString(R.string.empty_string)
 
@@ -487,6 +489,14 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
+    }
+
+
+    override fun onBackPressed() {
+        if(navController.currentDestination?.id==R.id.sipFragment) {
+            //do nothing
+            Toast.makeText(this,"Back button currently disabled",Toast.LENGTH_SHORT).show()
+        } else super.onBackPressed()
     }
 
 

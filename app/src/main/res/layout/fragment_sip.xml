@@ -145,7 +145,7 @@
             android:layout_width="80dp"
             android:layout_height="80dp"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="48dp"
 
             android:elevation="1dp"
             android:scaleType="center"
@@ -158,12 +158,23 @@
             app:layout_constraintEnd_toStartOf="@+id/sip_mic_Button"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/imageView3"
+            app:layout_constraintTop_toBottomOf="@id/callTimer_textView"
             app:maxImageSize="40dp"
             app:rippleColor="@color/colorPrimary"
             app:srcCompat="@drawable/ic_speaker_disabled" />
 
-
+        <TextView
+            android:id="@+id/callTimer_textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text=" "
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/imageView3"
+            tools:text="call duration" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

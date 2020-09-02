@@ -19,7 +19,7 @@ private val MYTAG="MY_SIPVIEWMODEL"
 
 class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : AndroidViewModel(application) {
     val TIMEOUT_IN_MILLIS=500L
-    val TIMEOUT_IN_MILLIS_NAVIGATE_BACK=1000L
+    val TIMEOUT_IN_MILLIS_NAVIGATE_BACK=2000L
 
     private val _timeout= MutableLiveData<Boolean>()
     val timeout:LiveData<Boolean>
