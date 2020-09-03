@@ -31,6 +31,7 @@ import java.util.concurrent.TimeUnit
 
 
 private val MYTAG="MY_Sip fragment"
+private val SERVER_LOG_TAG="SIP_Fragment"
 class SipFragment : Fragment() {
 
     private lateinit var binding:FragmentSipBinding
@@ -74,7 +75,6 @@ class SipFragment : Fragment() {
     }
 
     //Call timer
-    private val timerHandler: Handler = Handler(Looper.getMainLooper())
     private val callDurationTimer=Timer("Call Duration")
     private var callStartTime:Long=0L
     val callTimerRunnable = Runnable {
@@ -115,6 +115,7 @@ class SipFragment : Fragment() {
         args= SipFragmentArgs.fromBundle(requireArguments())
         setHasOptionsMenu(true)
         Log.i(MYTAG, "ONLIFE onCreate")
+        viewModel.logStateToMyServer(SERVER_LOG_TAG,"onCreate")
     }
 
     override fun onCreateView(
@@ -123,6 +124,7 @@ class SipFragment : Fragment() {
     ): View? {
         Log.i(MYTAG, "ONLIFE onCreateView")
         Log.i("SIP_FLOW"," Sip Fragment ONLIFE onCreateView")
+        viewModel.logStateToMyServer(SERVER_LOG_TAG,"onCreateView")
         binding= DataBindingUtil.inflate(inflater, R.layout.fragment_sip,container,false)
         binding.nametextView.text=args.contactName
 
@@ -182,6 +184,7 @@ class SipFragment : Fragment() {
             viewModel.navigateBack()
             Log.i(MYTAG," start navigate back function")
             Log.i("SIP_FLOW"," start navigate back function")
+            viewModel.logStateToMyServer(SERVER_LOG_TAG,"navigate back started")
         }
     }
 
@@ -190,6 +193,7 @@ class SipFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         Log.i(MYTAG, "ONLIFE onViewCreated")
         Log.i("SIP_FLOW"," Sip Fragment ONLIFE onViewCreated")
+        viewModel.logStateToMyServer(SERVER_LOG_TAG,"onViewCreated")
 
         viewModel.timeout.observe(viewLifecycleOwner, Observer {
             if(it){
@@ -306,7 +310,6 @@ class SipFragment : Fragment() {
 
 
     fun dispatchOnUIThread(r: Runnable) {
-
         sHandler.post(r)
     }
 
@@ -323,6 +326,7 @@ class SipFragment : Fragment() {
         Log.i(MYTAG, "ONLIFE START")
         Log.i("SIP_FLOW"," Sip Fragment ONLIFE onStart,mCore= $mCore")
         mCore?.enterForeground()
+        viewModel.logStateToMyServer(SERVER_LOG_TAG,"onStart,mCore= $mCore")
     }
 
 
@@ -330,6 +334,7 @@ class SipFragment : Fragment() {
         super.onResume()
         Log.i(MYTAG, "ONLIFE RESUME, mCore= $mCore")
         Log.i("SIP_FLOW"," Sip Fragment ONLIFE onResume,mCore= $mCore")
+        viewModel.logStateToMyServer(SERVER_LOG_TAG,"onResume,mCore= $mCore")
 
 
     }
@@ -338,6 +343,7 @@ class SipFragment : Fragment() {
         super.onPause()
         Log.i(MYTAG, "ONLIFE PAUSE,  mCore= $mCore")
         Log.i("SIP_FLOW"," Sip Fragment ONLIFE onPause,mCore= $mCore")
+        viewModel.logStateToMyServer(SERVER_LOG_TAG,"onPause,mCore= $mCore")
 
     }
 
@@ -345,6 +351,7 @@ class SipFragment : Fragment() {
         super.onStop()
         Log.i(MYTAG, "ONLIFE STOP,")
         Log.i("SIP_FLOW"," Sip Fragment ONLIFE onStop,mCore= $mCore")
+        viewModel.logStateToMyServer(SERVER_LOG_TAG,"onStop,mCore= $mCore")
         requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         if(wl.isHeld) wl.release()
         mCore?.enterBackground()
@@ -676,12 +683,14 @@ class SipFragment : Fragment() {
         viewModel.resetSipCredentials()
         Log.i(MYTAG,"ONLIFE DESTROY VIEW")
         Log.i("SIP_FLOW"," Sip Fragment ONLIFE onDestroyView,mCore= $mCore")
+        viewModel.logStateToMyServer(SERVER_LOG_TAG,"onDestroyView,mCore= $mCore")
     }
 
     override fun onDestroy() {
         super.onDestroy()
         Log.i(MYTAG,"ONLIFE DESTROY")
         Log.i("SIP_FLOW"," Sip Fragment ONLIFE onDestroy,mCore= $mCore")
+        viewModel.logStateToMyServer(SERVER_LOG_TAG,"onDestroy,mCore= $mCore")
         if(mTimer!=null) mTimer.cancel()
         if(mCore!=null){
             mCore?.enableMic(true)
@@ -716,7 +725,6 @@ class SipFragment : Fragment() {
         val minutes = allseconds / 60
         if(minutes<60){
             val seconds = allseconds % 60
-            Log.i("MTIMER","timePassed:$timePassedSinceCallStarted, allsecond $allseconds, minutes $minutes, seconds $seconds")
             Log.i("MTIMER","timePassed:${String.format("%d:%02d", minutes, seconds)}")
             binding.callTimerTextView.text=String.format("%d:%02d", minutes, seconds)
         }else{

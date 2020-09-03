@@ -139,7 +139,10 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
     }
 
 
+    fun logStateToServer(process:String,state:String){
+        myRepository.logStateToServer(process = process, state = state)
 
+    }
 
 
 

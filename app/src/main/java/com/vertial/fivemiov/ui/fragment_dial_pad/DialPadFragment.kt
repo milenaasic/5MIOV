@@ -195,6 +195,7 @@ class DialPadFragment : Fragment() {
         viewModel.userData.observe(viewLifecycleOwner, Observer {user->
            if(user!=null) {
                Log.i(MYTAG, " user from DB: $user")
+               viewModel.logStateToMyServer("DialPad_Fragment","observe user data from DB: $user")
                if (user.userEmail == EMPTY_EMAIL) binding.setEmailAndPassButton.visibility =
                    View.VISIBLE
                else binding.setEmailAndPassButton.visibility = View.GONE
@@ -418,7 +419,10 @@ class DialPadFragment : Fragment() {
                 startActivity(intentToCall)
             } else showSnackBar(resources.getString(R.string.unable_to_make_call))
 
-        } else showSnackBar(resources.getString(R.string.not_valid_phone_number))
+        } else {
+                showSnackBar(resources.getString(R.string.not_valid_phone_number))
+                viewModel.logStateToMyServer("DialPad Fragment","user typed number $phone , which is not valid phone number")
+        }
 
     }
 

@@ -253,6 +253,7 @@ class MainFragment : Fragment(){
         }
         catch (t:Throwable){
             Log.i(MYTAG, "can not get color as string, ${t.message}")
+            viewModel.logStateToServer("Main_Fragment (Contacts List)","getColorForHighlightLetters() exception ${t.message} ")
         }
         return colorStr
 

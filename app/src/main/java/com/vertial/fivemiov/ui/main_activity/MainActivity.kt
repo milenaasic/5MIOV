@@ -38,6 +38,7 @@ import org.acra.ACRA
 
 
 private const val MY_TAG="MY_MAIN_ACTIVITY"
+private const val LOG_STATE_TO_SERVER_TAG="Main_Activity"
 class MainActivity : AppCompatActivity() {
 
 
@@ -166,6 +167,7 @@ class MainActivity : AppCompatActivity() {
             //crash report custom data
            ACRA.getErrorReporter().putCustomData("MAIN_ACTIVITY_observe_user_data_phone",user.userPhone)
            ACRA.getErrorReporter().putCustomData("MAIN_ACTIVITY_observe_user_data_token",user.userToken)
+           viewModel.logStateToServer(LOG_STATE_TO_SERVER_TAG,"MAIN_ACTIVITY_observe_user_data: phone ${user.userPhone},token ${user.userToken}" )
 
             if(user!=null){
                 if (user.userPhone==EMPTY_PHONE_NUMBER || user.userPhone.isEmpty() || user.userToken== EMPTY_TOKEN || user.userToken.isEmpty()) {
@@ -250,8 +252,10 @@ class MainActivity : AppCompatActivity() {
 
         if (requestCode == MY_UPDATE_REQUEST_CODE) {
             Log.i(MY_TAG, "Update flow Result code: $resultCode")
+            viewModel.logStateToServer(LOG_STATE_TO_SERVER_TAG,"Automatic Update resultCode :$resultCode")
             if (resultCode != RESULT_OK) {
                 Log.i(MY_TAG, "Update flow failed! Result code: $resultCode")
+
                 // If the update is cancelled or fails,
                 // you can request to start the update again.
             }
@@ -447,6 +451,7 @@ class MainActivity : AppCompatActivity() {
     private fun startInAppUpdate(){
         //IN APP UPDATE
         // Creates instance of the manager.
+        viewModel.logStateToServer(LOG_STATE_TO_SERVER_TAG,"startInAppUpdate")
         appUpdateManager = AppUpdateManagerFactory.create(this)
         // Returns an intent object that you use to check for an update.
         val appUpdateInfoTask = appUpdateManager.appUpdateInfo
@@ -457,6 +462,7 @@ class MainActivity : AppCompatActivity() {
                 && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)
             ) {
                 // Request the update
+                viewModel.logStateToServer(LOG_STATE_TO_SERVER_TAG,"startInAppUpdate, UpdateAvailability.UPDATE_AVAILABLE")
                 appUpdateManager.startUpdateFlowForResult(
                     // Pass the intent that is returned by 'getAppUpdateInfo()'.
                     appUpdateInfo,

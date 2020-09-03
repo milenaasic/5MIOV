@@ -95,6 +95,9 @@ class MainFragmentViewModel(val repoContacts: RepoContacts,application: Applicat
         }
     }
 
+     fun logStateToServer(process:String, state:String){
+        repoContacts.logStateToServer(process = process,state = state)
+    }
 
 
 }
