@@ -116,14 +116,14 @@ class DialPadFragment : Fragment() {
                         val phoneNumber=binding.editTextEnterNumber.text.toString()
                         val normPhoneNumber=PhoneNumberUtils.normalizeNumber(phoneNumber)
                         if(checkForPermissions()) {
-                            if(normPhoneNumber.isPhoneNumberValid()) {
+                            if(isNumberEligibleForDial(normPhoneNumber)) {
                                 viewModel.insertCallIntoDB(RecentCall(recentCallName = phoneNumber,recentCallPhone = phoneNumber,recentCallTime = System.currentTimeMillis()))
                                 findNavController().navigate(DialPadFragmentDirections.actionDialPadFragmentToSipFragment(normPhoneNumber,normPhoneNumber))
                             }
                             else {
-                                showSnackBar(resources.getString(R.string.not_valid_phone_number))
+
                                 viewModel.logStateToMyServer("buttonSipCallDialpadFrag.setOnClickListener",
-                                    "normPhoneNumber.isPhoneNumberValid(),entered phone $phoneNumber, normalized $normPhoneNumber")
+                                    "phone number not valid for call,entered phone $phoneNumber, normalized $normPhoneNumber")
                                 enableCallButtons(true)
                             }
                         }
@@ -142,7 +142,7 @@ class DialPadFragment : Fragment() {
                  val start=binding.editTextEnterNumber.selectionStart
                  val end=binding.editTextEnterNumber.selectionEnd
                  if(start==end)
-                     Log.i(MYTAG, " after text changed, start $start, end $end")
+                    // Log.i(MYTAG, " after text changed, start $start, end $end")
                  currentCursorPosition=start
               } }
 
@@ -155,7 +155,7 @@ class DialPadFragment : Fragment() {
                   val start=binding.editTextEnterNumber.selectionStart
                   val end=binding.editTextEnterNumber.selectionEnd
                   if(start==end)
-                      Log.i(MYTAG, " onclicklistener, start $start, end $end")
+                      //Log.i(MYTAG, " onclicklistener, start $start, end $end")
                   currentCursorPosition=start
               }
 
@@ -404,24 +404,46 @@ class DialPadFragment : Fragment() {
 
     private fun makePhoneCall() {
         val enteredPhone=binding.editTextEnterNumber.text.toString()
-        val phone = PhoneNumberUtils.normalizeNumber(enteredPhone)
+        val normphone = PhoneNumberUtils.normalizeNumber(enteredPhone)
+        Log.i(MYTAG,"phone $normphone")
+        normphone?.let { phone ->
 
-        if (phone.isPhoneNumberValid()) {
+            if (isNumberEligibleForDial(phone)) {
+                val phoneWithHash = phone.plus("#")
+                Log.i(MYTAG, "phoneWithHash $phoneWithHash")
 
-            val intentToCall = Intent(Intent.ACTION_CALL).apply {
-                setData(Uri.parse(resources.getString(R.string.prenumber_call,myPrenumber,phone)))
-                Log.i(MYTAG, "uri is ${resources.getString(R.string.prenumber_call,myPrenumber,phone)} ")
-                viewModel.logStateToMyServer("SIM Card Call from Dialpad","calling number: ${resources.getString(R.string.prenumber_call,myPrenumber,phone)}")
+                val intentToCall = Intent(Intent.ACTION_CALL).apply {
+                    val callingNumber = resources.getString(
+                        R.string.prenumber_call,
+                        myPrenumber,
+                        Uri.encode(phoneWithHash)
+                    )
+                    setData(Uri.parse(callingNumber))
+                    viewModel.logStateToMyServer(
+                        "SIM Card Call from Dialpad",
+                        "calling number: $callingNumber"
+                    )
+                    Log.i(MYTAG, "saljem na dial $callingNumber")
+                }
+
+
+                if (intentToCall.resolveActivity(requireActivity().packageManager) != null) {
+                    viewModel.insertCallIntoDB(
+                        RecentCall(
+                            recentCallName = enteredPhone,
+                            recentCallPhone = enteredPhone,
+                            recentCallTime = System.currentTimeMillis()
+                        )
+                    )
+                    startActivity(intentToCall)
+                } else showSnackBar(resources.getString(R.string.unable_to_make_call))
+
+            } else {
+                viewModel.logStateToMyServer(
+                    "DialPad Fragment",
+                    "user typed number $phone , which is not valid phone number"
+                )
             }
-
-            if (intentToCall.resolveActivity(requireActivity().packageManager) != null) {
-                viewModel.insertCallIntoDB(RecentCall(recentCallName = enteredPhone,recentCallPhone = enteredPhone,recentCallTime = System.currentTimeMillis()))
-                startActivity(intentToCall)
-            } else showSnackBar(resources.getString(R.string.unable_to_make_call))
-
-        } else {
-                showSnackBar(resources.getString(R.string.not_valid_phone_number))
-                viewModel.logStateToMyServer("DialPad Fragment","user typed number $phone , which is not valid phone number")
         }
 
     }
@@ -455,7 +477,6 @@ class DialPadFragment : Fragment() {
                 TypedValue.complexToDimensionPixelSize(typedValue.data, resources.displayMetrics)
         }
 
-        Log.i(MYTAG,"density is ${resources.displayMetrics.density}, a actionbar height $actionBarHeight")
 
         val dialPadFragHeight=screenHeight-actionBarHeight-statusBarHeightDP*resources.displayMetrics.density
 
@@ -469,6 +490,22 @@ class DialPadFragment : Fragment() {
         Snackbar.make(binding.coordLayDialpadFragment,s, Snackbar.LENGTH_INDEFINITE).setAction("OK"){}.show()
     }
 
+    private fun isNumberEligibleForDial(phoneNumber:String):Boolean{
+        var isNumberEligible=false
 
+        if(!phoneNumber.isPhoneNumberValid()) showSnackBar(resources.getString(R.string.not_valid_phone_number))
+        else {
+            if (phoneNumber.startsWith("0")) showSnackBar(resources.getString(R.string.must_be_international_number))
+            else {
+                if (phoneNumber.startsWith("234") || phoneNumber.startsWith("+234")) showSnackBar(resources.getString(R.string.local_calls_not_allowed))
+                else isNumberEligible = true
+
+            }
+
+        }
+
+        return isNumberEligible
+
+    }
 
 }

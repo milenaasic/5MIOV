@@ -23,10 +23,10 @@ class SMSAuthorizationBroadcastReceiver : BroadcastReceiver() {
         _receivedSMSMessage.value=null
     }
 
-    companion object{
+   /* companion object{
         const val timeout="TIMEOUT"
 
-    }
+    }*/
 
 
     override fun onReceive(context: Context?, intent: Intent) {
@@ -49,7 +49,7 @@ class SMSAuthorizationBroadcastReceiver : BroadcastReceiver() {
 
                 CommonStatusCodes.TIMEOUT -> {
                     Log.i(MYTAG," on receive is TIMEOUT")
-                    _receivedSMSMessage.value= timeout
+                   // _receivedSMSMessage.value= timeout
 
                 }
             }

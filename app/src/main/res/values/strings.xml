@@ -58,7 +58,7 @@
 
     <!-- string sa formatiranjem-->
     <string name="nb_of_contacts_found">%1$d found</string>
-    <string name="prenumber_call">tel:%1$s,%2$s#</string>
+    <string name="prenumber_call">tel:%1$s,%2$s</string>
     <string name="phone_number_format">Number %1$s</string>
     <string name="add_plus_before_phone">+%1$s</string>
     <string name="current_credit">Current credit %1$s %2$s</string>
@@ -82,6 +82,8 @@
     <string name="something_went_wrong">Something went wrong</string>
     <string name="VOIP_not_supported">Unfortunately your current system does not support iOV NET calls."</string>
     <string name="no_SIP_permission">No permission to make VOIP call!</string>
+    <string name="must_be_international_number">Must be international number</string>
+    <string name="local_calls_not_allowed">Local calls not allowed!</string>
 
 
     <!-- set account dialog-->

@@ -121,7 +121,6 @@ class RegistrationFragment : Fragment() {
                     response.success == true && response.phoneNumberAlreadyAssigned == false -> {
                         showToast(response.userMessage)
                         activityViewModel.resetRegistrationNetSuccess()
-                       //activityViewModel.startSMSRetreiverFunction()
                         findNavController().navigate(RegistrationFragmentDirections.actionRegistrationFragmentToAuthorizationFragment())
                     }
 

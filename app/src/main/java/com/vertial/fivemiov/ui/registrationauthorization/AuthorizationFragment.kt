@@ -68,7 +68,7 @@ class AuthorizationFragment : Fragment() {
                 // If phone ringing
                 if (state == TelephonyManager.CALL_STATE_RINGING) {
                     Log.i(MYTAG, "ringing $state,  $incomingNumber")
-                    Toast.makeText(requireContext(), "Phone is Ringing", Toast.LENGTH_LONG).show()
+                   // Toast.makeText(requireContext(), "Phone is Ringing", Toast.LENGTH_LONG).show()
                     // call create route
                     if(incomingNumber.equals(OUR_VERIFICATION_NUMBER)) activityViewModel.submitButtonClicked(VERIFIED_BY_CALL)
                 }

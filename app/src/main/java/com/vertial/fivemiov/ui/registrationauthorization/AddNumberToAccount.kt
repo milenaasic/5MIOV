@@ -130,7 +130,6 @@ class AddNumberToAccount : Fragment() {
                     response.success == true -> {
                         showToast(response.usermessage)
                         activityViewModel?.resetAddNumberToAccountNetSuccess()
-                       // activityViewModel?.startSMSRetreiverFunction()
                         findNavController().navigate(AddNumberToAccountDirections.actionAddNumberToAccountToAuthorizationFragment())
                     }
 

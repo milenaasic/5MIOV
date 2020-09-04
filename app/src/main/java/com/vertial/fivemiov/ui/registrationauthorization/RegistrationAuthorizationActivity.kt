@@ -127,6 +127,7 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
              if(it!=null) {
                  if (it) {
                      startMySMSRetreiver()
+
                      viewModel.smsRetreiverStarted()
                  }
              }
@@ -170,22 +171,25 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
        val filter = IntentFilter().apply {
             addAction(SmsRetriever.SMS_RETRIEVED_ACTION)
         }
-        application.registerReceiver(smsBroadcastReceiver, filter)
+        registerReceiver(smsBroadcastReceiver, filter)
 
     }
 
     private fun startMySMSRetreiver(){
-        Log.i(MYTAG,"  entered function start MySMSReceiver")
+
+        Log.i("MY_SMSAuthBroadcastAct","  entered function start MySMSReceiver")
+        Log.i("MY_SMSAuthBroadcastAct","  entered function start MySMSReceiver")
         val client = SmsRetriever.getClient(this)
         val task: Task<Void> = client.startSmsRetriever()
+        Log.i("MY_SMSAuthBroadcastAct","  client $client, $task")
 
         task.addOnSuccessListener {
-            Log.i(MYTAG,"  Successfully started retriever, expect broadcast intent")
+            Log.i("MY_SMSAuthBroadcastAct","  Successfully started retriever, expect broadcast intent")
             // Successfully started retriever, expect broadcast intent
         }
 
         task.addOnFailureListener {
-            Log.i(MYTAG,"  SMS  retriever failure, ${it.message}")
+            Log.i("MY_SMSAuthBroadcastAct","  SMS  retriever failure, ${it.message}")
             // Failed to start retriever, inspect Exception for more details
         }
 
@@ -196,6 +200,7 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         //application.unregisterReceiver(smsBroadcastReceiver)
+        unregisterReceiver(smsBroadcastReceiver)
          super.onDestroy()
         Log.i(MYTAG,"On Destroy")
 

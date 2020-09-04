@@ -53,6 +53,11 @@ fun String.isPhoneNumberValid():Boolean{
 
 }
 
+fun String.isInternationalPhoneNumber():Boolean{
+
+    return true
+}
+
 fun String.isPasswordValid():Boolean{
 
     val passPattern="^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[*.!@$%^&(){}:;<>,?/~_+=|'\"-]).{8,32}$"
@@ -128,24 +133,4 @@ fun formatTimeFromMillis(mytimeInMillis: Long): String {
     return df.format(calendar.time)
 }
 
- /*fun PackageInfo.getMobAppVersion():String{
-
-    var myversionName=""
-    var versionCode=-1L
-
-    try {
-        //val packageInfo: PackageInfo = packageManager.getPackageInfo(requireActivity().packageName, 0);
-        myversionName = this.versionName
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            versionCode=this.longVersionCode
-        }else{
-            versionCode= this.versionCode.toLong()
-
-        }
-    } catch ( e:Throwable) {
-        e.printStackTrace();
-    }
-
-    return myversionName
-}*/
 

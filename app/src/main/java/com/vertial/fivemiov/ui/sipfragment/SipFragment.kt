@@ -115,7 +115,7 @@ class SipFragment : Fragment() {
         args= SipFragmentArgs.fromBundle(requireArguments())
         setHasOptionsMenu(true)
         Log.i(MYTAG, "ONLIFE onCreate")
-        viewModel.logStateToMyServer(SERVER_LOG_TAG,"onCreate")
+
     }
 
     override fun onCreateView(
@@ -124,7 +124,6 @@ class SipFragment : Fragment() {
     ): View? {
         Log.i(MYTAG, "ONLIFE onCreateView")
         Log.i("SIP_FLOW"," Sip Fragment ONLIFE onCreateView")
-        viewModel.logStateToMyServer(SERVER_LOG_TAG,"onCreateView")
         binding= DataBindingUtil.inflate(inflater, R.layout.fragment_sip,container,false)
         binding.nametextView.text=args.contactName
 

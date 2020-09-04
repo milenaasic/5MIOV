@@ -119,7 +119,6 @@ class NumberExistsInDatabase : Fragment() {
                     response.success==true->{
                             showToast(response.userMessage)
                             activityViewModel?.resetNmbExistsInDB_VerifyAccount_NetSuccess()
-                            //activityViewModel?.startSMSRetreiverFunction()
                             findNavController().navigate(NumberExistsInDatabaseDirections.actionNumberExistsInDatabaseToAuthorizationFragment())
                     }
                     response.success==false->{
@@ -146,12 +145,23 @@ class NumberExistsInDatabase : Fragment() {
 
         activityViewModel?.nmbExistsInDB_NoAccountSuccess?.observe(viewLifecycleOwner, Observer {response->
             if(response!=null) {
+                when{
+                    response.success==true->{
+                        showToast(response.userMessage)
+                        activityViewModel?.resetNmbExistsInDB_NOAccount_NetSuccess()
+                        findNavController().navigate(NumberExistsInDatabaseDirections.actionNumberExistsInDatabaseToAuthorizationFragment())
+                    }
+                    response.success==false->{
+                        showSnackBar(response.userMessage)
+                        activityViewModel?.resetNmbExistsInDB_NOAccount_NetSuccess()
+
+                    }
+                }
+
                 binding.nmbExistsSubmitButton.isEnabled = true
                 binding.dontHaveAccountButton.isEnabled = true
-                activityViewModel?.resetNmbExistsInDB_NOAccount_NetSuccess()
                 showProgressBar(false)
-                //activityViewModel?.startSMSRetreiverFunction()
-                findNavController().navigate(NumberExistsInDatabaseDirections.actionNumberExistsInDatabaseToAuthorizationFragment())
+
             }
         })
 
