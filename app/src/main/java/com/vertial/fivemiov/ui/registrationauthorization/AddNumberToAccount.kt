@@ -225,7 +225,7 @@ class AddNumberToAccount : Fragment() {
                     DialogInterface.OnClickListener { _, id ->
                         // sign in the user ...
                         startAddNumberToAccount(phone,email,password)
-                        activityViewModel?.startSMSRetreiverFunction()
+                        //activityViewModel?.startSMSRetreiverFunction()
                     })
                 .setNegativeButton(resources.getString(R.string.terms_of_use_cancel),
                     DialogInterface.OnClickListener { dialog, _ ->

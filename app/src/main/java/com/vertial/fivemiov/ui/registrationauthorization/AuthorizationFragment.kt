@@ -41,7 +41,9 @@ class AuthorizationFragment : Fragment() {
     private lateinit var telephonyManager:TelephonyManager
     private lateinit var callStateListener: PhoneStateListener
     private val VERIFIED_BY_CALL="verifiedByCall"
-    private val OUR_VERIFICATION_NUMBER="+018888420"
+    private val OUR_VERIFICATION_NUMBER_1="018888420"
+    private val OUR_VERIFICATION_NUMBER_2="+23418888420"
+
 
     companion object{
         val MY_PERMISSIONS_REQUEST_READ_PHONE_STATE_and_READ_CALL_LOG=20
@@ -70,7 +72,7 @@ class AuthorizationFragment : Fragment() {
                     Log.i(MYTAG, "ringing $state,  $incomingNumber")
                    // Toast.makeText(requireContext(), "Phone is Ringing", Toast.LENGTH_LONG).show()
                     // call create route
-                    if(incomingNumber.equals(OUR_VERIFICATION_NUMBER)) activityViewModel.submitButtonClicked(VERIFIED_BY_CALL)
+                    if(incomingNumber.equals(OUR_VERIFICATION_NUMBER_1) || incomingNumber.equals(OUR_VERIFICATION_NUMBER_2) ) activityViewModel.submitButtonClicked(VERIFIED_BY_CALL)
                 }
                 // If incoming call received
                 if (state == TelephonyManager.CALL_STATE_OFFHOOK) {
@@ -124,12 +126,14 @@ class AuthorizationFragment : Fragment() {
             binding.authorizationRootLayout.requestFocus()
             enableDisableButtons(false)
 
-            if(checkForPermissions()){
+            showProgressBar(true)
+            verifyBySMS()
+            activityViewModel.startSMSRetreiverFunction()
+
+           /* if(checkForPermissions()){
                     showProgressBar(true)
-                    verifyByCallExResend()
-            }
-
-
+                    verifyBySMS()
+            }*/
 
         }
 
@@ -204,7 +208,7 @@ class AuthorizationFragment : Fragment() {
 
     }
 
-    private fun verifyByCallExResend(){
+    private fun verifyBySMS(){
         //resending sms via registration route
         Log.i(MYTAG,"call verification button (ex Resend) ${activityViewModel.enteredPhoneNumber}, ${activityViewModel.enteredEmail}, ${activityViewModel.enteredPassword}, ${activityViewModel.signInParameter}")
         when{
@@ -313,7 +317,7 @@ class AuthorizationFragment : Fragment() {
 
                     if(grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED){
                         showProgressBar(true)
-                        verifyByCallExResend()
+                        verifyBySMS()
 
                     }else {
                         showSnackBar("Unable to verify account by phone call - permissions not granted")

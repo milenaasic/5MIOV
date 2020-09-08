@@ -1,7 +1,9 @@
 package com.vertial.fivemiov.ui.registrationauthorization
 
+import android.Manifest
 import android.app.Activity
 import android.content.DialogInterface
+import android.content.pm.PackageManager
 import android.graphics.text.LineBreaker.JUSTIFICATION_MODE_INTER_WORD
 import android.os.Build
 import android.os.Bundle
@@ -34,6 +36,7 @@ class RegistrationFragment : Fragment() {
 
     private lateinit var binding: FragmentRegistrationBinding
     private lateinit var activityViewModel: RegAuthActivityViewModel
+    val MY_PERMISSIONS_REGISTRATION_READ_PHONE_STATE_and_READ_CALL_LOG=30
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -52,6 +55,7 @@ class RegistrationFragment : Fragment() {
 
             hidekeyboard()
             binding.rootRegContLayout.requestFocus()
+            if(!checkForPermissions()) return@setOnClickListener
             if (!isOnline(requireActivity().application)) {
                 showSnackBar(resources.getString(R.string.no_internet))
 
@@ -70,6 +74,9 @@ class RegistrationFragment : Fragment() {
         }
 
         binding.addNumToAccountButton.setOnClickListener {
+
+            if(!checkForPermissions()) return@setOnClickListener
+
             if(!binding.phoneNumberEditText.text.isNullOrBlank() && !binding.phoneNumberEditText.text.isNullOrEmpty() ) {
                     activityViewModel.enteredPhoneNumber=binding.phoneNumberEditText.text.toString()
             }
@@ -97,7 +104,7 @@ class RegistrationFragment : Fragment() {
             }
         }
 
-
+        checkForPermissions()
         return binding.root
     }
 
@@ -202,7 +209,7 @@ class RegistrationFragment : Fragment() {
                     DialogInterface.OnClickListener { dialog, id ->
                         // sign in the user ...
                        startRegistraion(enteredPhoneNumber)
-                        activityViewModel.startSMSRetreiverFunction()
+                        //activityViewModel.startSMSRetreiverFunction()
                     })
                 .setNegativeButton(resources.getString(R.string.terms_of_use_cancel),
                     DialogInterface.OnClickListener { dialog, id ->
@@ -227,6 +234,61 @@ class RegistrationFragment : Fragment() {
 
 
     }
+
+    private fun checkForPermissions():Boolean{
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true
+        else {
+            if (requireActivity().checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED ||
+                requireActivity().checkSelfPermission(Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED
+
+            ) {
+                requestPermissions(arrayOf(
+                    Manifest.permission.READ_PHONE_STATE,
+                    Manifest.permission.READ_CALL_LOG),
+                    MY_PERMISSIONS_REGISTRATION_READ_PHONE_STATE_and_READ_CALL_LOG
+                )
+                return false
+            } else return true
+        }
+
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+
+        when (requestCode) {
+            MY_PERMISSIONS_REGISTRATION_READ_PHONE_STATE_and_READ_CALL_LOG -> {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.isNotEmpty()) {
+
+                    if(grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED){
+
+
+                    }else {
+                        showSnackBar("Unable to verify account by phone call - permissions not granted")
+
+                    }
+
+                    //if (grantResults[0] != PackageManager.PERMISSION_GRANTED) showSnackBar("Need READ PHONE STATE permission to verify your account by phone call")
+
+                    //if (grantResults[1] != PackageManager.PERMISSION_GRANTED) showSnackBar("Need READ CALL LOG permission to verify your account by phone call")
+
+                }
+
+                return
+            }
+
+            else -> {  }
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
+
+
+
 }
 
 

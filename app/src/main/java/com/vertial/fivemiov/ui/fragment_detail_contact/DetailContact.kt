@@ -46,6 +46,7 @@ import com.vertial.fivemiov.ui.fragment_main.MainFragment
 import com.vertial.fivemiov.ui.myapplication.MyApplication
 import com.vertial.fivemiov.utils.isPhoneNumberValid
 import com.vertial.fivemiov.utils.isVOIPsupported
+import com.vertial.fivemiov.utils.removePlus
 import java.util.*
 import java.util.Locale.US
 
@@ -127,36 +128,55 @@ class DetailContact : Fragment() {
 
 
     fun networkAvailabiltyChanged() {
-        Log.i(MYTAG,"funkcija networkAvailabiltyChanged ")
         phoneAdapter.notifyDataSetChanged()
     }
 
 
     fun makePrenumberPhoneCall(myphone:String){
 
+       val normphone = PhoneNumberUtils.normalizeNumber(myphone)?.removePlus()
+        if(normphone==null){
+            viewModel.logStateToMyServer(
+                "SIM Card Call from Contacs",
+                "normalized number to call is NULL: $normphone"
+            )
+        }
+        normphone?.let {phone->
 
-       val phone = PhoneNumberUtils.normalizeNumber(myphone)
+            if (phone.isPhoneNumberValid()) {
+                val phoneWithHash = phone.plus("#")
 
-       if (phone.isPhoneNumberValid()) {
-            val phoneWithHash=phone.plus("#")
+                val intentToCall = Intent(Intent.ACTION_CALL).apply {
+                    val callingNumber = resources.getString(
+                        R.string.prenumber_call,
+                        myPrefixNumber,
+                        Uri.encode(phoneWithHash)
+                    )
 
-           val intentToCall = Intent(Intent.ACTION_CALL).apply {
-               val callingNumber=resources.getString(R.string.prenumber_call,myPrefixNumber,Uri.encode(phoneWithHash))
+                    setData(Uri.parse(callingNumber))
 
-               setData(Uri.parse(callingNumber))
+                    Log.i(MYTAG, "sim phone call uri :$callingNumber")
 
-               Log.i(MYTAG,"sim phone call uri :$callingNumber} ")
+                    viewModel.logStateToMyServer(
+                        "SIM Card Call from Contacs",
+                        "calling number:$callingNumber"
+                    )
 
-               viewModel.logStateToMyServer("SIM Card Call from Contacs", "calling number $callingNumber")
+                }
 
-           }
+                if (intentToCall.resolveActivity(requireActivity().packageManager) != null) {
+                    viewModel.insertCallIntoDB(
+                        RecentCall(
+                            recentCallName = args.displayName,
+                            recentCallPhone = myphone,
+                            recentCallTime = System.currentTimeMillis()
+                        )
+                    )
+                    startActivity(intentToCall)
+                } else showSnackBar(resources.getString(R.string.unable_to_make_call))
 
-           if (intentToCall.resolveActivity(requireActivity().packageManager) != null) {
-                viewModel.insertCallIntoDB(RecentCall(recentCallName = args.displayName,recentCallPhone = myphone,recentCallTime = System.currentTimeMillis()))
-               startActivity(intentToCall)
-           } else showSnackBar(resources.getString(R.string.unable_to_make_call))
-
-       } else showSnackBar(resources.getString(R.string.not_valid_phone_number))
+            } else showSnackBar(resources.getString(R.string.not_valid_phone_number))
+        }
 
 
    }

@@ -404,11 +404,18 @@ class DialPadFragment : Fragment() {
 
     private fun makePhoneCall() {
         val enteredPhone=binding.editTextEnterNumber.text.toString()
-        val normphone = PhoneNumberUtils.normalizeNumber(enteredPhone)
+        val normphone = PhoneNumberUtils.normalizeNumber(enteredPhone)?.removePlus()
+        if(normphone==null){
+            viewModel.logStateToMyServer(
+                "SIM Card Call from Contacs",
+                "normalized number to call is NULL: $normphone"
+            )
+        }
         Log.i(MYTAG,"phone $normphone")
         normphone?.let { phone ->
 
             if (isNumberEligibleForDial(phone)) {
+
                 val phoneWithHash = phone.plus("#")
                 Log.i(MYTAG, "phoneWithHash $phoneWithHash")
 
@@ -423,7 +430,7 @@ class DialPadFragment : Fragment() {
                         "SIM Card Call from Dialpad",
                         "calling number: $callingNumber"
                     )
-                    Log.i(MYTAG, "saljem na dial $callingNumber")
+                    Log.i(MYTAG, "to dial $callingNumber")
                 }
 
 

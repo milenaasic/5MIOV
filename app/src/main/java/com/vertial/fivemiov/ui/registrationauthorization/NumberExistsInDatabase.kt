@@ -55,7 +55,7 @@ class NumberExistsInDatabase : Fragment() {
                     binding.nmbExistsEmailEditText.text.toString(),
                     binding.nmbExistsPassEditText.text.toString()
                 )
-                activityViewModel?.startSMSRetreiverFunction()
+                //activityViewModel?.startSMSRetreiverFunction()
             }else{
                 it.isEnabled=true
                 binding.dontHaveAccountButton.isEnabled=true
@@ -86,7 +86,7 @@ class NumberExistsInDatabase : Fragment() {
 
             }
             activityViewModel?.numberExistsInDb_NoAccount()
-            activityViewModel?.startSMSRetreiverFunction()
+            //activityViewModel?.startSMSRetreiverFunction()
 
          }
 

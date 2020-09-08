@@ -116,6 +116,7 @@ class SipFragment : Fragment() {
         setHasOptionsMenu(true)
         Log.i(MYTAG, "ONLIFE onCreate")
 
+
     }
 
     override fun onCreateView(
@@ -219,6 +220,7 @@ class SipFragment : Fragment() {
                     viewModel.resetgetSipAccountCredentialsNetSuccess()
                 }else {
                         showToast(resources.getString(R.string.something_went_wrong))
+                        viewModel.resetgetSipAccountCredentialsNetSuccess()
                         viewModel.navigateBack()
                         Log.i(MYTAG,"get sip credentials net success, but response is $response")
                 }
