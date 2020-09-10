@@ -151,9 +151,13 @@ class SipFragment : Fragment() {
                 Log.i("SIP_FLOW"," call end button clicked")
 
                 val currentcall=mCore?.currentCall
+                Log.i("SIP_FLOW"," Sip Fragment currentCall : $currentcall")
                 viewModel.logStateToMyServer("SIP:END BUTTON CLICKED","current call: ${mCore?.currentCall}")
-                if (currentcall != null) currentcall.terminate()
-                else startNavigation()
+                if (currentcall != null) {
+                        currentcall.terminate()
+                } else {
+                        startNavigation()
+                }
 
             }
 
@@ -179,6 +183,7 @@ class SipFragment : Fragment() {
     }
 
     private fun startNavigation() {
+        viewModel.logStateToMyServer(SERVER_LOG_TAG,"function: startNavigation(),navigationUpInProcess:$navigationUpInProcess")
         if(!navigationUpInProcess) {
             navigationUpInProcess=true
             viewModel.navigateBack()
@@ -438,14 +443,14 @@ class SipFragment : Fragment() {
                     }
 
                     RegistrationState.Failed->{
+                        viewModel.logStateToMyServer("SIP:onRegistrationStateChanged"," $cstate,$message, isAlreadyRegisteredOnce=$isAlreadyRegisteredOnce")
                         if(!isAlreadyRegisteredOnce) {
                             updateCallStatus("$message")
                             showToast("$message")
+                            startNavigation()
                         }
                         Log.i(MYTAG," registration state FAILED,$message,$cstate ")
-                        viewModel.logStateToMyServer("SIP:onRegistrationStateChanged"," $cstate,$message")
 
-                        viewModel.navigateUp
                         Log.i("SIP_FLOW"," registration  $message,$cstate")
                     }
 
