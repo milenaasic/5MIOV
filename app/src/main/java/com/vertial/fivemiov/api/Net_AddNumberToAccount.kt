@@ -36,7 +36,11 @@ data class NetResponse_AddNumberToAccount (
     val code:Int,
 
     @Json(name="verificationCallerId")
-    val verificationCallerId:String
+    val verificationCallerId:String,
+
+    @Json(name="callVerificationEnabled")
+    val callVerificationEnabled:Boolean
+
 
 )
 

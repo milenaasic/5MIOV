@@ -160,7 +160,7 @@ class AuthorizationFragment : Fragment() {
                 activityViewModel.resetAuthorization_NetSuccess()
                 showProgressBar(false)
                 enableDisableButtons(true)
-                response.userMessage.let { showToast(it) }
+                //response.userMessage.let { showToast(it) }
 
             }
         })

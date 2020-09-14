@@ -1,8 +1,10 @@
 package com.vertial.fivemiov.ui.registrationauthorization
 
 
+import android.Manifest
 import android.app.Activity
 import android.content.DialogInterface
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.text.Layout
@@ -24,6 +26,7 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 
 import com.vertial.fivemiov.R
+import com.vertial.fivemiov.api.NetResponse_AddNumberToAccount
 import com.vertial.fivemiov.databinding.FragmentAddNumberToAccountBinding
 import com.vertial.fivemiov.utils.*
 
@@ -32,6 +35,8 @@ class AddNumberToAccount : Fragment() {
 
     private lateinit var binding:FragmentAddNumberToAccountBinding
     private var activityViewModel:RegAuthActivityViewModel?=null
+    private lateinit var netAddNumberToAccountResponse: NetResponse_AddNumberToAccount
+    val MY_PERMISSIONS_ADD_NUMBER_READ_PHONE_STATE_and_READ_CALL_LOG=33
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -48,13 +53,13 @@ class AddNumberToAccount : Fragment() {
             binding.addNmbPhoneEditText.setText(activityViewModel?.enteredPhoneNumber)
         }else binding.addNmbPhoneEditText.setText(PLUS_NIGERIAN_PREFIX)
 
-        binding.addphoneTextView.apply {
+        /*binding.addphoneTextView.apply {
             when (isVerificationByCallEnabled()){
                 true-> text=resources.getString(R.string._5miov_will_call_to_verify_your_number)
                 false->text=resources.getString(R.string._5miov_will_send_sms_with_token_to_verify_your_number)
             }
 
-        }
+        }*/
 
         binding.addphoneButton.setOnClickListener {
 
@@ -135,13 +140,33 @@ class AddNumberToAccount : Fragment() {
 
             if(response!=null) {
 
-                // in verifyByCall mode extract number to receive call from (verificationCallerId)
-                if(isVerificationByCallEnabled()) {
-                    if(response.verificationCallerId.isNotEmpty()) {
-                        (requireActivity() as RegistrationAuthorizationActivity).verificationCallerId=response.verificationCallerId
+                //set variable to define if registration process should use call or sms verification
+                (requireActivity() as RegistrationAuthorizationActivity).verificationByCallEnabled = response.callVerificationEnabled
+
+                netAddNumberToAccountResponse=response
+
+                when (isVerificationByCallEnabled()) {
+
+                    true->{
+                        // in verifyByCall mode extract number to receive call from (verificationCallerId)
+                        if (response.verificationCallerId.isNotEmpty()) {
+                            (requireActivity() as RegistrationAuthorizationActivity).verificationCallerId =
+                                response.verificationCallerId
+                        }
+
+                        if(checkForPermissions()) checkResponseSuccessAndActAccordinglyAddNMB(response = response)
+
                     }
+                    false->{
+                        checkResponseSuccessAndActAccordinglyAddNMB(response = response)
+
+                    }
+
+
                 }
-                when {
+
+
+               /* when {
                     response.success == true -> {
 
                         // in verifyBySMS mode start listening for SMS
@@ -159,10 +184,36 @@ class AddNumberToAccount : Fragment() {
                 }
 
                 binding.addphoneButton.isEnabled = true
-                showProgressBar(false)
+                showProgressBar(false)*/
             }
 
         })
+
+
+    }
+
+    private fun checkResponseSuccessAndActAccordinglyAddNMB(response: NetResponse_AddNumberToAccount) {
+
+        when {
+            response.success == true -> {
+
+                // in verifyBySMS mode start listening for SMS
+                if(!isVerificationByCallEnabled()) activityViewModel?.startSMSRetreiverFunction()
+
+                //showToast(response.usermessage)
+                activityViewModel?.resetAddNumberToAccountNetSuccess()
+                findNavController().navigate(AddNumberToAccountDirections.actionAddNumberToAccountToAuthorizationFragment())
+            }
+
+            response.success == false -> {
+                showSnackBar(response.usermessage)
+                activityViewModel?.resetAddNumberToAccountNetSuccess()
+            }
+        }
+
+        binding.addphoneButton.isEnabled = true
+        showProgressBar(false)
+
 
     }
 
@@ -293,6 +344,61 @@ class AddNumberToAccount : Fragment() {
     private fun isVerificationByCallEnabled():Boolean{
         return (requireActivity() as RegistrationAuthorizationActivity).verificationByCallEnabled
     }
+
+    private fun checkForPermissions():Boolean{
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true
+        else {
+            if (requireActivity().checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED ||
+                requireActivity().checkSelfPermission(Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED
+
+            ) {
+                requestPermissions(arrayOf(
+                    Manifest.permission.READ_PHONE_STATE,
+                    Manifest.permission.READ_CALL_LOG),
+                    MY_PERMISSIONS_ADD_NUMBER_READ_PHONE_STATE_and_READ_CALL_LOG
+                )
+                return false
+            } else return true
+        }
+
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+
+        when (requestCode) {
+            MY_PERMISSIONS_ADD_NUMBER_READ_PHONE_STATE_and_READ_CALL_LOG -> {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.isNotEmpty()) {
+
+                    if(grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED){
+                        checkResponseSuccessAndActAccordinglyAddNMB(netAddNumberToAccountResponse)
+                    }else {
+                        activityViewModel?.resetAddNumberToAccountNetSuccess()
+                        binding.addphoneButton.isEnabled = true
+                        showProgressBar(false)
+                        showSnackBar(getString(R.string.call_log_permission_not_granted))
+
+                    }
+
+                    //if (grantResults[0] != PackageManager.PERMISSION_GRANTED) showSnackBar("Need READ PHONE STATE permission to verify your account by phone call")
+
+                    //if (grantResults[1] != PackageManager.PERMISSION_GRANTED) showSnackBar("Need READ CALL LOG permission to verify your account by phone call")
+
+                }
+
+                return
+            }
+
+            else -> {  }
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
+
 
 
 }

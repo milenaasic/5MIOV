@@ -34,7 +34,10 @@ data class NetResponse_Registration(
     val phoneNumberAlreadyAssigned:Boolean,
 
     @Json(name="verificationCallerId")
-    val verificationCallerId:String
+    val verificationCallerId:String,
+
+    @Json(name="callVerificationEnabled")
+    val callVerificationEnabled:Boolean
 
 
 )
