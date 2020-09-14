@@ -50,15 +50,24 @@ class RegistrationFragment : Fragment() {
         }
 
         binding.phoneNumberEditText.setText(PLUS_NIGERIAN_PREFIX)
+        binding.register2TextView.apply {
+                when (isVerificationByCallEnabled()){
+                    true-> text=resources.getString(R.string._5miov_will_call_to_verify_your_number)
+                    false->text=resources.getString(R.string._5miov_will_send_sms_with_token_to_verify_your_number)
+                }
+         }
 
         binding.registerButton.setOnClickListener {
 
             hidekeyboard()
             binding.rootRegContLayout.requestFocus()
-            if(!checkForPermissions()) return@setOnClickListener
+
+            if(isVerificationByCallEnabled()) {
+                    if(!checkForPermissions()) return@setOnClickListener
+            }
+
             if (!isOnline(requireActivity().application)) {
                 showSnackBar(resources.getString(R.string.no_internet))
-
                 return@setOnClickListener
             }
 
@@ -75,7 +84,9 @@ class RegistrationFragment : Fragment() {
 
         binding.addNumToAccountButton.setOnClickListener {
 
-            if(!checkForPermissions()) return@setOnClickListener
+            if(isVerificationByCallEnabled()) {
+                if(!checkForPermissions()) return@setOnClickListener
+            }
 
             if(!binding.phoneNumberEditText.text.isNullOrBlank() && !binding.phoneNumberEditText.text.isNullOrEmpty() ) {
                     activityViewModel.enteredPhoneNumber=binding.phoneNumberEditText.text.toString()
@@ -87,7 +98,6 @@ class RegistrationFragment : Fragment() {
 
             when (action) {
                 EditorInfo.IME_ACTION_DONE, EditorInfo.IME_ACTION_UNSPECIFIED -> {
-                    Log.i(MY_TAG, "action listener , action done or unspecified")
                     hidekeyboard()
                     view.clearFocus()
                     true
@@ -104,7 +114,10 @@ class RegistrationFragment : Fragment() {
             }
         }
 
-        checkForPermissions()
+        if(isVerificationByCallEnabled()) {
+            checkForPermissions()
+        }
+
         return binding.root
     }
 
@@ -124,15 +137,26 @@ class RegistrationFragment : Fragment() {
         activityViewModel.registrationNetSuccess.observe(viewLifecycleOwner, Observer { response ->
 
             if (response != null) {
+                // in verifyByCall mode extract number to receive call from (verificationCallerId)
+                if(isVerificationByCallEnabled()) {
+                    if(response.verificationCallerId.isNotEmpty()) {
+                        (requireActivity() as RegistrationAuthorizationActivity).verificationCallerId=response.verificationCallerId
+                    }
+                }
+
                 when {
                     response.success == true && response.phoneNumberAlreadyAssigned == false -> {
+
+                        // in verifyBySMS mode start listening for SMS
+                        if(!isVerificationByCallEnabled()) activityViewModel.startSMSRetreiverFunction()
+
                         showToast(response.userMessage)
                         activityViewModel.resetRegistrationNetSuccess()
                         findNavController().navigate(RegistrationFragmentDirections.actionRegistrationFragmentToAuthorizationFragment())
                     }
 
                     response.success == true && response.phoneNumberAlreadyAssigned == true -> {
-                        showToast(response.userMessage)
+                        //showToast(response.userMessage)
                         activityViewModel.resetRegistrationNetSuccess()
                         findNavController().navigate(RegistrationFragmentDirections.actionRegistrationFragmentToNumberExistsInDatabase())
                     }
@@ -154,10 +178,25 @@ class RegistrationFragment : Fragment() {
 
         binding.registerButton.isEnabled = false
         showProgressBar(true)
-        activityViewModel.registerButtonClicked(
-            enteredPhoneNumber.removePlus(),
-            smsResend = false
-        )
+
+        when(isVerificationByCallEnabled()){
+            true->{
+                activityViewModel.registerButtonClicked(
+                    enteredPhoneNumber.removePlus(),
+                    smsResend = false,
+                    verificationMethod = VERIFICATION_METHOD_CALL
+                )
+            }
+            false->{
+                activityViewModel.registerButtonClicked(
+                    enteredPhoneNumber.removePlus(),
+                    smsResend = false,
+                    verificationMethod = VERIFICATION_METHOD_SMS
+                )
+            }
+
+        }
+
 
     }
 
@@ -190,13 +229,13 @@ class RegistrationFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.i(MY_TAG, "On Destroy")
+
 
     }
 
 
     private fun showTermsOfUseDailog(enteredPhoneNumber: String) {
-        Log.i(MY_TAG, "showTermsOfUseDailog")
+
         val alertDialog: AlertDialog? = activity?.let {
 
             val builder = AlertDialog.Builder(it)
@@ -268,7 +307,7 @@ class RegistrationFragment : Fragment() {
 
 
                     }else {
-                        showSnackBar("Unable to verify account by phone call - permissions not granted")
+                        showSnackBar(getString(R.string.call_log_permission_not_granted))
 
                     }
 
@@ -284,6 +323,10 @@ class RegistrationFragment : Fragment() {
             else -> {  }
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
+
+    private fun isVerificationByCallEnabled():Boolean{
+        return (requireActivity() as RegistrationAuthorizationActivity).verificationByCallEnabled
     }
 
 

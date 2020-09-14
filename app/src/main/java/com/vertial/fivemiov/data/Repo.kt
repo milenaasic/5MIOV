@@ -90,19 +90,19 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
 
 
     // Registration fragment
-    suspend fun sendRegistationToServer(phone:String,smsResend:Boolean){
+    suspend fun sendRegistationToServer(phone:String,smsResend:Boolean,verificationMethod:String){
 
         val defResponse=myAPI.sendRegistrationToServer(
                 phoneNumber = phone,
                 signature = produceJWtToken(Pair(Claim.NUMBER.myClaim,phone)),
                 mobileAppVersion = mobileAppVer,
-                request = NetRequest_Registration(phoneNumber = phone )
+                request = NetRequest_Registration(phoneNumber = phone,verificationMethod = verificationMethod )
                 )
         try{
 
             val result:NetResponse_Registration=defResponse.await()
 
-            if(smsResend) _smsResendSuccess.value=result.userMessage
+            if(smsResend) _smsResendSuccess.value=result.code.toString()+result.userMessage
             else _registrationSuccess.value=result
 
         } catch (e:Throwable){
@@ -131,7 +131,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
 
 
     // ASSIGN NUMBER TO ACCOUNT
-    suspend fun assignPhoneNumberToAccount(phone:String, email:String,password:String,smsResend: Boolean=false){
+    suspend fun assignPhoneNumberToAccount(phone:String, email:String,password:String,smsResend: Boolean=false,verificationMethod: String){
 
         val defResponse=myAPI.sendAddNumberToAccount(
                 phoneNumber = phone,
@@ -144,11 +144,12 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
                 request = NetRequest_AddNumberToAccount(
                         phoneNumber = phone,
                         email = email,
-                        password = password ))
+                        password = password,
+                        verificationMethod = verificationMethod ))
         try{
             val result=defResponse.await()
 
-            if(smsResend) _smsResendSuccess.value=result.usermessage
+            if(smsResend) _smsResendSuccess.value=result.code.toString()+result.usermessage
             else _addNumberToAccountNetworkSuccess.value=result
 
         }
@@ -176,7 +177,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
 
 
     //NUMBER EXISTS IN DB  fragment
-    suspend fun numberExistsInDBVerifyAccount(enteredPhoneNumber:String, email:String, password:String,smsResend: Boolean=false){
+    suspend fun numberExistsInDBVerifyAccount(enteredPhoneNumber:String, email:String, password:String,smsResend: Boolean=false,verificationMethod: String){
 
         val defResult=myAPI.numberExistsInDBVerifyAccount(
                 phoneNumber = enteredPhoneNumber,
@@ -186,12 +187,16 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
                                             Pair(Claim.SIGN_IN.myClaim, CLAIM_VALUE_TRUE)
                 ),
                 mobileAppVersion = mobileAppVer,
-                request = NetRequest_NmbExistsInDB_UserHasAccount(enteredPhoneNumber,email, password)
+                request = NetRequest_NmbExistsInDB_UserHasAccount(
+                    phoneNumber = enteredPhoneNumber,
+                    email = email,
+                    password = password,
+                    verificationMethod = verificationMethod)
                 )
         try{
             val result=defResult.await()
 
-            if(smsResend) _smsResendSuccess.value=result.userMessage
+            if(smsResend) _smsResendSuccess.value=result.code.toString()+result.userMessage
             else _nmbExistsInDBUserHasAccountSuccess.value=result
         }
         catch (e:Throwable){
@@ -207,19 +212,19 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
     }
 
 
-    suspend fun numberExistsInDB_NOAccount(enteredPhoneNumber:String,smsResend: Boolean=false){
+    suspend fun numberExistsInDB_NOAccount(enteredPhoneNumber:String,smsResend: Boolean=false,verificationMethod: String){
 
         val defResult=myAPI.numberExistsInDB_NOAccount(
                 phoneNumber = enteredPhoneNumber,
                 signature = produceJWtToken(Pair(Claim.NUMBER.myClaim,enteredPhoneNumber),
                                             Pair(Claim.SIGN_IN.myClaim, CLAIM_VALUE_FALSE)),
                 mobileAppVersion = mobileAppVer,
-                request = NetRequest_NmbExistsInDB_NoAccount(phoneNumber = enteredPhoneNumber)
+                request = NetRequest_NmbExistsInDB_NoAccount(phoneNumber = enteredPhoneNumber,verificationMethod = verificationMethod)
                 )
         try{
             val result=defResult.await()
 
-            if(smsResend) _smsResendSuccess.value=result.userMessage
+            if(smsResend) _smsResendSuccess.value=result.code.toString()+result.userMessage
             else _nmbExistsInDB_NoAccountSuccess.value=result
         }
         catch (e:Throwable){

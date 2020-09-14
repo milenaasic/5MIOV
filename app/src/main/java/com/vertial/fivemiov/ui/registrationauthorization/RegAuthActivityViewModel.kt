@@ -70,12 +70,12 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
 
 
     //registration fragment
-    fun registerButtonClicked(phoneNumber:String, smsResend:Boolean){
+    fun registerButtonClicked(phoneNumber:String, smsResend:Boolean, verificationMethod:String){
         enteredPhoneNumber=phoneNumber
 
         //send registrtion phone number to server and go to authorization fragment
         viewModelScope.launch {
-            myRepository.sendRegistationToServer(phoneNumber,smsResend)
+            myRepository.sendRegistationToServer(phone = phoneNumber,smsResend = smsResend,verificationMethod = verificationMethod)
          }
     }
 
@@ -90,14 +90,19 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
 
 
     //add number to existing account fragment
-    fun addNumberToAccountButtonClicked(phoneNumber:String,email:String,password:String,smsResend: Boolean=false){
+    fun addNumberToAccountButtonClicked(phoneNumber:String,email:String,password:String,smsResend: Boolean=false,verificationMethod: String){
         enteredPhoneNumber=phoneNumber
         enteredEmail=email
         enteredPassword=password
 
-        //send add phone, email and pass to server and go to authorization fragment
+        //send  phone, email and pass to server and go to authorization fragment
         viewModelScope.launch {
-            myRepository.assignPhoneNumberToAccount(phoneNumber,email,password,smsResend)
+            myRepository.assignPhoneNumberToAccount(
+                phone = phoneNumber,
+                email = email,
+                password = password,
+                smsResend = smsResend,
+                verificationMethod = verificationMethod)
         }
     }
 
@@ -113,7 +118,7 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
 
 
     //number exists in DB fragment
-    fun numberExistsInDBVerifyAccount(email: String,password: String,smsResend: Boolean=false){
+    fun numberExistsInDBVerifyAccount(email: String,password: String,smsResend: Boolean=false,verificationMethod: String){
         enteredEmail=email
         enteredPassword=password
         if(enteredPhoneNumber!=null) {
@@ -122,16 +127,17 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
                     enteredPhoneNumber?:"",
                     email,
                     password,
-                    smsResend
+                    smsResend,
+                    verificationMethod = verificationMethod
                 )
             }
         }
     }
 
-    fun numberExistsInDb_NoAccount(smsResend: Boolean=false){
+    fun numberExistsInDb_NoAccount(smsResend: Boolean=false,verificationMethod: String){
     if(enteredPhoneNumber!=null) {
         viewModelScope.launch {
-            myRepository.numberExistsInDB_NOAccount(enteredPhoneNumber?:"", smsResend)
+            myRepository.numberExistsInDB_NOAccount(enteredPhoneNumber?:"", smsResend,verificationMethod = verificationMethod)
         }
     }
     }

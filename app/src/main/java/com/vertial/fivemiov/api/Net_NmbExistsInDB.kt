@@ -10,7 +10,10 @@ data class NetRequest_NmbExistsInDB_NoAccount(
     val phoneNumber:String,
 
     @Json(name="signIn")
-    val signin:String="false"
+    val signin:String="false",
+
+    @Json(name="verificationMethod")
+    val verificationMethod:String
 
 
 )
@@ -28,7 +31,11 @@ data class NetRequest_NmbExistsInDB_UserHasAccount(
     val password:String,
 
     @Json(name="signIn")
-    val signin:String="true"
+    val signin:String="true",
+
+    @Json(name="verificationMethod")
+    val verificationMethod:String
+
 
 )
 
@@ -48,6 +55,9 @@ data class NetResponse_NmbExistsInDB(
     val code:Int,
 
     @Json(name="version")
-    val appVersion:String?
+    val appVersion:String?,
+
+    @Json(name="verificationCallerId")
+    val verificationCallerId:String
 
 )

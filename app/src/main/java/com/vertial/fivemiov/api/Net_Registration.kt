@@ -8,7 +8,10 @@ import com.vertial.fivemiov.ui.main_activity.MainActivity
 data class NetRequest_Registration(
 
     @Json(name="number")
-    val phoneNumber:String
+    val phoneNumber:String,
+
+    @Json(name="verificationMethod")
+    val verificationMethod:String
 
 )
 
@@ -28,7 +31,10 @@ data class NetResponse_Registration(
     val code:Int,
 
     @Json(name="phoneNumberAlreadyAssigned")
-    val phoneNumberAlreadyAssigned:Boolean
+    val phoneNumberAlreadyAssigned:Boolean,
+
+    @Json(name="verificationCallerId")
+    val verificationCallerId:String
 
 
 )

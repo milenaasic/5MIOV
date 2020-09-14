@@ -13,7 +13,10 @@ data class NetRequest_AddNumberToAccount (
     val email:String,
 
     @Json(name="password")
-    val password:String
+    val password:String,
+
+    @Json(name="verificationMethod")
+    val verificationMethod:String
 
 )
 
@@ -27,7 +30,13 @@ data class NetResponse_AddNumberToAccount (
     val message:String,
 
     @Json(name="userMsg")
-    val usermessage:String
+    val usermessage:String,
+
+    @Json(name="code")
+    val code:Int,
+
+    @Json(name="verificationCallerId")
+    val verificationCallerId:String
 
 )
 

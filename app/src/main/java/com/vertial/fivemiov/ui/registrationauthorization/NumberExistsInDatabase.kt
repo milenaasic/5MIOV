@@ -19,9 +19,7 @@ import com.google.android.material.snackbar.Snackbar
 
 import com.vertial.fivemiov.R
 import com.vertial.fivemiov.databinding.FragmentNumberExistsInDatabaseBinding
-import com.vertial.fivemiov.utils.afterTextChanged
-import com.vertial.fivemiov.utils.isEmailValid
-import com.vertial.fivemiov.utils.isPasswordValid
+import com.vertial.fivemiov.utils.*
 
 private val MY_TAG="MY_NumberExistsInDB"
 class NumberExistsInDatabase : Fragment() {
@@ -51,11 +49,28 @@ class NumberExistsInDatabase : Fragment() {
             if(allEnteredFieldsAreValid()){
                 showProgressBar(true)
                 activityViewModel?.signInParameter=true
-                activityViewModel?.numberExistsInDBVerifyAccount(
-                    binding.nmbExistsEmailEditText.text.toString(),
-                    binding.nmbExistsPassEditText.text.toString()
-                )
+
+                when(isVerificationByCallEnabled()){
+                    true->{
+                        activityViewModel?.numberExistsInDBVerifyAccount(
+                            email = binding.nmbExistsEmailEditText.text.toString(),
+                            password = binding.nmbExistsPassEditText.text.toString(),
+                            verificationMethod = VERIFICATION_METHOD_CALL
+                        )
+
+                    }
+                    false->{
+                        activityViewModel?.numberExistsInDBVerifyAccount(
+                            email = binding.nmbExistsEmailEditText.text.toString(),
+                            password = binding.nmbExistsPassEditText.text.toString(),
+                            verificationMethod = VERIFICATION_METHOD_SMS
+                        )
+
+                    }
+
+                }
                 //activityViewModel?.startSMSRetreiverFunction()
+
             }else{
                 it.isEnabled=true
                 binding.dontHaveAccountButton.isEnabled=true
@@ -85,8 +100,20 @@ class NumberExistsInDatabase : Fragment() {
                 enteredPassword=null
 
             }
-            activityViewModel?.numberExistsInDb_NoAccount()
-            //activityViewModel?.startSMSRetreiverFunction()
+
+            when(isVerificationByCallEnabled()){
+                true->{
+                    activityViewModel?.numberExistsInDb_NoAccount(verificationMethod = VERIFICATION_METHOD_CALL)
+                }
+
+                false->{
+                    activityViewModel?.numberExistsInDb_NoAccount(verificationMethod = VERIFICATION_METHOD_SMS)
+
+                }
+
+            }
+
+
 
          }
 
@@ -115,8 +142,19 @@ class NumberExistsInDatabase : Fragment() {
 
         activityViewModel?.nmbExistsInDBUserHasAccountSuccess?.observe(viewLifecycleOwner, Observer {response->
             if(response!=null) {
+
+                // in verifyByCall mode extract number to receive call from (verificationCallerId)
+                if(isVerificationByCallEnabled()) {
+                    if(response.verificationCallerId.isNotEmpty()) {
+                        (requireActivity() as RegistrationAuthorizationActivity).verificationCallerId=response.verificationCallerId
+                    }
+                }
+
                 when{
                     response.success==true->{
+                            // in verifyBySMS mode start SMS retreival
+                            if(!isVerificationByCallEnabled())activityViewModel?.startSMSRetreiverFunction()
+
                             showToast(response.userMessage)
                             activityViewModel?.resetNmbExistsInDB_VerifyAccount_NetSuccess()
                             findNavController().navigate(NumberExistsInDatabaseDirections.actionNumberExistsInDatabaseToAuthorizationFragment())
@@ -145,8 +183,19 @@ class NumberExistsInDatabase : Fragment() {
 
         activityViewModel?.nmbExistsInDB_NoAccountSuccess?.observe(viewLifecycleOwner, Observer {response->
             if(response!=null) {
+
+                // in verifyByCall mode extract number to receive call from (verificationCallerId)
+                if(isVerificationByCallEnabled()) {
+                    if(response.verificationCallerId.isNotEmpty()) {
+                        (requireActivity() as RegistrationAuthorizationActivity).verificationCallerId=response.verificationCallerId
+                    }
+                }
+
                 when{
                     response.success==true->{
+                        // in verifyBySMS mode start SMS retreival
+                        if(!isVerificationByCallEnabled())activityViewModel?.startSMSRetreiverFunction()
+
                         showToast(response.userMessage)
                         activityViewModel?.resetNmbExistsInDB_NOAccount_NetSuccess()
                         findNavController().navigate(NumberExistsInDatabaseDirections.actionNumberExistsInDatabaseToAuthorizationFragment())
@@ -231,6 +280,8 @@ class NumberExistsInDatabase : Fragment() {
         Toast.makeText(requireActivity(),message, Toast.LENGTH_LONG).show()
     }
 
-
+    private fun isVerificationByCallEnabled():Boolean{
+        return (requireActivity() as RegistrationAuthorizationActivity).verificationByCallEnabled
+    }
 
 }

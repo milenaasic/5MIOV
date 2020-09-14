@@ -64,9 +64,9 @@
             android:layout_marginTop="8dp"
             android:hint="@string/e_mail_hint"
             app:errorEnabled="true"
-            app:layout_constraintEnd_toEndOf="@+id/number_exists_text"
-            app:layout_constraintStart_toStartOf="@+id/number_exists_text"
-            app:layout_constraintTop_toBottomOf="@+id/number_exists_text">
+            app:layout_constraintEnd_toEndOf="@+id/no_call_received_explanation"
+            app:layout_constraintStart_toStartOf="@+id/no_call_received_explanation"
+            app:layout_constraintTop_toBottomOf="@+id/no_call_received_explanation">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/nmb_exists_email_editText"
@@ -127,7 +127,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/number_exists_text"
+            android:id="@+id/no_call_received_explanation"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"

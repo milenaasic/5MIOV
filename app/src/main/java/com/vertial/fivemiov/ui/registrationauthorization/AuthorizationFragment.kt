@@ -8,8 +8,10 @@ import android.content.DialogInterface
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
+import android.text.Layout
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -27,10 +29,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
 import com.vertial.fivemiov.R
 import com.vertial.fivemiov.databinding.FragmentAuthorizationBinding
-import com.vertial.fivemiov.utils.TERMS_OF_USE
-import com.vertial.fivemiov.utils.afterTextChanged
-import com.vertial.fivemiov.utils.isOnline
-import com.vertial.fivemiov.utils.removePlus
+import com.vertial.fivemiov.utils.*
 
 
 private val MYTAG="MY_AuthorizationFragm"
@@ -38,11 +37,12 @@ class AuthorizationFragment : Fragment() {
 
     private lateinit var binding: FragmentAuthorizationBinding
     private lateinit var activityViewModel:RegAuthActivityViewModel
-    private lateinit var telephonyManager:TelephonyManager
-    private lateinit var callStateListener: PhoneStateListener
+    private  var telephonyManager:TelephonyManager?=null
+    private  var callStateListener: PhoneStateListener?=null
     private val VERIFIED_BY_CALL="verifiedByCall"
-    private val OUR_VERIFICATION_NUMBER_1="018888420"
-    private val OUR_VERIFICATION_NUMBER_2="+23418888420"
+    private val webAPPIsMakingCall_Code="55"
+    private val TIME_TO_WAIT_FOR_CALL=8000L
+
 
 
     companion object{
@@ -60,31 +60,27 @@ class AuthorizationFragment : Fragment() {
             ViewModelProvider(this)[RegAuthActivityViewModel::class.java]
         }
 
-        telephonyManager = requireActivity().getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
 
-         callStateListener = object : PhoneStateListener() {
-            override fun onCallStateChanged(state: Int, incomingNumber: String) {
 
-                //  React to incoming call.
-                Log.i(MYTAG,"state $state,  $incomingNumber")
-                // If phone ringing
-                if (state == TelephonyManager.CALL_STATE_RINGING) {
-                    Log.i(MYTAG, "ringing $state,  $incomingNumber")
-                   // Toast.makeText(requireContext(), "Phone is Ringing", Toast.LENGTH_LONG).show()
-                    // call create route
-                    if(incomingNumber.equals(OUR_VERIFICATION_NUMBER_1) || incomingNumber.equals(OUR_VERIFICATION_NUMBER_2) ) activityViewModel.submitButtonClicked(VERIFIED_BY_CALL)
+
+        when(isVerificationByCallEnabled()){
+            true->{
+                //show progress bar
+                showProgressBar(true)
+                binding.apply {
+                    noCallReceivedExplanation.visibility=View.VISIBLE
+                    resendSmsButton.text=resources.getString(R.string.send_sms)
+                    noSmsOrCallText.text=resources.getString(R.string.no_call_try_sms)
                 }
-                // If incoming call received
-                if (state == TelephonyManager.CALL_STATE_OFFHOOK) {
-                    //Toast.makeText(requireContext(), "Phone is Currently in A call", Toast.LENGTH_LONG).show()
-                }
-                if (state == TelephonyManager.CALL_STATE_IDLE) {
-                    //Toast.makeText(requireContext(), "phone is neither ringing nor in a call", Toast.LENGTH_LONG).show()
-                }
+
             }
-        }
 
-        telephonyManager.listen(callStateListener, PhoneStateListener.LISTEN_CALL_STATE)
+            false->{
+
+            }
+
+
+        }
 
         binding.authPhoneTextView.text=String.format(resources.getString(R.string.add_plus_before_phone,activityViewModel.enteredPhoneNumber))
 
@@ -127,13 +123,18 @@ class AuthorizationFragment : Fragment() {
             enableDisableButtons(false)
 
             showProgressBar(true)
-            verifyBySMS()
-            activityViewModel.startSMSRetreiverFunction()
+            when (isVerificationByCallEnabled()){
+                true->{
+                    activityViewModel.startSMSRetreiverFunction()
+                     verifyBySMSorCallAgain(VERIFICATION_METHOD_SMS)
+                }
+                false->{
+                    activityViewModel.startSMSRetreiverFunction()
+                    verifyBySMSorCallAgain(VERIFICATION_METHOD_SMS)
+                }
 
-           /* if(checkForPermissions()){
-                    showProgressBar(true)
-                    verifyBySMS()
-            }*/
+            }
+
 
         }
 
@@ -177,9 +178,14 @@ class AuthorizationFragment : Fragment() {
             Log.i(MYTAG," sms resend success , value $it")
             if(it!=null){
                 activityViewModel.resetSMSResend_NetSuccess()
-                showToast(it)
-                showProgressBar(false)
-                enableDisableButtons(true)
+                if(it.startsWith(webAPPIsMakingCall_Code)){
+                    showToast(it.substring(2))
+
+                }else{
+                    showToast(it.substring(2))
+                    showProgressBar(false)
+                    enableDisableButtons(true)
+                }
             }
         })
 
@@ -205,31 +211,80 @@ class AuthorizationFragment : Fragment() {
         })
 
 
-
     }
 
-    private fun verifyBySMS(){
-        //resending sms via registration route
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+
+        when(isVerificationByCallEnabled()){
+            true-> {
+                //initalize call listener
+                telephonyManager =
+                    requireActivity().getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+                callStateListener = object : PhoneStateListener() {
+                    override fun onCallStateChanged(state: Int, incomingNumber: String) {
+
+                        //  React to incoming call.
+                        Log.i(MYTAG, "state $state,  $incomingNumber")
+                        // If phone ringing
+                        if (state == TelephonyManager.CALL_STATE_RINGING) {
+                            Log.i(MYTAG, "ringing $state,  $incomingNumber")
+                            // Toast.makeText(requireContext(), "Phone is Ringing", Toast.LENGTH_LONG).show()
+                            // call create route
+                            val numberToAwait =
+                                (requireActivity() as RegistrationAuthorizationActivity).verificationCallerId
+                            Log.i(MYTAG, "number to await is $numberToAwait")
+                            if (incomingNumber.equals(numberToAwait)) {
+                                activityViewModel.submitButtonClicked(VERIFIED_BY_CALL)
+                                telephonyManager?.listen(callStateListener, PhoneStateListener.LISTEN_NONE)
+                                }
+                        }
+                        // If incoming call received
+                        /*if (state == TelephonyManager.CALL_STATE_OFFHOOK) {
+                            //Toast.makeText(requireContext(), "Phone is Currently in A call", Toast.LENGTH_LONG).show()
+                        }
+                        if (state == TelephonyManager.CALL_STATE_IDLE) {
+                            //Toast.makeText(requireContext(), "phone is neither ringing nor in a call", Toast.LENGTH_LONG).show()
+                        }*/
+                    }
+                }
+
+                telephonyManager?.listen(callStateListener, PhoneStateListener.LISTEN_CALL_STATE)
+                startFirstCountDownTimer()
+            }
+
+        }
+    }
+
+    private fun verifyBySMSorCallAgain(verificationMethod:String){
+
+        //resending sms via signIn route
         Log.i(MYTAG,"call verification button (ex Resend) ${activityViewModel.enteredPhoneNumber}, ${activityViewModel.enteredEmail}, ${activityViewModel.enteredPassword}, ${activityViewModel.signInParameter}")
         when{
             //came from registrtion fragment
-            activityViewModel.enteredEmail==null && activityViewModel.signInParameter==null->activityViewModel.registerButtonClicked(activityViewModel.enteredPhoneNumber?.removePlus()?:"",smsResend = true)
+            activityViewModel.enteredEmail==null && activityViewModel.signInParameter==null->activityViewModel.registerButtonClicked(
+                                                                                activityViewModel.enteredPhoneNumber?.removePlus()?:"",
+                                                                                    smsResend = true,
+                                                                                    verificationMethod = verificationMethod)
 
             //came from AddNumberToAccount fragment
             activityViewModel.enteredEmail!=null && activityViewModel.signInParameter==null->activityViewModel.addNumberToAccountButtonClicked(
                 activityViewModel.enteredPhoneNumber?.removePlus()?:"",
                 activityViewModel.enteredEmail?:"",
                 activityViewModel.enteredPassword?:"",
-                smsResend = true)
+                smsResend = true,
+                verificationMethod = verificationMethod)
 
             //came from NumberExistsInDatabase, create new account
-            activityViewModel.enteredEmail==null && activityViewModel.signInParameter==false->activityViewModel.numberExistsInDb_NoAccount(smsResend = true)
+            activityViewModel.enteredEmail==null && activityViewModel.signInParameter==false->activityViewModel.numberExistsInDb_NoAccount(smsResend = true,verificationMethod = verificationMethod)
 
             //came from NumberExistsInDatabase, verify account
             activityViewModel.enteredEmail!=null && activityViewModel.signInParameter==true->activityViewModel.numberExistsInDBVerifyAccount(
                 activityViewModel.enteredEmail?:"",
                 activityViewModel.enteredPassword?:"",
-                smsResend = true)
+                smsResend = true,
+                verificationMethod = verificationMethod)
 
         }
 
@@ -317,7 +372,7 @@ class AuthorizationFragment : Fragment() {
 
                     if(grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED){
                         showProgressBar(true)
-                        verifyBySMS()
+                        verifyBySMSorCallAgain(VERIFICATION_METHOD_CALL)
 
                     }else {
                         showSnackBar("Unable to verify account by phone call - permissions not granted")
@@ -339,10 +394,81 @@ class AuthorizationFragment : Fragment() {
     }
 
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        if(isVerificationByCallEnabled()) telephonyManager?.listen(callStateListener, PhoneStateListener.LISTEN_NONE)
+    }
 
     override fun onDestroy() {
         super.onDestroy()
         Log.i(MYTAG,"On Destroy")
+
+    }
+
+    private fun startFirstCountDownTimer(){
+        Log.i(MYTAG,"startFirstCountDownTimer() Timer started")
+        object:CountDownTimer(TIME_TO_WAIT_FOR_CALL,TIME_TO_WAIT_FOR_CALL){
+            override fun onTick(millisUntilFinished: Long) {
+                Log.i(MYTAG,"first timer:$millisUntilFinished")
+            }
+
+            override fun onFinish() {
+                Log.i(MYTAG,"first timer:finished")
+                showDialogToConfirmUserNunber()
+            }
+        }.start()
+
+    }
+
+    private fun startSecondCoundDownTImer(){
+        object:CountDownTimer(TIME_TO_WAIT_FOR_CALL,TIME_TO_WAIT_FOR_CALL){
+            override fun onTick(millisUntilFinished: Long) {
+                Log.i(MYTAG,"second timer:$millisUntilFinished")
+            }
+
+            override fun onFinish() {
+                Log.i(MYTAG,"second timer:finished")
+                //both calls failed  show Authorization Fragment
+                showProgressBar(false)
+                showSnackBar("Unable to make a call, try SMS!")
+            }
+        }.start()
+
+    }
+
+
+    private fun isVerificationByCallEnabled():Boolean{
+        return (requireActivity() as RegistrationAuthorizationActivity).verificationByCallEnabled
+    }
+
+    private fun showDialogToConfirmUserNunber(){
+        val alertDialog: AlertDialog? = activity?.let {
+
+            val builder = AlertDialog.Builder(it)
+
+            // Add action buttons
+            builder
+                .setTitle("Is this your phone number ${activityViewModel.enteredPhoneNumber} ?")
+                .setPositiveButton("YES",
+                    DialogInterface.OnClickListener { dialog, id ->
+                        verifyBySMSorCallAgain(VERIFICATION_METHOD_EXPENSIVE_CALL)
+                        startSecondCoundDownTImer()
+                    })
+                .setNegativeButton("NO",
+                    DialogInterface.OnClickListener { dialog, id ->
+
+                        dialog.cancel()
+                        showProgressBar(false)
+                        showSnackBar(resources.getString(R.string.enter_correct_number))
+                    })
+                .setCancelable(false)
+
+            builder.create()
+
+        }
+
+        alertDialog?.show()
+
 
     }
 

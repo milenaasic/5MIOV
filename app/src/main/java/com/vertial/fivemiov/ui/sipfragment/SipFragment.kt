@@ -307,7 +307,12 @@ class SipFragment : Fragment() {
             callParams?.enableEarlyMediaSending(true)
             Log.i(MYTAG," call params ${callParams?.usedAudioPayloadType},audio enabled ${callParams?.audioEnabled()}, early media enabled ${callParams?.earlyMediaSendingEnabled()} ")
             viewModel.logStateToMyServer("SIP - makeSipAudioCall","calling number: sip:$numberToCall@$mSipServer")
-            if(mSipServer!=null) mCall = mCore?.inviteWithParams("sip:$numberToCall@$mSipServer",callParams)
+            try {
+                if(mSipServer!=null) mCall = mCore?.inviteWithParams("sip:$numberToCall@$mSipServer",callParams)
+            }catch (t:Throwable){
+                viewModel.logStateToMyServer("make SIP Call","mCore.invite error: ${t.message}")
+                Log.i(MYTAG,"mCore.invite error: ${t.message}")
+            }
 
 
         }

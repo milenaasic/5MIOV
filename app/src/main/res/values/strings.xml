@@ -25,11 +25,13 @@
     <string name="to_register_enter_your_phone_number">To Register Enter Your Phone Number</string>
     <string name="phone_number">phone number</string>
     <string name="register">REGISTER</string>
-    <string name="_5miov_will_send_sms_with_token_to_verify_your_number">5MIOV will send verification code to your number</string>
-    <string name="enter_token_sent_to_your_phone_number">No Call Received To Your Phone Number? Try SMS.</string>
+    <string name="_5miov_will_send_sms_with_token_to_verify_your_number">5MIOV will send SMS with OTP to verify your number</string>
+    <string name="_5miov_will_call_to_verify_your_number">You will receive a phone call from 5MIOV to verify your number</string>
+    <string name="enter_token_sent_to_your_phone_number">No Call? Try SMS.</string>
     <string name="token">verification code</string>
     <string name="submit">SUBMIT</string>
-    <string name="resend_sms">SEND SMS</string>
+    <string name="resend_sms">RESEND SMS</string>
+    <string name="send_sms">SEND SMS</string>
     <string name="or">OR</string>
     <string name="resend_allowed_2_times_in_24_hours">* Resend allowed 2 times in 24 hours</string>
     <string name="token_expires_in_5_minutes">Verification code expires in 5 minutes</string>
@@ -127,8 +129,12 @@
     <!-- DISCLAIMER-->
     <string name="disclaimer_title_important">Important</string>
     <string name="disclaimer_IUnderstand_button">I Understand</string>
-    <string name="no_sms_try_free_call_verification">*No Call? Try SMS Verification.</string>
+    <string name="no_sms_try_sms_resend">*No SMS? Try Resend SMS .</string>
+    <string name="no_call_try_sms">*No Call? Try SMS.</string>
     <string name="make_cheap_international_calls">Make Cheap International Calls</string>
 
+    <!-- SNACKBAR MESSAGES-->
+    <string name="call_log_permission_not_granted">5MIOV needs this permission to verify account by phone call</string>
+    <string name="enter_correct_number">Please, go back and correct your number.</string>
 
 </resources>

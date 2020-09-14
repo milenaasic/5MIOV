@@ -2,6 +2,10 @@ package com.vertial.fivemiov.utils
 
 import com.vertial.fivemiov.model.ContactItem
 
+const val VERIFICATION_METHOD_SMS="sms"
+const val VERIFICATION_METHOD_CALL="call"
+const val VERIFICATION_METHOD_EXPENSIVE_CALL="expensiveCall"
+
 const val DEFAULT_SHARED_PREFERENCES="default_shared_pref"
 const val PHONEBOOK_IS_EXPORTED = "phone_book_is_exported"
 const val DISCLAIMER_WAS_SHOWN="disclaimer_was_shown"

@@ -48,6 +48,14 @@ class AddNumberToAccount : Fragment() {
             binding.addNmbPhoneEditText.setText(activityViewModel?.enteredPhoneNumber)
         }else binding.addNmbPhoneEditText.setText(PLUS_NIGERIAN_PREFIX)
 
+        binding.addphoneTextView.apply {
+            when (isVerificationByCallEnabled()){
+                true-> text=resources.getString(R.string._5miov_will_call_to_verify_your_number)
+                false->text=resources.getString(R.string._5miov_will_send_sms_with_token_to_verify_your_number)
+            }
+
+        }
+
         binding.addphoneButton.setOnClickListener {
 
             binding.rootAddNumberConstrLayout.requestFocus()
@@ -126,8 +134,19 @@ class AddNumberToAccount : Fragment() {
         activityViewModel?.addNumberToAccuntNetworkSuccess?.observe(viewLifecycleOwner,Observer{response->
 
             if(response!=null) {
+
+                // in verifyByCall mode extract number to receive call from (verificationCallerId)
+                if(isVerificationByCallEnabled()) {
+                    if(response.verificationCallerId.isNotEmpty()) {
+                        (requireActivity() as RegistrationAuthorizationActivity).verificationCallerId=response.verificationCallerId
+                    }
+                }
                 when {
                     response.success == true -> {
+
+                        // in verifyBySMS mode start listening for SMS
+                        if(!isVerificationByCallEnabled()) activityViewModel?.startSMSRetreiverFunction()
+
                         showToast(response.usermessage)
                         activityViewModel?.resetAddNumberToAccountNetSuccess()
                         findNavController().navigate(AddNumberToAccountDirections.actionAddNumberToAccountToAuthorizationFragment())
@@ -202,11 +221,31 @@ class AddNumberToAccount : Fragment() {
     private fun startAddNumberToAccount(phone: String,email: String,password: String) {
             binding.addphoneButton.isEnabled=false
             showProgressBar(true)
-            activityViewModel?.addNumberToAccountButtonClicked(
-                phoneNumber = phone,
-                email = email,
-                password = password
-            )
+
+        when(isVerificationByCallEnabled()) {
+            true -> {
+                activityViewModel?.addNumberToAccountButtonClicked(
+                    phoneNumber = phone,
+                    email = email,
+                    password = password,
+                    verificationMethod = VERIFICATION_METHOD_CALL
+                )
+
+            }
+
+            false -> {
+                activityViewModel?.addNumberToAccountButtonClicked(
+                    phoneNumber = phone,
+                    email = email,
+                    password = password,
+                    verificationMethod = VERIFICATION_METHOD_SMS
+                )
+
+            }
+        }
+
+
+
 
 
     }
@@ -251,6 +290,9 @@ class AddNumberToAccount : Fragment() {
     }
 
 
+    private fun isVerificationByCallEnabled():Boolean{
+        return (requireActivity() as RegistrationAuthorizationActivity).verificationByCallEnabled
+    }
 
 
 }
