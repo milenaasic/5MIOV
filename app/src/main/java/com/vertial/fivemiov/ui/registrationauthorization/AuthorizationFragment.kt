@@ -472,6 +472,8 @@ class AuthorizationFragment : Fragment() {
 
     }
 
+
+
     /*private fun makeListOfVerificationCallerIds(verifivationCallerId:String):List<String>{
         return (verifivationCallerId as CharSequence).split(",")
     }*/

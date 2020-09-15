@@ -204,7 +204,7 @@ class RegistrationFragment : Fragment() {
                 // in verifyBySMS mode start listening for SMS
                 if(!isVerificationByCallEnabled()) activityViewModel.startSMSRetreiverFunction()
 
-                //showToast(response.userMessage)
+                showToast(response.userMessage)
                 activityViewModel.resetRegistrationNetSuccess()
                 findNavController().navigate(RegistrationFragmentDirections.actionRegistrationFragmentToAuthorizationFragment())
             }
