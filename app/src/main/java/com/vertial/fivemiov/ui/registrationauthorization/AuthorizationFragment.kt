@@ -472,4 +472,16 @@ class AuthorizationFragment : Fragment() {
 
     }
 
+    /*private fun makeListOfVerificationCallerIds(verifivationCallerId:String):List<String>{
+        return (verifivationCallerId as CharSequence).split(",")
+    }*/
+
+    /*private fun checkIfCurrentCallIdIsInList(callIdsList:List<String>):Boolean{
+        var isInList=false
+        for (item in callIdsList){
+            if()
+        }
+        return isInList
+    }*/
+
 }
