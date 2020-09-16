@@ -718,7 +718,11 @@ class SipFragment : Fragment() {
             mCore?.removeListener(mListener)
             mCore=null
         }
-        Factory.instance().loggingService.removeListener(myLoggingServiceListener)
+        try{
+            Factory.instance().loggingService.removeListener(myLoggingServiceListener)
+        }catch (t:Throwable){
+            viewModel.logStateToMyServer(SERVER_LOG_TAG,"onDestroy , try-catch in Factory.instance().loggingService.removeListener(myLoggingServiceListener)")
+        }
         if(mCall!=null) mCall=null
         if(mListener!=null) mListener=null
         mAudioManager?.isSpeakerphoneOn=false
