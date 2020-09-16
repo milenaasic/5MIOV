@@ -53,12 +53,12 @@ class RegistrationFragment : Fragment() {
 
         binding.phoneNumberEditText.setText(PLUS_NIGERIAN_PREFIX)
 
-       /* binding.register2TextView.apply {
+        binding.register2TextView.apply {
                 when (isVerificationByCallEnabled()){
                     true-> text=resources.getString(R.string._5miov_will_call_to_verify_your_number)
                     false->text=resources.getString(R.string._5miov_will_send_sms_with_token_to_verify_your_number)
                 }
-         }*/
+         }
 
         binding.registerButton.setOnClickListener {
 
@@ -136,7 +136,7 @@ class RegistrationFragment : Fragment() {
             if (response != null) {
 
                //set variable to define if registration process should use call or sms verification
-                (requireActivity() as RegistrationAuthorizationActivity).verificationByCallEnabled = response.callVerificationEnabled
+                //(requireActivity() as RegistrationAuthorizationActivity).verificationByCallEnabled = response.callVerificationEnabled
 
                 netResponseRegistration=response
 
@@ -328,7 +328,8 @@ class RegistrationFragment : Fragment() {
     }
 
     private fun checkForPermissions():Boolean{
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true
+            return true
+        /*if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true
         else {
             if (requireActivity().checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED ||
                 requireActivity().checkSelfPermission(Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED
@@ -341,7 +342,7 @@ class RegistrationFragment : Fragment() {
                 )
                 return false
             } else return true
-        }
+        }*/
 
     }
 

@@ -267,12 +267,14 @@ class SipFragment : Fragment() {
         Log.i(MYTAG, "INITIALIZE CORE funkcija")
         viewModel.logCredentialsForSipCall(sipUsername =sipUserName,sipPassword = sipPassword,sipDisplayname =sipCallerId,sipServer = sipServer)
         mSipServer=sipServer
-        mCore =
-            Factory.instance()
-                .createCore(
-                    null,
-                    null,
-                    requireActivity().applicationContext)
+        try {
+            mCore =
+                Factory.instance()
+                    .createCore(
+                        null,
+                        null,
+                        requireActivity().applicationContext)
+
 
         configureCore(sipUserName,sipPassword,sipCallerId)
         configureLogging()
@@ -286,6 +288,13 @@ class SipFragment : Fragment() {
         //mTimer = Timer("Linphone scheduler")
         mCore?.start()
         mTimer.schedule(lTask, 0, 20)
+
+        }catch (t:Throwable){
+            Log.e(MYTAG,"initializing mCore error ${t.message}")
+            viewModel.logStateToMyServer("SIP:initializing mCore error","error message:${t.message}")
+            startNavigation()
+
+        }
 
     }
 

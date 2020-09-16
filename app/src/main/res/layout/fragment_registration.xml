@@ -88,7 +88,7 @@
             android:text="@string/_5miov_will_send_sms_with_token_to_verify_your_number"
             android:textAlignment="center"
             android:textAppearance="@style/TextAppearance.AppCompat.Body2"
-            android:visibility="gone"
+            android:visibility="visible"
             app:layout_constraintEnd_toEndOf="@+id/register1_textView"
             app:layout_constraintStart_toStartOf="@+id/register1_textView"
             app:layout_constraintTop_toBottomOf="@+id/register1_textView" />

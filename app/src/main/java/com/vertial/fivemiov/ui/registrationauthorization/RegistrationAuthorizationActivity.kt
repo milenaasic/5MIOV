@@ -38,7 +38,7 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
     private val SPLASH_SCREEN_DURATION_IN_MILLIS=1000L
 
     //is user verification by call enabled or not
-    var verificationByCallEnabled=true
+    var verificationByCallEnabled=false
     var verificationCallerId=""
 
     companion object{

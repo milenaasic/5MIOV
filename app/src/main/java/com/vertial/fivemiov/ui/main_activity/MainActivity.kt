@@ -331,7 +331,7 @@ class MainActivity : AppCompatActivity() {
     private fun setSipFragmentUI() {
         binding.toolbarMain.apply {
             //navigationIcon = null
-            navigationIcon=resources.getDrawable(R.drawable.new_logo_cropped, null)
+            navigationIcon=resources.getDrawable(R.drawable.logo5m169, null)
             elevation = 0f
             title = resources.getString(R.string.empty_string)
 
