@@ -42,7 +42,10 @@ data class NetResponse_GetSipAccessCredentials(
     val appVersion:String?,
 
     @Json(name="authTokenMismatch")
-    val authTokenMismatch:Boolean
+    val authTokenMismatch:Boolean,
+
+    @Json(name="stunServer")
+    val stunServer:String
 
 )
 

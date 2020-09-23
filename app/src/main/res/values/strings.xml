@@ -81,7 +81,7 @@
     <string name="unable_to_make_call">Unable to make a call</string>
     <string name="clipboard_invalid_data_type">Clipboard contains an invalid data type</string>
     <string name="account_email_is_set">Your account is set</string>
-    <string name="something_went_wrong">Bad connection.Please,try again!</string>
+    <string name="something_went_wrong">Bad connection. Please,try again!</string>
     <string name="VOIP_not_supported">Unfortunately your current system does not support iOV NET calls."</string>
     <string name="no_SIP_permission">No permission to make VOIP call!</string>
     <string name="must_be_international_number">Must be international number</string>
@@ -124,7 +124,7 @@
     <string name="end_to_end_encrypted">end-to-end encrypted</string>
 
     <!-- SHARE FUNCTION-->
-    <string name="share_title">5MIOV-Make cheap international calls</string>
+    <string name="share_title">5MIOV - Make cheap international calls</string>
 
     <!-- DISCLAIMER-->
     <string name="disclaimer_title_important">Important</string>

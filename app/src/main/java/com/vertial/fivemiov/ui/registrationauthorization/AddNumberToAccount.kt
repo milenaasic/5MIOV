@@ -53,13 +53,13 @@ class AddNumberToAccount : Fragment() {
             binding.addNmbPhoneEditText.setText(activityViewModel?.enteredPhoneNumber)
         }else binding.addNmbPhoneEditText.setText(PLUS_NIGERIAN_PREFIX)
 
-        binding.addphoneTextView.apply {
+        /*binding.addphoneTextView.apply {
             when (isVerificationByCallEnabled()){
                 true-> text=resources.getString(R.string._5miov_will_call_to_verify_your_number)
                 false->text=resources.getString(R.string._5miov_will_send_sms_with_token_to_verify_your_number)
             }
 
-        }
+        }*/
 
         binding.addphoneButton.setOnClickListener {
 
@@ -141,7 +141,7 @@ class AddNumberToAccount : Fragment() {
             if(response!=null) {
 
                 //set variable to define if registration process should use call or sms verification
-                //(requireActivity() as RegistrationAuthorizationActivity).verificationByCallEnabled = response.callVerificationEnabled
+                (requireActivity() as RegistrationAuthorizationActivity).verificationByCallEnabled = response.callVerificationEnabled
 
                 netAddNumberToAccountResponse=response
 
@@ -162,29 +162,8 @@ class AddNumberToAccount : Fragment() {
 
                     }
 
-
                 }
 
-
-               /* when {
-                    response.success == true -> {
-
-                        // in verifyBySMS mode start listening for SMS
-                        if(!isVerificationByCallEnabled()) activityViewModel?.startSMSRetreiverFunction()
-
-                        showToast(response.usermessage)
-                        activityViewModel?.resetAddNumberToAccountNetSuccess()
-                        findNavController().navigate(AddNumberToAccountDirections.actionAddNumberToAccountToAuthorizationFragment())
-                    }
-
-                    response.success == false -> {
-                        showSnackBar(response.usermessage)
-                        activityViewModel?.resetAddNumberToAccountNetSuccess()
-                    }
-                }
-
-                binding.addphoneButton.isEnabled = true
-                showProgressBar(false)*/
             }
 
         })
@@ -200,7 +179,7 @@ class AddNumberToAccount : Fragment() {
                 // in verifyBySMS mode start listening for SMS
                 if(!isVerificationByCallEnabled()) activityViewModel?.startSMSRetreiverFunction()
 
-                //showToast(response.usermessage)
+                showToast(response.usermessage)
                 activityViewModel?.resetAddNumberToAccountNetSuccess()
                 findNavController().navigate(AddNumberToAccountDirections.actionAddNumberToAccountToAuthorizationFragment())
             }

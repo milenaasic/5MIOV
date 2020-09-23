@@ -90,11 +90,11 @@ class RepoSIPE1 (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIService,val m
         _getSipAccessCredentialsNetError.value=null
     }
 
-    fun logCredentialsForSipCall(sipUsername:String?,sipPassword:String?,sipDisplayname:String?,sipServer:String?){
+    fun logCredentialsForSipCall(sipUsername:String?,sipPassword:String?,sipDisplayname:String?,sipServer:String?,stunServer:String?){
         GlobalScope.launch {
             withContext(Dispatchers.IO){
                 val def=myAPI.sendErrorToServer(phoneNumber = "$sipUsername",process="initializeCore function",
-                    errorMsg= "credentials: $sipUsername,$sipPassword,$sipDisplayname,$sipServer")
+                    errorMsg= "credentials: $sipUsername,$sipPassword,$sipDisplayname,$sipServer,$stunServer")
                 try {
                     val defResponse=def.await()
                 }catch (t:Throwable){

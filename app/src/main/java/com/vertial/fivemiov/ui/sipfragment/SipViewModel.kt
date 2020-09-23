@@ -127,9 +127,9 @@ class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : Androi
         _navigateUp.value=false
     }
 
-    fun logCredentialsForSipCall(sipUsername:String?,sipPassword:String?,sipDisplayname:String?,sipServer:String?){
+    fun logCredentialsForSipCall(sipUsername:String?,sipPassword:String?,sipDisplayname:String?,sipServer:String?,stunServer:String?){
         mySipRepo.logCredentialsForSipCall(sipUsername = sipUsername,sipPassword = sipPassword,
-            sipDisplayname = sipDisplayname,sipServer = sipServer)
+            sipDisplayname = sipDisplayname,sipServer = sipServer,stunServer = stunServer)
 
     }
 

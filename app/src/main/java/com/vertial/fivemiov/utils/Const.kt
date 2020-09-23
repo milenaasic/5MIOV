@@ -70,6 +70,14 @@ const val TERMS_OF_USE=
         "</p>" +
         "<ul>" +
         "<li>" +
+        "\t<strong>Call Log</strong>" +
+        "</li>" +
+        "</ul>" +
+        "<p>" +
+        "To ensure better security for our users 5MIOV has integrated call verification feature. For this feature to work, we need permission to read your device's call log so we could determine if the call from us ever got to your device. 5MIOV doesn't store or use any other information from call logs and will only use it for verification purposes." +
+        "</p>" +
+        "<ul>" +
+        "<li>" +
         "\t<strong>Address Book</strong>" +
         "</li>" +
         "</ul>" +
@@ -166,7 +174,7 @@ const val TERMS_OF_USE=
         "</strong>" +
         "</p>" +
         "<p>" +
-        "Last update: 15th of May 2020</p>"
+        "Last update: 16th of September 2020</p>"
 
 
 

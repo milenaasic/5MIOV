@@ -92,12 +92,15 @@ class SipFragment : Fragment() {
         LoggingServiceListener { logService, domain, lev, message ->
             when (lev) {
                 LogLevel.Debug -> {Log.d(domain, message)
-                    Log.d(MYTAG,"$domain, $message") }
+                    }
 
                 LogLevel.Message -> {Log.i(domain, message)
-                    Log.i(MYTAG,"$domain, $message")   }
+                    Log.i(MYTAG,"$domain, $message")
+                    if(message.contains("Via: SIP/2.0/UDP",true)) viewModel.logStateToMyServer("Linphone REQEST-RESPONSE  ","$message")
+
+                     }
                 LogLevel.Warning -> {Log.w(domain, message)
-                    Log.w(MYTAG,"$domain, $message")  }
+                     }
                 LogLevel.Error -> {Log.e(domain, message)
                     Log.e(MYTAG,"$domain, $message")
                     viewModel.logStateToMyServer("Linphone LoggingService","error:$domain, $message")  }
@@ -124,7 +127,6 @@ class SipFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         Log.i(MYTAG, "ONLIFE onCreateView")
-        Log.i("SIP_FLOW"," Sip Fragment ONLIFE onCreateView")
         binding= DataBindingUtil.inflate(inflater, R.layout.fragment_sip,container,false)
         binding.nametextView.text=args.contactName
 
@@ -148,7 +150,6 @@ class SipFragment : Fragment() {
 
             binding.sipendbutton.setOnClickListener {
                 Log.i(MYTAG, "call end button clicked ")
-                Log.i("SIP_FLOW"," call end button clicked")
 
                 val currentcall=mCore?.currentCall
                 Log.i("SIP_FLOW"," Sip Fragment currentCall : $currentcall")
@@ -221,7 +222,11 @@ class SipFragment : Fragment() {
                         && response.sipPassword.isNotEmpty() && response.sipPassword.isNotBlank()
                         && response.sipServer.isNotEmpty() && response.sipServer.isNotBlank()
                 ){
-                    initializeCore(sipUserName = response.sipUserName,sipPassword = response.sipPassword,sipServer = response.sipServer,sipCallerId = response.sipCallerId)
+                    initializeCore( sipUserName = response.sipUserName,
+                                    sipPassword = response.sipPassword,
+                                    sipServer = response.sipServer,
+                                    sipCallerId = response.sipCallerId,
+                                    stunServer = response.stunServer)
                     viewModel.resetgetSipAccountCredentialsNetSuccess()
                 }else {
                         showToast(resources.getString(R.string.something_went_wrong))
@@ -263,9 +268,9 @@ class SipFragment : Fragment() {
         menu.findItem(R.id.aboutFragment).isVisible=false
     }
 
-    private fun initializeCore(sipUserName:String, sipPassword:String, sipServer:String,sipCallerId:String) {
+    private fun initializeCore(sipUserName:String, sipPassword:String, sipServer:String,sipCallerId:String,stunServer:String) {
         Log.i(MYTAG, "INITIALIZE CORE funkcija")
-        viewModel.logCredentialsForSipCall(sipUsername =sipUserName,sipPassword = sipPassword,sipDisplayname =sipCallerId,sipServer = sipServer)
+        viewModel.logCredentialsForSipCall(sipUsername =sipUserName,sipPassword = sipPassword,sipDisplayname =sipCallerId,sipServer = sipServer, stunServer=stunServer)
         mSipServer=sipServer
         try {
             mCore =
@@ -276,7 +281,7 @@ class SipFragment : Fragment() {
                         requireActivity().applicationContext)
 
 
-        configureCore(sipUserName,sipPassword,sipCallerId)
+        configureCore(username = sipUserName,password = sipPassword,callerID = sipCallerId,stunServer = stunServer)
         configureLogging()
 
         mProxyConfig= mCore?.createProxyConfig()
@@ -300,21 +305,19 @@ class SipFragment : Fragment() {
 
     private fun makeSipAudioCall() {
         //start a call
-        Log.i(MYTAG," proxy config list je ${mCore?.proxyConfigList?.size}")
-        Log.i(MYTAG," username je ${mCore?.defaultProxyConfig?.identityAddress?.username}")
-        Log.i(MYTAG,"stanje registracije ${mCore?.defaultProxyConfig?.state} ")
-        Log.i(MYTAG," avpf mode iz Call ${mCore?.defaultProxyConfig?.avpfMode}, enabled ${mCore?.defaultProxyConfig?.avpfEnabled()} ")
-        Log.i(MYTAG," media encryption iz Call je ${mCore?.mediaEncryption}")
-        Log.i(MYTAG,"broj koji zovem je ${args.contactNumber}, server je $mSipServer")
 
-        val numberToCall=PhoneNumberUtils.normalizeNumber(args.contactNumber)
-        Log.i(MYTAG,"broj koji zovem normalizovan je ${numberToCall}")
+        val numberFromArgs=PhoneNumberUtils.normalizeNumber(args.contactNumber)
 
+        //if the number does not start with a plus, plus must be added
+        val numberToCall=if(!numberFromArgs.startsWith("+")) "+$numberFromArgs"
+                                else numberFromArgs
+
+        Log.i(MYTAG,"calling number: ${numberToCall}")
 
         if(numberToCall!=null) {
             var callParams = mCore?.createCallParams(null)
             callParams?.enableEarlyMediaSending(true)
-            Log.i(MYTAG," call params ${callParams?.usedAudioPayloadType},audio enabled ${callParams?.audioEnabled()}, early media enabled ${callParams?.earlyMediaSendingEnabled()} ")
+
             viewModel.logStateToMyServer("SIP - makeSipAudioCall","calling number: sip:$numberToCall@$mSipServer")
             try {
                 if(mSipServer!=null) mCall = mCore?.inviteWithParams("sip:$numberToCall@$mSipServer",callParams)
@@ -380,7 +383,7 @@ class SipFragment : Fragment() {
 
 
 
-    private fun configureCore(username:String,password:String,callerID:String){
+    private fun configureCore(username:String,password:String,callerID:String,stunServer: String){
         val myAuthInfo=Factory.instance().createAuthInfo(username,username,password,null,null,null)
 
         mCore?.apply {
@@ -393,12 +396,11 @@ class SipFragment : Fragment() {
             enableWifiOnly(false)
             addAuthInfo(myAuthInfo)
             enableLogCollection(LogCollectionState.Enabled)
-            logCollectionUploadServerUrl="https://5miov.vertial.net/api/mobileLog"
-            Log.i(MYTAG," media device is ${mCore?.mediaDevice}, noRTP Timeout ${mCore?.nortpTimeout}, sdp200AckEnabled ${mCore?.sdp200AckEnabled()}," +
-                    "soud device list ${mCore?.soundDevicesList?.size}")
-
+            if(stunServer.isNotEmpty()) setStunServer(stunServer)
 
         }
+
+        viewModel.logStateToMyServer("Configure Core","stun server:${mCore?.stunServer}")
 
         // set only GSM codec
         for(item in mCore?.audioPayloadTypes?.toList()!!){

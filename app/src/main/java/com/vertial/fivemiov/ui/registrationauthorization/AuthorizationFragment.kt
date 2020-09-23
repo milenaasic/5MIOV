@@ -41,7 +41,7 @@ class AuthorizationFragment : Fragment() {
     private  var callStateListener: PhoneStateListener?=null
     private val VERIFIED_BY_CALL="verifiedByCall"
     private val webAPPIsMakingCall_Code="55"
-    private val TIME_TO_WAIT_FOR_CALL=8000L
+    private val TIME_TO_WAIT_FOR_CALL=6000L
 
 
 
@@ -229,13 +229,12 @@ class AuthorizationFragment : Fragment() {
                         Log.i(MYTAG, "state $state,  $incomingNumber")
                         // If phone ringing
                         if (state == TelephonyManager.CALL_STATE_RINGING) {
-                            Log.i(MYTAG, "ringing $state,  $incomingNumber")
-                            // Toast.makeText(requireContext(), "Phone is Ringing", Toast.LENGTH_LONG).show()
+
                             // call create route
                             val numberToAwait =
                                 (requireActivity() as RegistrationAuthorizationActivity).verificationCallerId
                             Log.i(MYTAG, "number to await is $numberToAwait")
-                            if (incomingNumber.equals(numberToAwait)) {
+                            if (checkIfCurrentCallIdIsInList(makeListOfVerificationCallerIds(numberToAwait),incomingNumber)) {
                                 activityViewModel.submitButtonClicked(VERIFIED_BY_CALL)
                                 telephonyManager?.listen(callStateListener, PhoneStateListener.LISTEN_NONE)
                                 }
@@ -474,16 +473,21 @@ class AuthorizationFragment : Fragment() {
 
 
 
-    /*private fun makeListOfVerificationCallerIds(verifivationCallerId:String):List<String>{
+    private fun makeListOfVerificationCallerIds(verifivationCallerId:String):List<String>{
         return (verifivationCallerId as CharSequence).split(",")
-    }*/
+    }
 
-    /*private fun checkIfCurrentCallIdIsInList(callIdsList:List<String>):Boolean{
+    private fun checkIfCurrentCallIdIsInList(callIdsList:List<String>,numberToMatch:String):Boolean{
         var isInList=false
+        val regex=Regex("[0-9]+")
+        Log.i(MYTAG," incoming number is $numberToMatch, list of callerIDs $callIdsList")
         for (item in callIdsList){
-            if()
+           if(regex.find(item)?.value==regex.find(numberToMatch)?.value) {
+                isInList=true
+                break
+            }
         }
         return isInList
-    }*/
+    }
 
 }
