@@ -1,6 +1,6 @@
 <resources>
 
-    <string name="app_name">5m IoV</string>
+    <string name="app_name">Hello</string>
     <string name="empty_string">  </string>
 
     <!-- Menu names -->
@@ -21,12 +21,12 @@
 
     <!-- layout items text -->
     <string name="name">Name</string>
-    <string name="_5miov">5m IoV</string>
+    <string name="_5miov">Hello</string>
     <string name="to_register_enter_your_phone_number">To Register Enter Your Phone Number</string>
     <string name="phone_number">phone number</string>
     <string name="register">REGISTER</string>
-    <string name="_5miov_will_send_sms_with_token_to_verify_your_number">5m IoV will send SMS with OTP to verify your number</string>
-    <string name="_5miov_will_call_to_verify_your_number">You will receive a phone call from 5m IoV to verify your number</string>
+    <string name="_5miov_will_send_sms_with_token_to_verify_your_number">Hello IoV will send SMS with OTP to verify your number</string>
+    <string name="_5miov_will_call_to_verify_your_number">You will receive a phone call from Hello to verify your number</string>
     <string name="enter_token_sent_to_your_phone_number">No Call? Try SMS.</string>
     <string name="token">verification code</string>
     <string name="submit">SUBMIT</string>
@@ -99,10 +99,10 @@
 
     <!-- SIP messages-->
     <string name="sip_failure_message">Something went wrong!</string>
-    <string name="sip_registering">Registering...</string>
+    <string name="sip_registering">Registering…</string>
     <string name="sip_reg_done">Registration Done.</string>
     <string name="sip_reg_failed">Registration Failed.</string>
-    <string name="sip_calling">Calling...</string>
+    <string name="sip_calling">Calling…</string>
     <string name="sip_busy">Busy.</string>
     <string name="sip_call_established">Call Established.</string>
     <string name="sip_call_ended">Call Ended.</string>
@@ -124,7 +124,7 @@
     <string name="end_to_end_encrypted">end-to-end encrypted</string>
 
     <!-- SHARE FUNCTION-->
-    <string name="share_title">5MIOV-Make cheap international calls</string>
+    <string name="share_title">Hello-Make cheap international calls</string>
 
     <!-- DISCLAIMER-->
     <string name="disclaimer_title_important">Important</string>
@@ -134,7 +134,7 @@
     <string name="make_cheap_international_calls">Make Cheap International Calls</string>
 
     <!-- SNACKBAR MESSAGES-->
-    <string name="call_log_permission_not_granted">5m IoV needs this permission to verify account by phone call</string>
+    <string name="call_log_permission_not_granted">Hello needs this permission to verify account by phone call</string>
     <string name="enter_correct_number">Please, go back and correct your number.</string>
 
 </resources>
