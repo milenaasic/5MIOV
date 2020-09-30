@@ -13,7 +13,7 @@ android {
     compileSdkVersion 29
     buildToolsVersion "29.0.2"
     defaultConfig {
-        applicationId "com.vertial.fivemiov"
+        applicationId "com.adinfinitum.hello"
         minSdkVersion 21
         targetSdkVersion 29
         versionCode 1
@@ -45,15 +45,17 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug{
-
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
 
 
 
     }
 
-    dataBinding {
-        enabled = true
+    buildFeatures{
+        dataBinding=true
     }
 }
 
@@ -74,7 +76,7 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
 
     //material design
-    implementation 'com.google.android.material:material:1.2.0'
+    implementation 'com.google.android.material:material:1.2.1'
 
     //retrofit
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
@@ -87,7 +89,7 @@ dependencies {
 
 
     // Coroutines
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.0"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.7"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.0"
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0'
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.vertial.fivemiov">
+    package="com.adinfinitum.hello">
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -21,11 +21,11 @@
 
     <uses-feature android:name="android.hardware.sensor.proximity" android:required="false"/>
 
-    <uses-feature android:name="android.software.webview" android:required="false"/>
+    <uses-feature android:name="android.software.webview" android:required="true"/>
 
 
     <application
-        android:name=".ui.myapplication.MyApplication"
+        android:name="com.adinfinitum.hello.ui.myapplication.MyApplication"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -34,7 +34,7 @@
         android:theme="@style/AppTheme">
 
         <activity
-            android:name=".ui.registrationauthorization.RegistrationAuthorizationActivity"
+            android:name="com.adinfinitum.hello.ui.registrationauthorization.RegistrationAuthorizationActivity"
             android:screenOrientation="portrait"
             android:theme="@style/RegistrationTheme"
             tools:ignore="LockedOrientationActivity">
@@ -46,10 +46,10 @@
         </activity>
 
 
-        <activity android:name=".ui.webView.WebViewActivity" />
+        <activity android:name="com.adinfinitum.hello.ui.webView.WebViewActivity" />
 
         <activity
-            android:name=".ui.main_activity.MainActivity"
+            android:name="com.adinfinitum.hello.ui.main_activity.MainActivity"
             android:launchMode="singleTop"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity">

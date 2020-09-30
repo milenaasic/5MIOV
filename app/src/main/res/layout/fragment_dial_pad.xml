@@ -331,7 +331,7 @@
             android:layout_height="1dp"
             app:behavior_hideable="true"
             app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
-            android:name="com.vertial.fivemiov.ui.fragment_recent_calls.RecentCallsFragment" />
+            android:name="com.adinfinitum.hello.ui.fragment_recent_calls.RecentCallsFragment" />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 </layout>
