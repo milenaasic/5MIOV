@@ -3,8 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 <data>
-    <variable name="clickListener" type="com.adinfinitum.hello.ui.fragment_recent_calls.RecentCallClickListener"/>
-    <variable name="recentCallItem" type="com.adinfinitum.hello.model.RecentCall" />
+    <variable name="clickListener" type="app.adinfinitum.ello.ui.fragment_recent_calls.RecentCallClickListener"/>
+    <variable name="recentCallItem" type="app.adinfinitum.ello.model.RecentCall" />
 
 </data>
 

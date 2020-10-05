@@ -4,9 +4,9 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <data>
-        <variable name="clickListener" type="com.adinfinitum.hello.ui.fragment_main.ContactItemClickListener"/>
-        <variable name="contactItem" type="com.adinfinitum.hello.model.ContactItem" />
-        <variable name="viewType" type="com.adinfinitum.hello.ui.fragment_main.MyViewHolderType" />
+        <variable name="clickListener" type="app.adinfinitum.ello.ui.fragment_main.ContactItemClickListener"/>
+        <variable name="contactItem" type="app.adinfinitum.ello.model.ContactItem" />
+        <variable name="viewType" type="app.adinfinitum.ello.ui.fragment_main.MyViewHolderType" />
         <variable name="textToColor" type="String" />
         <variable name="myColor" type="String" />
     </data>
