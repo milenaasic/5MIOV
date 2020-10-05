@@ -7,15 +7,15 @@
 
     <variable
         name="phoneItem"
-        type="com.vertial.fivemiov.model.PhoneItem" />
+        type="app.adinfinitum.ello.model.PhoneItem" />
 
         <variable
             name="sipClick"
-            type="com.vertial.fivemiov.ui.fragment_detail_contact.SipItemClickListener" />
+            type="app.adinfinitum.ello.ui.fragment_detail_contact.SipItemClickListener" />
 
         <variable
             name="prenumberClick"
-            type="com.vertial.fivemiov.ui.fragment_detail_contact.PrenumberItemClickListener" />
+            type="app.adinfinitum.ello.ui.fragment_detail_contact.PrenumberItemClickListener" />
 
 
     </data>

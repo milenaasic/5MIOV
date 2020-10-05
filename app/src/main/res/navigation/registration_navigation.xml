@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/registrationFragment"
-        android:name="com.vertial.fivemiov.ui.registrationauthorization.RegistrationFragment"
+        android:name="app.adinfinitum.ello.ui.registrationauthorization.RegistrationFragment"
         android:label="fragment_registration"
         tools:layout="@layout/fragment_registration" >
         <action
@@ -27,12 +27,12 @@
     </fragment>
     <fragment
         android:id="@+id/authorizationFragment"
-        android:name="com.vertial.fivemiov.ui.registrationauthorization.AuthorizationFragment"
+        android:name="app.adinfinitum.ello.ui.registrationauthorization.AuthorizationFragment"
         android:label="fragment_authorization"
         tools:layout="@layout/fragment_authorization" />
     <fragment
         android:id="@+id/emptyLogoFragment"
-        android:name="com.vertial.fivemiov.ui.emty_logo_fragment.EmptyLogoFragment"
+        android:name="app.adinfinitum.ello.ui.emty_logo_fragment.EmptyLogoFragment"
         android:label="fragment_empty_logo"
         tools:layout="@layout/fragment_empty_logo" >
         <action
@@ -43,7 +43,7 @@
     </fragment>
     <fragment
         android:id="@+id/addNumberToAccount"
-        android:name="com.vertial.fivemiov.ui.registrationauthorization.AddNumberToAccount"
+        android:name="app.adinfinitum.ello.ui.registrationauthorization.AddNumberToAccount"
         android:label="AddNumberToAccount"
         tools:layout="@layout/fragment_add_number_to_account" >
         <action
@@ -54,7 +54,7 @@
     </fragment>
     <fragment
         android:id="@+id/numberExistsInDatabase"
-        android:name="com.vertial.fivemiov.ui.registrationauthorization.NumberExistsInDatabase"
+        android:name="app.adinfinitum.ello.ui.registrationauthorization.NumberExistsInDatabase"
         android:label="NumberExistsInDatabase"
         tools:layout="@layout/fragment_number_exists_in_database">
         <action

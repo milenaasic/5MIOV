@@ -14,7 +14,7 @@
         android:id="@+id/menuItemRecentCalls"
         android:icon="@drawable/ic_call_made_black"
         android:orderInCategory="1"
-        android:title="Recent"
+        android:title="@string/recent"
         app:showAsAction="always" />
 
 
