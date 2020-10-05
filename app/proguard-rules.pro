@@ -33,7 +33,7 @@
 #    *;
 #}
 
--keep class com.adinfinitum.hello.ui.fragment_recent_calls.**
+-keep class app.adinfinitum.ello.ui.fragment_recent_calls.**
 
 -keep class io.jsonwebtoken.** {
   public protected private *;
