@@ -10,7 +10,7 @@ data class NetRequest_SetE1Prenumber(
     @Json(name="token")
     val authToken:String,
 
-    @Json(name="phone")
+    @Json(name="phoneNumber")
     val phoneNumber:String
 
 )

@@ -12,6 +12,7 @@ import app.adinfinitum.ello.utils.*
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private const val MY_TAG="MY_WebViewActivViewMode"
 class WebViewViewModel(val myRepository: RepoContacts, application: Application) : AndroidViewModel(application) {
@@ -30,7 +31,7 @@ class WebViewViewModel(val myRepository: RepoContacts, application: Application)
 
     val phoneBookExported=myRepository.exportPhoneBookWebViewNetworkSuccess
 
-    //logging out zbog token mismatch
+    //logging out- token mismatch
     val loggingOut=myRepository.loggingOut
     fun resetLoggingOutToFalse(){
         myRepository.resetLoggingOutToFalse()
@@ -54,12 +55,10 @@ class WebViewViewModel(val myRepository: RepoContacts, application: Application)
 
         viewModelScope.launch {
 
-            val deferredList = viewModelScope.async(IO) {
-                myRepository.getRawContactsPhonebook()
-            }
             try {
-
-                    val resultList = deferredList.await()
+                    val resultList = withContext(IO) {
+                                    myRepository.getRawContactsPhonebook()
+                                }
                     if (!resultList.isNullOrEmpty()) _phoneBook.value = resultList
 
             } catch (t: Throwable) {
@@ -70,7 +69,6 @@ class WebViewViewModel(val myRepository: RepoContacts, application: Application)
         }
 
     }
-
 
 
     fun exportPhoneBook(phoneBook:List<PhoneBookItem>){

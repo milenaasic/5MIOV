@@ -129,7 +129,7 @@ class RegistrationFragment : Fragment() {
             if (response != null) {
 
                //set variable to define if registration process should use call or sms verification
-                (requireActivity() as RegistrationAuthorizationActivity).verificationByCallEnabled = response.callVerificationEnabled
+                //(requireActivity() as RegistrationAuthorizationActivity).verificationByCallEnabled = response.callVerificationEnabled
 
                 netResponseRegistration=response
 

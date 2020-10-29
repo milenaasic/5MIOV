@@ -47,7 +47,16 @@ class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : Androi
     fun getSipAccountCredentials(){
 
         viewModelScope.launch{
-            val deferredUser = viewModelScope.async(IO) {
+            try {
+                val myUser= withContext(Dispatchers.IO){
+                    mySipRepo.getUserNoLiveData()
+                }
+                if(myUser.userToken.isNotEmpty() && myUser.userPhone.isNotEmpty()) mySipRepo.getSipAccessCredentials(token = myUser.userToken,phone = myUser.userPhone)
+            }catch (e: Exception) {
+                Log.i(MYTAG,"db error in GetSipAccountCredentials ${e.message}")
+            }
+
+            /*val deferredUser = viewModelScope.async(IO) {
 
                 mySipRepo.getUserNoLiveData()
             }
@@ -57,10 +66,10 @@ class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : Androi
 
             } catch (e: Exception) {
                 Log.i(MYTAG,"db error in GetSipAccountCredentials ${e.message}")
-            }
+            }*/
 
 
-            }
+        }
     }
 
     //reset getCredentials

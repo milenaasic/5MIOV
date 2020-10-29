@@ -1,6 +1,7 @@
 package app.adinfinitum.ello.data
 
 import android.content.ContentResolver
+import android.net.Uri
 import android.provider.ContactsContract
 import android.telephony.PhoneNumberUtils
 import android.util.Log
@@ -195,8 +196,62 @@ class RepoContacts (val contentResolver: ContentResolver,
         }
     }
 
+    //Detail fragment
+    fun getPhoneNumbersForContact(lookUpKey:String):List<PhoneItem>{
+
+        val CURSOR_ID=0
+        val CURSOR_PHONE=1
+        val CURSOR_PHONE_TYPE=2
+        val CURSOR_PHOTO_URI=3
+        val CURSOR_PHOTO_FILE_ID=4
+
+        val PROJECTION: Array<out String> = arrayOf(
+            ContactsContract.CommonDataKinds.Phone._ID,
+            ContactsContract.CommonDataKinds.Phone.NUMBER,
+            ContactsContract.CommonDataKinds.Phone.TYPE,
+            ContactsContract.CommonDataKinds.Photo.PHOTO_URI,
+            ContactsContract.CommonDataKinds.Photo.PHOTO_FILE_ID
+        )
+
+        val SELECTION: String = "${ContactsContract.CommonDataKinds.Phone.LOOKUP_KEY} = ?"
+
+        val selectionArguments=arrayOf<String>(lookUpKey)
+
+        val cursor = contentResolver.query(
+            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+            PROJECTION,
+            SELECTION,
+            selectionArguments,
+            null
+        )
+
+        if (cursor == null) return emptyList()
+
+        val list = mutableListOf<PhoneItem>()
+
+        try {
+            while (cursor.moveToNext()) {
+                list.add(
+                    PhoneItem(
+                        cursor.getString(CURSOR_PHONE),
+                        cursor.getInt(CURSOR_PHONE_TYPE),
+                        cursor.getString(CURSOR_PHOTO_URI),
+
+                    )
+
+                )
+            }
+        } finally {
+            cursor.close();
+        }
+        Log.i(MY_TAG,"convert cursor u listu $list")
+
+        return list
+
+    }
+
     // ovo mi treba za detail fragment
-     fun getInternationalPhoneNumbersForContact(lookUpKey:String):List<PhoneItem>{
+     /*fun getInternationalPhoneNumbersForContact(lookUpKey:String):List<PhoneItem>{
 
         val CURSOR_ID=0
         val CURSOR_PHONE=1
@@ -247,10 +302,69 @@ class RepoContacts (val contentResolver: ContentResolver,
         }
 
         return list.distinctBy {it.phoneNumber}
+    }*/
+
+
+    //Retreive all contacts from phonebook, no filters
+    fun getAllContacts(uri: Uri):List<ContactItem>{
+
+        val CURSOR_ID = 0
+        val CURSOR_LOOKUP_KEY = 1
+        val CURSOR_NAME = 2
+        val CURSOSR_PHOTO_THUMBNAIL_URI = 3
+        val CURSOR_HAS_PHONE_NUMBER = 4
+
+        val PROJECTION: Array<out String> = arrayOf(
+            ContactsContract.Contacts._ID,
+            ContactsContract.Contacts.LOOKUP_KEY,
+            ContactsContract.Contacts.DISPLAY_NAME_PRIMARY,
+            ContactsContract.Contacts.PHOTO_THUMBNAIL_URI,
+            ContactsContract.Contacts.HAS_PHONE_NUMBER
+        )
+
+        val SELECTION: String =
+            ("((${ContactsContract.Contacts.DISPLAY_NAME_PRIMARY} NOTNULL) AND (${ContactsContract.Contacts.HAS_PHONE_NUMBER} =1) " +
+                    "AND (${ContactsContract.Contacts.DISPLAY_NAME_PRIMARY}!= '' ))")
+
+        val cursor = contentResolver.query(
+            uri,
+            PROJECTION,
+            SELECTION,
+            null,
+            "${ContactsContract.Contacts.DISPLAY_NAME_PRIMARY} ASC"
+        )
+
+        if (cursor == null) return emptyList()
+        else{
+            val list = mutableListOf<ContactItem>()
+
+            try {
+                while (cursor.moveToNext()) {
+                    list.add(
+                        ContactItem(
+                            cursor.getLong(CURSOR_ID),
+                            cursor.getString(CURSOR_LOOKUP_KEY),
+                            cursor.getString(CURSOR_NAME),
+                            cursor.getString(CURSOSR_PHOTO_THUMBNAIL_URI),
+                            cursor.getString(CURSOR_HAS_PHONE_NUMBER)
+                        )
+                    )
+                }
+            } finally {
+                cursor.close();
+            }
+
+            Log.i(MY_TAG, "convert cursor u listu $list")
+
+
+            return list
+        }
+
     }
 
+
     //all contacts with international numbers
-    fun getAllRawContactWithInternPhoneNumber():List<ContactItem>{
+    /*fun getAllRawContactWithInternPhoneNumber():List<ContactItem>{
 
         var resultList= mutableListOf<ContactItem>()
 
@@ -271,8 +385,11 @@ class RepoContacts (val contentResolver: ContentResolver,
 
         )
 
+        //querry for specific phone numbers
         val SELECTION: String = "(${ContactsContract.CommonDataKinds.Phone.NUMBER} != '') AND (${ContactsContract.CommonDataKinds.Phone.NUMBER} NOT LIKE '+234%') " +
                 "AND (${ContactsContract.CommonDataKinds.Phone.NUMBER} NOT LIKE '234%') AND (${ContactsContract.CommonDataKinds.Phone.NUMBER} NOT LIKE '0%') "
+
+
 
         val sortOrder = "${ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME_PRIMARY} ASC"
 
@@ -306,7 +423,7 @@ class RepoContacts (val contentResolver: ContentResolver,
         val noDuplicatesList=resultList.toSet().toList()
         Log.i(MY_TAG, "no duplicates contacts list ${noDuplicatesList}")
         return noDuplicatesList
-    }
+    }*/
 
 
 
@@ -329,8 +446,13 @@ class RepoContacts (val contentResolver: ContentResolver,
             ContactsContract.CommonDataKinds.Phone.NUMBER
         )
 
-        val SELECTION: String = "(${ContactsContract.CommonDataKinds.Phone.NUMBER} != '') AND (${ContactsContract.CommonDataKinds.Phone.NUMBER} NOT LIKE '+234%') " +
-                "AND (${ContactsContract.CommonDataKinds.Phone.NUMBER} NOT LIKE '234%') AND (${ContactsContract.CommonDataKinds.Phone.NUMBER} NOT LIKE '0%') "
+        /*val SELECTION: String = "(${ContactsContract.CommonDataKinds.Phone.NUMBER} != '') AND (${ContactsContract.CommonDataKinds.Phone.NUMBER} NOT LIKE '+234%') " +
+                "AND (${ContactsContract.CommonDataKinds.Phone.NUMBER} NOT LIKE '234%') AND (${ContactsContract.CommonDataKinds.Phone.NUMBER} NOT LIKE '0%') "*/
+
+        val SELECTION: String =
+            ("((${ContactsContract.Contacts.DISPLAY_NAME_PRIMARY} NOTNULL) AND (${ContactsContract.Contacts.HAS_PHONE_NUMBER} =1) " +
+                    "AND (${ContactsContract.Contacts.DISPLAY_NAME_PRIMARY}!= '' ))")
+
 
         val sortOrder = "${ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME_PRIMARY} ASC"
 

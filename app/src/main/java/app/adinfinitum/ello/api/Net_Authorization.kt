@@ -6,10 +6,10 @@ import com.squareup.moshi.JsonClass
 @JsonClass(generateAdapter = true)
 data class NetRequest_Authorization(
 
-    @Json(name="number")
+    @Json(name="phoneNumber")
     val phoneNumber:String,
 
-    @Json(name="token")
+    @Json(name="verificationCode")
     val smstoken:String,
 
     @Json(name="email")

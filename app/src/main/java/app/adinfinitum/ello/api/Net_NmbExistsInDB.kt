@@ -6,7 +6,7 @@ import com.squareup.moshi.JsonClass
 @JsonClass(generateAdapter = true)
 data class NetRequest_NmbExistsInDB_NoAccount(
 
-    @Json(name="number")
+    @Json(name="phoneNumber")
     val phoneNumber:String,
 
     @Json(name="signIn")

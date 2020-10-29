@@ -7,9 +7,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import app.adinfinitum.ello.database.MyDatabaseDao
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.lang.Exception
 
 
@@ -27,7 +29,7 @@ class AboutFragmentViewModel (val myDatabaseDao: MyDatabaseDao, application: App
         getWebApiVersion()
     }
 
-     private fun getWebApiVersion() {
+     /*private fun getWebApiVersion() {
 
          viewModelScope.launch {
              val webapiDef = viewModelScope.async (IO){
@@ -42,6 +44,21 @@ class AboutFragmentViewModel (val myDatabaseDao: MyDatabaseDao, application: App
              }
          }
 
+     }*/
+
+     private fun getWebApiVersion(){
+            viewModelScope.launch {
+                try {
+                        val webApiVer=withContext(Dispatchers.IO){
+                                                        myDatabaseDao.getWebApiVersion()
+                                                }
+                        _webApiVersion.value=webApiVer
+
+                } catch (e:Exception){
+                    Log.i(MYTAG, " DB error ${e.message}")
+                }
+
+             }
      }
 
 

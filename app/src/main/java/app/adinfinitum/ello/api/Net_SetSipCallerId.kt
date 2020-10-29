@@ -18,7 +18,7 @@ data class NetRequest_SetSipCallerId(
     @Json(name="sipCallerId")
     val sipCallerId:String,
 
-    @Json(name="phone")
+    @Json(name="phoneNumber")
     val phoneNumber:String
 
 )

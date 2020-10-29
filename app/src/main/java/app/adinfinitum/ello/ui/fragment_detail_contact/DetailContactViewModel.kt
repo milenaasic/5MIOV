@@ -37,7 +37,7 @@ class DetailContactViewModel(val contactLookUp:String,val myRepository: RepoCont
 
                 try {
                     val defList = viewModelScope.async(IO) {
-                        myRepository.getInternationalPhoneNumbersForContact(contactLookUp)
+                        myRepository.getPhoneNumbersForContact(contactLookUp)
                     }
                     val list=defList.await()
                     _phoneList.value=list

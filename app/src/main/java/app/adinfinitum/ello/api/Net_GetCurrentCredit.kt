@@ -9,7 +9,7 @@ data class NetRequest_GetCurrentCredit(
     @Json(name="token")
     val authToken:String,
 
-    @Json(name="phone")
+    @Json(name="phoneNumber")
     val phoneNumber:String
 )
 

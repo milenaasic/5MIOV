@@ -9,7 +9,7 @@ data class NetRequest_GetSipCallerIds(
     @Json(name="token")
     val authToken:String,
 
-    @Json(name="phone")
+    @Json(name="phoneNumber")
     val phoneNumber:String
 
 )

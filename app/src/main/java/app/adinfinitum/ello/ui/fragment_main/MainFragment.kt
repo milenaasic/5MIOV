@@ -116,19 +116,19 @@ class MainFragment : Fragment(){
         binding.mainFregmRecViewLinLayout.setHasFixedSize(true)
         binding.mainFregmRecViewLinLayout.adapter=contactsAdapter
 
+        viewModel.populateContactList("")
+
     }
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-       activityViewModel.fullContactListWithInternationalNumbers.observe(viewLifecycleOwner,Observer{
+       /*activityViewModel.fullContactListWithInternationalNumbers.observe(viewLifecycleOwner,Observer{
         if(it!=null){
             contactsAdapter.dataList=convertListWithPhonesToContactItemList(it)
         }
-       }
-
-       )
+       })*/
 
         viewModel.contactList.observe(viewLifecycleOwner, Observer {list->
 
@@ -140,6 +140,15 @@ class MainFragment : Fragment(){
             if(it!=null) binding.nbOfContactsTextView.text=String.format(resources.getString(R.string.nb_of_contacts_found,it))
 
          })
+
+
+        viewModel.currentSearchString.observe(viewLifecycleOwner, Observer {
+            contactsAdapter.stringToColor=it
+
+        })
+
+
+
 
         viewModel.loggingOut.observe(viewLifecycleOwner, Observer {
             if(it!=null){
@@ -190,15 +199,15 @@ class MainFragment : Fragment(){
 
             override fun onQueryTextSubmit(p0: String?): Boolean {
                 Log.i(MYTAG,"on qerry text submit $p0")
-
+                if(!p0.isNullOrBlank()) viewModel.populateContactList(p0)
                 return true
             }
 
             override fun onQueryTextChange(p0: String?): Boolean {
                 Log.i(MYTAG,"on qerry text change $p0")
-
-                contactsAdapter.stringToColor=p0
-                viewModel.querryContactList(p0)
+                //contactsAdapter.stringToColor=p0
+                //viewModel.querryContactList(p0)
+                viewModel.populateContactList(p0?:"")
                 return true
             }
 
@@ -222,7 +231,7 @@ class MainFragment : Fragment(){
     override fun onStart() {
         super.onStart()
         if(checkForPermissions()){
-                    viewModel.populateContactList()
+                    //viewModel.populateContactList()
                     if(shouldExportPhoneBook()) (requireActivity() as MainActivity).exportPhoneBook()
         }
 
@@ -278,7 +287,7 @@ class MainFragment : Fragment(){
             MY_PERMISSIONS_REQUEST_READ_CONTACTS -> {
                 // If request is cancelled, the result arrays are empty.
                 if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                    viewModel.populateContactList()
+                    viewModel.populateContactList("")
                     if(shouldExportPhoneBook()) (requireActivity() as MainActivity).exportPhoneBook()
                 } else {
                     showSnackBar(resources.getString(R.string.no_permission_read_contacts))
