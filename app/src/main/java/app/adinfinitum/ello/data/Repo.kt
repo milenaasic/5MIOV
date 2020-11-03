@@ -3,6 +3,7 @@ package app.adinfinitum.ello.data
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import app.adinfinitum.ello.R
 import app.adinfinitum.ello.api.*
 import app.adinfinitum.ello.database.MyDatabaseDao
 import kotlinx.coroutines.*
@@ -15,81 +16,9 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
     //User Live Data
     fun getUserData()=myDatabaseDao.getUser()
 
-    // Registration fragment
-    private val _registrationNetworkError= MutableLiveData<String?>()
-    val registrationNetworkError: LiveData<String?>
-        get() = _registrationNetworkError
-
-    private val _registrationSuccess= MutableLiveData<NetResponse_Registration?>()
-    val registrationSuccess: LiveData<NetResponse_Registration?>
-        get() = _registrationSuccess
-
-
-
-    // Assign number to existing account fragment
-    private val _addNumberToAccountNetworkError= MutableLiveData<String?>()
-    val addNumberToAccountNetworkError: LiveData<String?>
-        get() = _addNumberToAccountNetworkError
-
-    private val _addNumberToAccountNetworkSuccess= MutableLiveData<NetResponse_AddNumberToAccount?>()
-    val addNumberToAccountNetworkSuccess: LiveData<NetResponse_AddNumberToAccount?>
-        get() = _addNumberToAccountNetworkSuccess
-
-
-
-    //Number exists in DB fragment (has two buttons)
-    private val _nmbExistsInDBUserHasAccountSuccess= MutableLiveData<NetResponse_NmbExistsInDB?>()
-    val nmbExistsInDBUserHasAccountSuccess: LiveData<NetResponse_NmbExistsInDB?>
-        get() = _nmbExistsInDBUserHasAccountSuccess
-
-    private val _nmbExistsInDBUserHasAccountError= MutableLiveData<String?>()
-    val nmbExistsInDBUserHasAccountError: LiveData<String?>
-        get() = _nmbExistsInDBUserHasAccountError
-
-
-    private val _nmbExistsInDB_NoAccountSuccess= MutableLiveData<NetResponse_NmbExistsInDB?>()
-    val nmbExistsInDB_NoAccountSuccess: LiveData<NetResponse_NmbExistsInDB?>
-        get() = _nmbExistsInDB_NoAccountSuccess
-
-    private val _nmbExistsInDB_NoAccountError= MutableLiveData<String?>()
-    val nmbExistsInDB_NoAccountError: LiveData<String?>
-        get() = _nmbExistsInDB_NoAccountError
-
-
-
-    // authorization fragment
-    private val _authorizationNetworkError= MutableLiveData<String?>()
-    val authorizationNetworkError: LiveData<String?>
-        get() = _authorizationNetworkError
-
-    private val _authorizationSuccess= MutableLiveData<NetResponse_Authorization?>()
-    val authorizationSuccess: LiveData<NetResponse_Authorization?>
-        get() = _authorizationSuccess
-
-    private val _smsResendNetworkError= MutableLiveData<String?>()
-    val smsResendNetworkError: LiveData<String?>
-        get() = _smsResendNetworkError
-
-    private val _smsResendSuccess= MutableLiveData<String?>()
-    val smsResendSuccess: LiveData<String?>
-        get() = _smsResendSuccess
-
-
-
-    // Main part of the app
-    private val _setAccountEmailAndPassError= MutableLiveData<String?>()
-    val setAccountEmailAndPassError: LiveData<String?>
-        get() = _setAccountEmailAndPassError
-
-    private val _setAccountEmailAndPassSuccess= MutableLiveData<NetResponse_SetAccountEmailAndPass?>()
-    val setAccountEmailAndPassSuccess: LiveData<NetResponse_SetAccountEmailAndPass?>
-        get() = _setAccountEmailAndPassSuccess
-
-
-
 
     // Registration fragment
-    suspend fun sendRegistationToServer(phone:String,smsResend:Boolean,verificationMethod:String){
+    suspend fun sendRegistationToServer(phone:String,smsResend:Boolean,verificationMethod:String): Result<NetResponse_Registration> {
 
         val defResponse=myAPI.sendRegistrationToServer(
                 phoneNumber = phone,
@@ -101,36 +30,24 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
 
             val result:NetResponse_Registration=defResponse.await()
 
-            if(smsResend) _smsResendSuccess.value=result.code.toString()+result.userMessage
-            else _registrationSuccess.value=result
+            return Result.Success(result)
 
-        } catch (e:Throwable){
+        } catch (e:Exception){
             GlobalScope.launch {
                 withContext(IO){
                     SendErrorrToServer(myAPI,phone,"sendRegistationToServer,$phone,smsResend_$smsResend",e.message.toString()).sendError()
                 } }
-            if(smsResend) _smsResendNetworkError.value=e.message
-            else _registrationNetworkError.value=e.toString()
+
+            return Result.Error(e)
 
         }
 
     }
 
-    //Registration fragment reset state functions
-    fun resetRegistrationNetSuccess(){
-        _registrationSuccess.value=null
-    }
-
-    fun resetRegistrationNetError(){
-        _registrationNetworkError.value=null
-    }
-
-
-
 
 
     // ASSIGN NUMBER TO ACCOUNT
-    suspend fun assignPhoneNumberToAccount(phone:String, email:String,password:String,smsResend: Boolean=false,verificationMethod: String){
+    suspend fun assignPhoneNumberToAccount(phone:String, email:String,password:String,smsResend: Boolean=false,verificationMethod: String):Result<NetResponse_AddNumberToAccount>{
 
         val defResponse=myAPI.sendAddNumberToAccount(
                 phoneNumber = phone,
@@ -148,35 +65,26 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
         try{
             val result=defResponse.await()
 
-            if(smsResend) _smsResendSuccess.value=result.code.toString()+result.usermessage
-            else _addNumberToAccountNetworkSuccess.value=result
+            return Result.Success(result)
 
         }
-        catch (e:Throwable){
-            val errorMessage:String?=e.message
+        catch (e:Exception){
+
             GlobalScope.launch {
                 withContext(IO){
                     SendErrorrToServer(myAPI,phone,"assignPhoneNumberToAccount $phone, $email,$password smsResend $smsResend",e.message.toString()).sendError()
                 } }
-            if(smsResend)_smsResendNetworkError.value=errorMessage
-            else _addNumberToAccountNetworkError.value=errorMessage
+
+            return Result.Error(e)
 
         }
 
     }
 
-    //ASSIGN NUMBER TO ACCOUNT  reset state functions
-    fun resetAssignPhoneNumberToAccountNetSuccess(){
-        _addNumberToAccountNetworkSuccess.value=null
-    }
-
-    fun resetAssignPhoneNumberToAccountNetError(){
-        _addNumberToAccountNetworkError.value=null
-    }
 
 
     //NUMBER EXISTS IN DB  fragment
-    suspend fun numberExistsInDBVerifyAccount(enteredPhoneNumber:String, email:String, password:String,smsResend: Boolean=false,verificationMethod: String){
+    suspend fun numberExistsInDBVerifyAccount(enteredPhoneNumber:String, email:String, password:String,smsResend: Boolean=false,verificationMethod: String):Result<NetResponse_NmbExistsInDB>{
 
         val defResult=myAPI.numberExistsInDBVerifyAccount(
                 phoneNumber = enteredPhoneNumber,
@@ -195,23 +103,21 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
         try{
             val result=defResult.await()
 
-            if(smsResend) _smsResendSuccess.value=result.code.toString()+result.userMessage
-            else _nmbExistsInDBUserHasAccountSuccess.value=result
+            return Result.Success(result)
         }
-        catch (e:Throwable){
-            val errorMessage:String?=e.message
+        catch (e:Exception){
             GlobalScope.launch {
                 withContext(IO){
                     SendErrorrToServer(myAPI,enteredPhoneNumber,"numberExistsInDBVerifyAccount $enteredPhoneNumber $email,$password smsResend $smsResend",e.message.toString()).sendError()
                 } }
-            if(smsResend) _smsResendNetworkError.value=e.message
-            else _nmbExistsInDBUserHasAccountError.value=errorMessage
+
+                return Result.Error(e)
 
         }
     }
 
 
-    suspend fun numberExistsInDB_NOAccount(enteredPhoneNumber:String,smsResend: Boolean=false,verificationMethod: String){
+    suspend fun numberExistsInDB_NOAccount(enteredPhoneNumber:String,smsResend: Boolean=false,verificationMethod: String):Result<NetResponse_NmbExistsInDB>{
 
         val defResult=myAPI.numberExistsInDB_NOAccount(
                 phoneNumber = enteredPhoneNumber,
@@ -223,41 +129,22 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
         try{
             val result=defResult.await()
 
-            if(smsResend) _smsResendSuccess.value=result.code.toString()+result.userMessage
-            else _nmbExistsInDB_NoAccountSuccess.value=result
+            return Result.Success(result)
         }
-        catch (e:Throwable){
-            val errorMessage:String?=e.message
+        catch (e:Exception){
+
             GlobalScope.launch {
                 withContext(IO){
                     SendErrorrToServer(myAPI,enteredPhoneNumber,"numberExistsInDB_NOAccount $enteredPhoneNumber, smsResend $smsResend",e.message.toString()).sendError()
                 } }
-            _nmbExistsInDB_NoAccountError.value=errorMessage
+
+            return Result.Error(e)
         }
     }
 
-    // NUMBER EXISTS IN DB reset functions
-
-    fun resetNmbExistsInDB_VerifyAccount_NetSuccess(){
-        _nmbExistsInDBUserHasAccountSuccess.value=null
-    }
-
-    fun resetNmbExistsInDB_VerifyAccount_NetError(){
-        _nmbExistsInDBUserHasAccountError.value=null
-    }
-
-    fun resetNmbExistsInDB_NOAccount_NetSuccess(){
-        _nmbExistsInDB_NoAccountSuccess.value=null
-    }
-
-    fun resetNmbExistsInDB_NOAccount_NetError(){
-        _nmbExistsInDB_NoAccountError.value=null
-    }
-
-
 
     //Authorization fragment
-    suspend fun authorizeThisUser(phone:String,smsToken:String,email: String,password: String){
+    suspend fun authorizeThisUser(phone:String,smsToken:String,email: String,password: String):Result<NetResponse_Authorization>{
 
         val defResponse=myAPI.authorizeUser(
                 phoneNumber = phone,
@@ -273,7 +160,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
         try{
             val result=defResponse.await()
 
-            if(result.success==true) {
+            /*if(result.success==true) {
                 val uncancelableJob = UncancelableJob(
                     phone=phone,
                     resultAuthorization = result,
@@ -290,51 +177,36 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
                     }
                 }
 
-                withContext(Dispatchers.IO) {
+                /*withContext(Dispatchers.IO) {
                     if (result.email.isNotEmpty()
                         && result.email.isNotBlank()
                         && result.authToken.isNotEmpty()
                         && result.authToken.isNotBlank()
                         ) myDatabaseDao.updateUsersPhoneTokenEmail(phone, result.authToken, result.email)
                     else if(result.authToken.isNotEmpty() && result.authToken.isNotBlank()) myDatabaseDao.updateUsersPhoneAndToken(phone, result.authToken)
-                }
-            }
+                }*/
+            }*/
 
-            _authorizationSuccess.value=result
+          return Result.Success(result)
 
         }
-        catch (e:Throwable){
-            val errorMessage:String?=e.message
+        catch (e:Exception){
+
             GlobalScope.launch {
                 withContext(IO){
                     SendErrorrToServer(myAPI,phone,"authorizeThisUser,$phone,$smsToken,$email,$password",e.message.toString()).sendError()
                 } }
-            _authorizationNetworkError.value=errorMessage
+
+            return Result.Error(e)
 
         }
 
     }
 
-    //Authorization fragment reset functions
-    fun resetAuthorization_NetSuccess(){
-        _authorizationSuccess.value=null
-    }
-
-    fun resetAuthorization_NetError(){
-        _authorizationNetworkError.value=null
-    }
-
-    fun resetSMSResend_NetSuccess(){
-        _smsResendSuccess.value=null
-    }
-
-    fun resetSMSResend_NetError(){
-        _smsResendNetworkError.value=null
-    }
 
 
-    //Main part of the app, SetAccountAndEmail Fragment
-    suspend fun  setAccountEmailAndPasswordForUser(phoneNumber:String,token: String,email: String,password: String){
+    //SetAccountAndEmail Fragment - Main part of the app
+    suspend fun  setAccountEmailAndPasswordForUser(phoneNumber:String,token: String,email: String,password: String):Result<NetResponse_SetAccountEmailAndPass>{
 
         val defResult=myAPI.setAccountEmailAndPasswordForUser(
             phoneNumber = phoneNumber,
@@ -351,7 +223,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
         try {
             val result = defResult.await()
                 Log.i(MY_TAG,"NetRequest_SetAccountEmailAndPass $result")
-                if (result.success == true) {
+                /*if (result.success == true) {
                     val myUncancelableJob: UncancelableJob = UncancelableJob(
                         phone = phoneNumber,
                         resultAuthorization = null,
@@ -369,36 +241,85 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
 
                     GlobalScope.launch {
                         withContext(Dispatchers.IO) {
-
                             if (result.email.isNotEmpty() && result.email.isNotBlank()) myDatabaseDao.updateUserEmail(result.email)
-
                         }
                     }
 
-                }
-                _setAccountEmailAndPassSuccess.value = result
+                }*/
+                return Result.Success(result)
 
         }
-        catch (e:Throwable){
+        catch (e:Exception){
             Log.i(MY_TAG,"NetRequest_SetAccountEmailAndPass error ${e.message}")
-            val errorMessage:String?=e.message
+
             GlobalScope.launch {
                 withContext(IO){
                     SendErrorrToServer(myAPI,phoneNumber,"setAccountEmailAndPasswordForUser $phoneNumber, $token, $email, $password",e.message.toString()).sendError()
                 } }
-            _setAccountEmailAndPassError.value=errorMessage
+
+            return Result.Error(e)
 
         }
     }
 
-    //Reset functions
-    fun resetSetAccountEmailAndPassNetSuccess(){
-        _setAccountEmailAndPassSuccess.value=null
+
+    // Reset Sip Access data on server
+    suspend fun resetSipAccess(
+        phone:String,
+        authToken: String
+    ) {
+          try {
+                myAPI.resetSipAccess(
+                    phoneNumber = phone,
+                    signature = produceJWtToken(
+                        Pair(Claim.TOKEN.myClaim,authToken),
+                        Pair(Claim.PHONE.myClaim,phone),
+                        Pair(Claim.FORCE_RESET.myClaim, CLAIM_VALUE_1)
+                    ),
+                    mobileAppVersion = mobileAppVer,
+                    request = NetRequest_ResetSipAccess(authToken=authToken,phoneNumber = phone)
+                )
+
+            }catch (e:Throwable){
+                        SendErrorrToServer(myAPI,phone,"resetSIPAccess_from_uncancelable_job,$phone,$authToken",e.message.toString()).sendError()
+            }
+
     }
 
-    fun resetSetAccountEmailAndPassNetError(){
-        _setAccountEmailAndPassError.value=null
+    //get E1 prenumber
+    suspend fun callSetNewE1(phone: String,token: String) {
+
+        val defResult = myAPI.setNewE1(
+            phoneNumber = phone,
+            signature = produceJWtToken(
+                Pair(Claim.TOKEN.myClaim,token),
+                Pair(Claim.PHONE.myClaim,phone)
+            ),
+            mobileAppVersion = mobileAppVer,
+            request = NetRequest_SetE1Prenumber(
+                authToken = token,
+                phoneNumber = phone
+            )
+        )
+        try {
+            val result = defResult.await()
+
+            if (!result.e1prenumber.isNullOrEmpty() && !result.e1prenumber.isNullOrBlank()) {
+                myDatabaseDao.updatePrenumber(result.e1prenumber, System.currentTimeMillis())
+            }
+
+
+        }catch (e:Throwable){
+
+            GlobalScope.launch {
+                withContext(IO){
+                    SendErrorrToServer(myAPI,phone,"setNewE1_from_uncancelable_job,$phone,$token",e.message.toString()).sendError()
+                }
+            }
+        }
+
     }
+
 
     suspend fun getUser()=withContext(Dispatchers.IO){
         myDatabaseDao.getUserNoLiveData()
@@ -406,19 +327,25 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
     }
 
 
-
-    suspend fun insertEmailIntoDatabase(email: String){
-
-        withContext(Dispatchers.IO) {
-            myDatabaseDao.updateUserEmail(email)
-        }
+    fun updateUsersPhoneTokenEmail(phone: String,token: String,email: String){
+        myDatabaseDao.updateUsersPhoneTokenEmail(phoneNb = phone,token = token,email = email)
     }
 
 
-    suspend fun insertTokenAndPhoneIntoDatabase(phone:String,token:String) {
-        withContext(Dispatchers.IO) {
-            myDatabaseDao.updateUsersPhoneAndToken(phone, token)
-        }
+    fun updateUsersPhoneAndToken (phone:String,token:String) {
+        myDatabaseDao.updateUsersPhoneAndToken(phoneNb = phone,token =  token)
+    }
+
+    fun updateUserEmail (email: String){
+        myDatabaseDao.updateUserEmail(email = email)
+    }
+
+    fun updatePrenumber(e1Phone:String, timestamp:Long){
+        myDatabaseDao.updatePrenumber(prenumber = e1Phone,timestamp = timestamp)
+    }
+
+    fun updateWebApiVersion(webApiVer:String){
+        myDatabaseDao.updateWebApiVersion(webApiVer =webApiVer )
     }
 
     //Log state to our server
@@ -444,7 +371,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
 
 }
 
-class UncancelableJob(
+/*class UncancelableJob(
                         val phone: String,
                         val resultAuthorization:NetResponse_Authorization?,
                         val resultSetAccountEmailAndPass:NetResponse_SetAccountEmailAndPass?,
@@ -566,5 +493,5 @@ class UncancelableJob(
     }
 
 
-}
+}*/
 

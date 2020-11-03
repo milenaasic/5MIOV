@@ -153,8 +153,8 @@ class AuthorizationFragment : Fragment() {
 
         activityViewModel.authorizationNetworkSuccess.observe(viewLifecycleOwner, Observer {response->
             if(response!=null){
-
                 activityViewModel.resetAuthorization_NetSuccess()
+                activityViewModel.processAuthorizationData(response)
                 showProgressBar(false)
                 enableDisableButtons(true)
                 //response.userMessage.let { showToast(it) }
@@ -287,12 +287,6 @@ class AuthorizationFragment : Fragment() {
 
 
     }
-
-    override fun onStart() {
-        super.onStart()
-
-    }
-
 
 
     private fun showSnackBar(message: String) {
@@ -446,7 +440,7 @@ class AuthorizationFragment : Fragment() {
             builder
                 .setTitle("Is this your phone number ${activityViewModel.enteredPhoneNumber} ?")
                 .setPositiveButton("YES",
-                    DialogInterface.OnClickListener { dialog, id ->
+                    DialogInterface.OnClickListener { _, id ->
                         verifyBySMSorCallAgain(VERIFICATION_METHOD_EXPENSIVE_CALL)
                         startSecondCoundDownTImer()
                     })

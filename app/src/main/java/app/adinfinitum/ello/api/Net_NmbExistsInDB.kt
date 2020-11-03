@@ -21,7 +21,7 @@ data class NetRequest_NmbExistsInDB_NoAccount(
 @JsonClass(generateAdapter = true)
 data class NetRequest_NmbExistsInDB_UserHasAccount(
 
-    @Json(name="number")
+    @Json(name="phoneNumber")
     val phoneNumber:String,
 
     @Json(name="email")

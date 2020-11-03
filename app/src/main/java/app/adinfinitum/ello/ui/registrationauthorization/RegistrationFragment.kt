@@ -26,6 +26,7 @@ import com.google.android.material.snackbar.Snackbar
 
 import app.adinfinitum.ello.R
 import app.adinfinitum.ello.api.NetResponse_Registration
+import app.adinfinitum.ello.data.Result
 import app.adinfinitum.ello.databinding.FragmentRegistrationBinding
 import app.adinfinitum.ello.utils.*
 
@@ -114,7 +115,8 @@ class RegistrationFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        activityViewModel.registrationNetworkError.observe(viewLifecycleOwner, Observer {
+
+        activityViewModel.registrationNetworkResponseError.observe(viewLifecycleOwner, Observer {
 
             if (it != null) {
                 showSnackBar(resources.getString(R.string.something_went_wrong))
@@ -124,7 +126,7 @@ class RegistrationFragment : Fragment() {
             }
         })
 
-        activityViewModel.registrationNetSuccess.observe(viewLifecycleOwner, Observer { response ->
+        activityViewModel.registrationNetworkResponseSuccess.observe(viewLifecycleOwner, Observer { response ->
 
             if (response != null) {
 
@@ -259,7 +261,7 @@ class RegistrationFragment : Fragment() {
             // Add action buttons
             builder
                 .setPositiveButton(resources.getString(R.string.terms_of_use_accept),
-                    DialogInterface.OnClickListener { dialog, id ->
+                    DialogInterface.OnClickListener { _, id ->
                         // sign in the user ...
                        startRegistraion(enteredPhoneNumber)
                         //activityViewModel.startSMSRetreiverFunction()

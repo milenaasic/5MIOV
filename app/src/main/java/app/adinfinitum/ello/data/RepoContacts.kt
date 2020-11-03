@@ -176,25 +176,7 @@ class RepoContacts (val contentResolver: ContentResolver,
 
      fun getE1Timestamp()= myDatabaseDao.getE1Timestamp()
 
-    fun refreshE1(phoneNumber: String,token:String){
-        if(token.isNotEmpty() && phoneNumber.isNotEmpty()) {
 
-            val myE1Job = UncancelableJob(  phone=phoneNumber,
-                                            resultAuthorization = null,
-                                            resultSetAccountEmailAndPass = null,
-                                            myDatabaseDao = myDatabaseDao,
-                                            myAPI = myAPIService,
-                                            mobileAppVer = mobileAppVer)
-
-            GlobalScope.launch {
-                withContext(IO) {
-                    myE1Job.startRefreshE124HPassed(token)
-                }
-            }
-        }else{
-            Log.i(MY_TAG," ILLEGAL STATE refresh E1 function- token or phone empty")
-        }
-    }
 
     //Detail fragment
     fun getPhoneNumbersForContact(lookUpKey:String):List<PhoneItem>{

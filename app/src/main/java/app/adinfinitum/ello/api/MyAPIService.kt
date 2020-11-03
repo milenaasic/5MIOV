@@ -56,7 +56,6 @@ object MyAPI {
 
 
     val retrofitService : MyAPIService by lazy {
-        Log.i(NAME,"val coded $coded, moshi je $moshi, logging $logging, okhttpclient $okHttpClient, retrofit $retrofit ")
         retrofit.create(MyAPIService::class.java)
     }
 
