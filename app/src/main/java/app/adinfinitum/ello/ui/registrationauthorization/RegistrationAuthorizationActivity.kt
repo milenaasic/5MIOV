@@ -19,6 +19,7 @@ import app.adinfinitum.ello.data.Repo
 import app.adinfinitum.ello.data.RepoSIPE1
 import app.adinfinitum.ello.database.MyDatabase
 import app.adinfinitum.ello.databinding.ActivityRegistrationAuthorizationBinding
+import app.adinfinitum.ello.ui.AppSignatureHelper
 import app.adinfinitum.ello.ui.emty_logo_fragment.EmptyLogoFragmentDirections
 import app.adinfinitum.ello.ui.main_activity.MainActivity
 import app.adinfinitum.ello.ui.myapplication.MyApplication
@@ -179,10 +180,9 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
     private fun startMySMSRetreiver(){
 
         Log.i("MY_SMSAuthBroadcastAct","  entered function start MySMSReceiver")
-        Log.i("MY_SMSAuthBroadcastAct","  entered function start MySMSReceiver")
         val client = SmsRetriever.getClient(this)
         val task: Task<Void> = client.startSmsRetriever()
-        Log.i("MY_SMSAuthBroadcastAct","  client $client, $task")
+        Log.i("MY_SMSAuthBroadcastAct","  client $client, $task, ${client.apiOptions},${client.instanceId}")
 
         task.addOnSuccessListener {
             Log.i("MY_SMSAuthBroadcastAct","  Successfully started retriever, expect broadcast intent")
@@ -193,6 +193,8 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
             Log.i("MY_SMSAuthBroadcastAct","  SMS  retriever failure, ${it.message}")
             // Failed to start retriever, inspect Exception for more details
         }
+
+        
 
     }
 

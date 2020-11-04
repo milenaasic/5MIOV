@@ -151,20 +151,25 @@ class AuthorizationFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        activityViewModel.authorizationNetworkSuccess.observe(viewLifecycleOwner, Observer {response->
-            if(response!=null){
-                activityViewModel.resetAuthorization_NetSuccess()
-                activityViewModel.processAuthorizationData(response)
-                showProgressBar(false)
-                enableDisableButtons(true)
-                //response.userMessage.let { showToast(it) }
+        activityViewModel.authorizationNetworkSuccess.observe(viewLifecycleOwner, Observer {
+            if(!it.hasBeenHandled){
 
+                it.getContentIfNotHandled()?.let {response->
+                    when(response.success) {
+                        true -> activityViewModel.processAuthorizationData(response)
+                        false -> {
+                            showProgressBar(false)
+                            enableDisableButtons(true)
+                            response.userMessage.let { showSnackBar(it) }
+                        }
+                    }
+                }
             }
         })
 
         activityViewModel.authorizationNetworkError.observe(viewLifecycleOwner, Observer {
-            if(it!=null){
-                activityViewModel.resetAuthorization_NetError()
+            if(!it.hasBeenHandled){
+
                 showProgressBar(false)
                 enableDisableButtons(true)
                 showSnackBar(resources.getString(R.string.something_went_wrong))
@@ -173,23 +178,25 @@ class AuthorizationFragment : Fragment() {
 
         activityViewModel.smsResendNetworkSuccess.observe(viewLifecycleOwner, Observer {
             Log.i(MYTAG," sms resend success , value $it")
-            if(it!=null){
-                activityViewModel.resetSMSResend_NetSuccess()
-                if(it.startsWith(webAPPIsMakingCall_Code)){
-                    showToast(it.substring(2))
+            if(!it.hasBeenHandled){
+                it.getContentIfNotHandled()?.let { message ->
+                  if(message.isNotEmpty()) {
+                      if (message.startsWith(webAPPIsMakingCall_Code)) {
+                          showToast(message.substring(2))
 
-                }else{
-                    showToast(it.substring(2))
-                    showProgressBar(false)
-                    enableDisableButtons(true)
+                      } else {
+                          showToast(message.substring(2))
+                          showProgressBar(false)
+                          enableDisableButtons(true)
+                      }
+                  }
                 }
             }
         })
 
         activityViewModel.smsResendNetworkError.observe(viewLifecycleOwner, Observer {
-            if(it!=null){
-                Log.i(MYTAG," sms resend error , value $it")
-                activityViewModel.resetSMSResend_NetError()
+            if(!it.hasBeenHandled){
+
                 showSnackBar(resources.getString(R.string.something_went_wrong))
                 showProgressBar(false)
                 enableDisableButtons(true)
@@ -258,7 +265,7 @@ class AuthorizationFragment : Fragment() {
         //resending sms via signIn route
         Log.i(MYTAG,"call verification button (ex Resend) ${activityViewModel.enteredPhoneNumber}, ${activityViewModel.enteredEmail}, ${activityViewModel.enteredPassword}, ${activityViewModel.signInParameter}")
         when{
-            //came from registrtion fragment
+            //came from registration fragment
             activityViewModel.enteredEmail==null && activityViewModel.signInParameter==null->activityViewModel.registerButtonClicked(
                                                                                 activityViewModel.enteredPhoneNumber?.removePlus()?:"",
                                                                                     smsResend = true,

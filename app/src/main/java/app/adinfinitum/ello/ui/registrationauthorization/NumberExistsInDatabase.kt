@@ -140,70 +140,74 @@ class NumberExistsInDatabase : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        activityViewModel?.nmbExistsInDBUserHasAccountSuccess?.observe(viewLifecycleOwner, Observer {response->
-            if(response!=null) {
+        activityViewModel?.nmbExistsInDBUserHasAccountSuccess?.observe(viewLifecycleOwner, Observer {
 
-                // in verifyByCall mode extract number to receive call from (verificationCallerId)
-                if(isVerificationByCallEnabled()) {
-                    if(response.verificationCallerId.isNotEmpty()) {
-                        (requireActivity() as RegistrationAuthorizationActivity).verificationCallerId=response.verificationCallerId
+            if(!it.hasBeenHandled) {
+
+                it.getContentIfNotHandled()?.let {response->
+
+                    // in verifyByCall mode extract number to receive call from (verificationCallerId)
+                    if (isVerificationByCallEnabled()) {
+                        if (response.verificationCallerId.isNotEmpty()) {
+                            (requireActivity() as RegistrationAuthorizationActivity).verificationCallerId =
+                                response.verificationCallerId
+                        }
                     }
-                }
 
-                when{
-                    response.success==true->{
+                    when {
+                        response.success == true -> {
                             // in verifyBySMS mode start SMS retreival
-                            if(!isVerificationByCallEnabled())activityViewModel?.startSMSRetreiverFunction()
+                            if (!isVerificationByCallEnabled()) activityViewModel?.startSMSRetreiverFunction()
 
                             showToast(response.userMessage)
-                            activityViewModel?.resetNmbExistsInDB_VerifyAccount_NetSuccess()
                             findNavController().navigate(NumberExistsInDatabaseDirections.actionNumberExistsInDatabaseToAuthorizationFragment())
-                    }
-                    response.success==false->{
-                        showSnackBar(response.userMessage)
-                        activityViewModel?.resetNmbExistsInDB_VerifyAccount_NetSuccess()
+                        }
+                        response.success == false -> {
+                            showSnackBar(response.userMessage)
 
+                        }
                     }
                 }
                 binding.nmbExistsSubmitButton.isEnabled = true
                 binding.dontHaveAccountButton.isEnabled = true
                 showProgressBar(false)
+
             }
          })
 
         activityViewModel?.nmbExistsInDBUserHasAccountError?.observe(viewLifecycleOwner, Observer {
-            if(it!=null) {
+            if(!it.hasBeenHandled) {
                 showSnackBar(resources.getString(R.string.something_went_wrong))
                 binding.nmbExistsSubmitButton.isEnabled = true
                 binding.dontHaveAccountButton.isEnabled = true
-                activityViewModel?.resetNmbExistsInDB_VerifyAccount_NetError()
                 showProgressBar(false)
             }
         })
 
-        activityViewModel?.nmbExistsInDB_NoAccountSuccess?.observe(viewLifecycleOwner, Observer {response->
-            if(response!=null) {
+        activityViewModel?.nmbExistsInDB_NoAccountSuccess?.observe(viewLifecycleOwner, Observer {
 
-                // in verifyByCall mode extract number to receive call from (verificationCallerId)
-                if(isVerificationByCallEnabled()) {
-                    if(response.verificationCallerId.isNotEmpty()) {
-                        (requireActivity() as RegistrationAuthorizationActivity).verificationCallerId=response.verificationCallerId
+            if(!it.hasBeenHandled) {
+
+                it.getContentIfNotHandled()?.let {response->
+
+                    // in verifyByCall mode extract number to receive call from (verificationCallerId)
+                    if (isVerificationByCallEnabled()) {
+                        if (response.verificationCallerId.isNotEmpty()) {
+                            (requireActivity() as RegistrationAuthorizationActivity).verificationCallerId =
+                                response.verificationCallerId
+                        }
                     }
-                }
 
-                when{
-                    response.success==true->{
-                        // in verifyBySMS mode start SMS retreival
-                        if(!isVerificationByCallEnabled())activityViewModel?.startSMSRetreiverFunction()
-
-                        showToast(response.userMessage)
-                        activityViewModel?.resetNmbExistsInDB_NOAccount_NetSuccess()
-                        findNavController().navigate(NumberExistsInDatabaseDirections.actionNumberExistsInDatabaseToAuthorizationFragment())
-                    }
-                    response.success==false->{
-                        showSnackBar(response.userMessage)
-                        activityViewModel?.resetNmbExistsInDB_NOAccount_NetSuccess()
-
+                    when {
+                        response.success == true -> {
+                            // in verifyBySMS mode start SMS retreival
+                            if (!isVerificationByCallEnabled()) activityViewModel?.startSMSRetreiverFunction()
+                            showToast(response.userMessage)
+                            findNavController().navigate(NumberExistsInDatabaseDirections.actionNumberExistsInDatabaseToAuthorizationFragment())
+                        }
+                        response.success == false -> {
+                            showSnackBar(response.userMessage)
+                        }
                     }
                 }
 
@@ -215,11 +219,11 @@ class NumberExistsInDatabase : Fragment() {
         })
 
         activityViewModel?.nmbExistsInDB_NoAccountError?.observe(viewLifecycleOwner, Observer {
-            if(it!=null) {
+            if(!it.hasBeenHandled) {
+
                 showSnackBar(resources.getString(R.string.something_went_wrong))
                 binding.nmbExistsSubmitButton.isEnabled = true
                 binding.dontHaveAccountButton.isEnabled = true
-                activityViewModel?.resetNmbExistsInDB_NOAccount_NetError()
                 showProgressBar(false)
             }
         })

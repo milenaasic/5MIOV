@@ -51,6 +51,11 @@ public class AppSignatureHelper extends ContextWrapper {
                     appCodes.add(String.format("%s", hash));
                 }
             }
+            for(int q=0;q<appCodes.size();q++){
+                Log.i("POTPISI",appCodes.get(q).toString());
+
+            }
+            Log.i("POTPISI",appCodes.get(0).toString());
         } catch (PackageManager.NameNotFoundException e) {
             Log.e(TAG, "Unable to find package to obtain hash.", e);
         }

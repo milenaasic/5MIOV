@@ -17,6 +17,7 @@ import app.adinfinitum.ello.data.Result
 import app.adinfinitum.ello.database.MyDatabase
 import app.adinfinitum.ello.ui.myapplication.MyApplication
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -34,59 +35,59 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
     val userData=myRepository.getUserData()
 
     // Registration fragment
-    private val _registrationNetworkResponseSuccess= MutableLiveData<NetResponse_Registration?>()
-    val registrationNetworkResponseSuccess: LiveData<NetResponse_Registration?>
+    private val _registrationNetworkResponseSuccess= MutableLiveData<Event<NetResponse_Registration>>()
+    val registrationNetworkResponseSuccess: LiveData<Event<NetResponse_Registration>>
         get() = _registrationNetworkResponseSuccess
 
-    private val _registrationNetworkResponseError= MutableLiveData<String?>()
-    val registrationNetworkResponseError: LiveData<String?>
+    private val _registrationNetworkResponseError= MutableLiveData<Event<String?>>()
+    val registrationNetworkResponseError: LiveData<Event<String?>>
         get() = _registrationNetworkResponseError
 
 
     //Add Number to Account fragment
-    private val _addNumberToAccuntNetworkSuccess= MutableLiveData<NetResponse_AddNumberToAccount?>()
-    val addNumberToAccuntNetworkSuccess: LiveData<NetResponse_AddNumberToAccount?>
+    private val _addNumberToAccuntNetworkSuccess= MutableLiveData<Event<NetResponse_AddNumberToAccount>>()
+    val addNumberToAccuntNetworkSuccess: LiveData<Event<NetResponse_AddNumberToAccount>>
         get() = _addNumberToAccuntNetworkSuccess
 
-    private val _addNumberToAccuntNetworkError= MutableLiveData<String?>()
-    val addNumberToAccuntNetworkError: LiveData<String?>
+    private val _addNumberToAccuntNetworkError= MutableLiveData<Event<String?>>()
+    val addNumberToAccuntNetworkError: LiveData<Event<String?>>
         get() = _addNumberToAccuntNetworkError
 
 
     //PhoneNumber exists in DB
-    private val _nmbExistsInDBUserHasAccountSuccess= MutableLiveData<NetResponse_NmbExistsInDB?>()
-    val nmbExistsInDBUserHasAccountSuccess: LiveData<NetResponse_NmbExistsInDB?>
+    private val _nmbExistsInDBUserHasAccountSuccess= MutableLiveData<Event<NetResponse_NmbExistsInDB>>()
+    val nmbExistsInDBUserHasAccountSuccess: LiveData<Event<NetResponse_NmbExistsInDB>>
         get() = _nmbExistsInDBUserHasAccountSuccess
 
-    private val _nmbExistsInDBUserHasAccountError= MutableLiveData<String?>()
-    val nmbExistsInDBUserHasAccountError: LiveData<String?>
+    private val _nmbExistsInDBUserHasAccountError= MutableLiveData<Event<String?>>()
+    val nmbExistsInDBUserHasAccountError: LiveData<Event<String?>>
         get() = _nmbExistsInDBUserHasAccountError
 
-    private val _nmbExistsInDB_NoAccountSuccess= MutableLiveData<NetResponse_NmbExistsInDB?>()
-    val nmbExistsInDB_NoAccountSuccess: LiveData<NetResponse_NmbExistsInDB?>
+    private val _nmbExistsInDB_NoAccountSuccess= MutableLiveData<Event<NetResponse_NmbExistsInDB>>()
+    val nmbExistsInDB_NoAccountSuccess: LiveData<Event<NetResponse_NmbExistsInDB>>
         get() = _nmbExistsInDB_NoAccountSuccess
 
-    private val _nmbExistsInDB_NoAccountError= MutableLiveData<String?>()
-    val nmbExistsInDB_NoAccountError: LiveData<String?>
+    private val _nmbExistsInDB_NoAccountError= MutableLiveData<Event<String?>>()
+    val nmbExistsInDB_NoAccountError: LiveData<Event<String?>>
         get() = _nmbExistsInDB_NoAccountError
 
 
 
     //Authorization fragment
-    private val _authorizationNetworkSuccess= MutableLiveData<NetResponse_Authorization?>()
-    val authorizationNetworkSuccess: LiveData<NetResponse_Authorization?>
+    private val _authorizationNetworkSuccess= MutableLiveData<Event<NetResponse_Authorization>>()
+    val authorizationNetworkSuccess: LiveData<Event<NetResponse_Authorization>>
         get() = _authorizationNetworkSuccess
 
-    private val _authorizationNetworkError= MutableLiveData<String?>()
-    val authorizationNetworkError: LiveData<String?>
+    private val _authorizationNetworkError= MutableLiveData<Event<String?>>()
+    val authorizationNetworkError: LiveData<Event<String?>>
         get() = _authorizationNetworkError
 
-    private val _smsResendNetworkSuccess= MutableLiveData<String?>()
-    val smsResendNetworkSuccess: LiveData<String?>
+    private val _smsResendNetworkSuccess= MutableLiveData<Event<String?>>()
+    val smsResendNetworkSuccess: LiveData<Event<String?>>
         get() = _smsResendNetworkSuccess
 
-    private val _smsResendNetworkError= MutableLiveData<String?>()
-    val smsResendNetworkError: LiveData<String?>
+    private val _smsResendNetworkError= MutableLiveData<Event<String?>>()
+    val smsResendNetworkError: LiveData<Event<String?>>
         get() = _smsResendNetworkError
 
 
@@ -133,18 +134,17 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
                     )
                 }
 
-                Log.i(MY_TAG,"registerButtonClicked, ${result}")
                 when(smsResend){
                     false->{
                             when(result){
-                                is Result.Success->_registrationNetworkResponseSuccess.value=result.data
-                                is Result.Error->_registrationNetworkResponseError.value=result.exception.message
+                                is Result.Success->_registrationNetworkResponseSuccess.value=Event(result.data)
+                                is Result.Error->_registrationNetworkResponseError.value=Event(result.exception.message)
                             }
                     }
                     true->{
                         when(result){
-                            is Result.Success->_smsResendNetworkSuccess.value=result.data.code.toString()+result.data.userMessage
-                            is Result.Error->_smsResendNetworkError.value=result.exception.message
+                            is Result.Success->_smsResendNetworkSuccess.value=Event(result.data.code.toString()+result.data.userMessage)
+                            is Result.Error->_smsResendNetworkError.value=Event(result.exception.message?:"")
                         }
                     }
 
@@ -157,15 +157,6 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
          }
     }
 
-   fun resetRegistrationNetSuccess(){
-        _registrationNetworkResponseSuccess.value=null
-    }
-
-    fun resetRegistrationNetErrorr(){
-        _registrationNetworkResponseError.value=null
-    }
-
-
 
     //add number to existing account fragment
     fun addNumberToAccountButtonClicked(phoneNumber:String,email:String,password:String,smsResend: Boolean=false,verificationMethod: String){
@@ -175,44 +166,39 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
 
         //send  phone, email and pass to server
         viewModelScope.launch {
-            val result= withContext(Dispatchers.IO){
-                        myRepository.assignPhoneNumberToAccount(
-                                    phone = phoneNumber,
-                                    email = email,
-                                    password = password,
-                                    smsResend = smsResend,
-                                    verificationMethod = verificationMethod
-                                    )
-            }
+            try {
 
-            when(smsResend){
-                false->{
-                    when(result){
-                        is Result.Success->_addNumberToAccuntNetworkSuccess.value=result.data
-                        is Result.Error->_addNumberToAccuntNetworkError.value=result.exception.message
-                    }
+                val result = withContext(Dispatchers.IO) {
+                    myRepository.assignPhoneNumberToAccount(
+                        phone = phoneNumber,
+                        email = email,
+                        password = password,
+                        smsResend = smsResend,
+                        verificationMethod = verificationMethod
+                    )
                 }
-                true->{
-                    when(result){
-                        is Result.Success->_smsResendNetworkSuccess.value=result.data.code.toString()+result.data.usermessage
-                        is Result.Error->_smsResendNetworkError.value=result.exception.message
+
+                when (smsResend) {
+                    false -> {
+                        when (result) {
+                            is Result.Success -> _addNumberToAccuntNetworkSuccess.value = Event(result.data)
+                            is Result.Error -> _addNumberToAccuntNetworkError.value = Event(result.exception.message)
+                        }
                     }
+                    true -> {
+                        when (result) {
+                            is Result.Success -> _smsResendNetworkSuccess.value = Event(result.data.code.toString() + result.data.usermessage)
+                            is Result.Error -> _smsResendNetworkError.value = Event(result.exception.message)
+                        }
+                    }
+
                 }
+            }catch (e:Exception){
 
             }
 
         }
     }
-
-    fun resetAddNumberToAccountNetSuccess() {
-        _addNumberToAccuntNetworkSuccess.value=null
-    }
-
-    fun resetAddNumberToAccountNetError(){
-        _addNumberToAccuntNetworkError.value=null
-    }
-
-
 
 
     //number exists in DB fragment
@@ -221,31 +207,37 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
         enteredPassword=password
         if(enteredPhoneNumber!=null) {
             viewModelScope.launch {
-               val result= withContext(Dispatchers.IO) {
-                   myRepository.numberExistsInDBVerifyAccount(
-                       enteredPhoneNumber ?: "",
-                       email,
-                       password,
-                       smsResend,
-                       verificationMethod = verificationMethod
-                   )
-               }
+              try {
+                  val result = withContext(Dispatchers.IO) {
+                      myRepository.numberExistsInDBVerifyAccount(
+                          enteredPhoneNumber ?: "",
+                          email,
+                          password,
+                          smsResend,
+                          verificationMethod = verificationMethod
+                      )
+                  }
 
-                when(smsResend){
-                    false->{
-                        when(result){
-                            is Result.Success->_nmbExistsInDBUserHasAccountSuccess.value=result.data
-                            is Result.Error->_nmbExistsInDBUserHasAccountError.value=result.exception.message
-                        }
-                    }
-                    true->{
-                        when(result){
-                            is Result.Success->_smsResendNetworkSuccess.value=result.data.code.toString()+result.data.userMessage
-                            is Result.Error->_smsResendNetworkError.value=result.exception.message
-                        }
-                    }
+                  when (smsResend) {
+                      false -> {
+                          when (result) {
+                              is Result.Success -> _nmbExistsInDBUserHasAccountSuccess.value = Event(result.data)
+                              is Result.Error -> _nmbExistsInDBUserHasAccountError.value = Event(result.exception.message)
+                          }
+                      }
+                      true -> {
+                          when (result) {
+                              is Result.Success -> _smsResendNetworkSuccess.value =
+                                  Event(result.data.code.toString() + result.data.userMessage)
+                              is Result.Error -> _smsResendNetworkError.value =
+                                  Event(result.exception.message)
+                          }
+                      }
 
-                }
+                  }
+              }catch (e:Exception){
+
+              }
 
             }
         }
@@ -253,48 +245,43 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
 
     fun numberExistsInDb_NoAccount(smsResend: Boolean=false,verificationMethod: String){
          if(enteredPhoneNumber!=null) {
-                viewModelScope.launch {
-                    val result = myRepository.numberExistsInDB_NOAccount(
-                        enteredPhoneNumber ?: "",
-                        smsResend,
-                        verificationMethod = verificationMethod
-                    )
 
-                    when(smsResend){
-                        false->{
+             viewModelScope.launch {
+                try {
+                    val result = withContext(IO) {
+                        myRepository.numberExistsInDB_NOAccount(
+                            enteredPhoneNumber ?: "",
+                            smsResend,
+                            verificationMethod = verificationMethod
+                        )
+                    }
+
+                    when (smsResend) {
+                        false -> {
                             when (result) {
-                                is Result.Success -> _nmbExistsInDB_NoAccountSuccess.value = result.data
-                                is Result.Error -> _nmbExistsInDB_NoAccountError.value = result.exception.message
+                                is Result.Success -> _nmbExistsInDB_NoAccountSuccess.value = Event(result.data)
+                                is Result.Error -> _nmbExistsInDB_NoAccountError.value = Event(result.exception.message)
                             }
                         }
-                        true->{
-                            when(result){
-                                is Result.Success->_smsResendNetworkSuccess.value=result.data.code.toString()+result.data.userMessage
-                                is Result.Error->_smsResendNetworkError.value=result.exception.message
+                        true -> {
+                            when (result) {
+                                is Result.Success -> _smsResendNetworkSuccess.value =
+                                    Event(result.data.code.toString() + result.data.userMessage)
+                                is Result.Error -> _smsResendNetworkError.value =
+                                    Event(result.exception.message)
                             }
                         }
 
                     }
 
+                }catch (e:Exception){
+
                 }
+
+             }
         }
     }
 
-    fun resetNmbExistsInDB_VerifyAccount_NetSuccess(){
-        _nmbExistsInDBUserHasAccountSuccess.value=null
-    }
-
-    fun resetNmbExistsInDB_VerifyAccount_NetError(){
-        _nmbExistsInDBUserHasAccountError.value=null
-    }
-
-    fun resetNmbExistsInDB_NOAccount_NetSuccess(){
-        _nmbExistsInDB_NoAccountSuccess.value=null
-    }
-
-    fun resetNmbExistsInDB_NOAccount_NetError(){
-        _nmbExistsInDB_NoAccountError.value=null
-    }
 
 
     //authorization fragment
@@ -312,8 +299,8 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
                 }
 
                 when(result){
-                    is Result.Success-> _authorizationNetworkSuccess.value=result.data
-                    is Result.Error-> _authorizationNetworkError.value=result.exception.message
+                    is Result.Success-> _authorizationNetworkSuccess.value=Event(result.data)
+                    is Result.Error-> _authorizationNetworkError.value=Event(result.exception.message)
                 }
 
             }
@@ -342,11 +329,28 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
 
             //if E1 is not sent, go fetch it
             if (authData.e1phone.isNullOrEmpty() || authData.e1phone.isBlank()) {
-                launch(Dispatchers.IO) {
-                    myRepository.callSetNewE1(
-                        phone = myphoneNumber,
-                        token = authData.authToken
-                    )
+                try {
+                    val result = withContext(Dispatchers.IO) {
+                        myRepository.callSetNewE1(
+                            phone = myphoneNumber,
+                            token = authData.authToken
+                        )
+                    }
+
+                    when (result) {
+                        is Result.Success -> {
+                            if (!result.data.e1prenumber.isNullOrEmpty() && !result.data.e1prenumber.isNullOrBlank()) {
+                                myRepository.updatePrenumber(result.data.e1prenumber, System.currentTimeMillis())
+                            }
+                        }
+                        is Result.Error -> {
+
+                        }
+
+
+                    }
+                }catch (e:Exception){
+
                 }
             }else {
                 myRepository.updatePrenumber(
@@ -383,27 +387,9 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
 
 
 
-    fun resetAuthorization_NetSuccess(){
-        _authorizationNetworkSuccess.value=null
-    }
-
-    fun resetAuthorization_NetError(){
-        _authorizationNetworkError.value=null
-    }
-
-    fun resetSMSResend_NetSuccess(){
-        _smsResendNetworkSuccess.value=null
-    }
-
-    fun resetSMSResend_NetError(){
-        _smsResendNetworkError.value=null
-    }
-
-
     //SMS Retreiver
     fun setSMSVerificationTokenForAuthFragment(verToken:String){
         _verificationTokenForAuthFragment.value=verToken
-
     }
 
     fun resetSMSVerificationTOkenForAuthFragToNull(){

@@ -8,6 +8,7 @@ import android.graphics.text.LineBreaker
 import android.os.Build
 import android.os.Bundle
 import android.text.Layout
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -117,18 +118,58 @@ class RegistrationFragment : Fragment() {
 
 
         activityViewModel.registrationNetworkResponseError.observe(viewLifecycleOwner, Observer {
+            Log.i(MY_TAG,"registrationNetworkResponseError.observe $it")
+            if(!it.hasBeenHandled){
 
-            if (it != null) {
+                showSnackBar(resources.getString(R.string.something_went_wrong))
+                //activityViewModel.resetRegistrationNetErrorr()
+                binding.registerButton.isEnabled = true
+                showProgressBar(false)
+
+            }
+            /*if (it != null) {
                 showSnackBar(resources.getString(R.string.something_went_wrong))
                 activityViewModel.resetRegistrationNetErrorr()
                 binding.registerButton.isEnabled = true
                 showProgressBar(false)
-            }
+            }*/
         })
 
-        activityViewModel.registrationNetworkResponseSuccess.observe(viewLifecycleOwner, Observer { response ->
+        activityViewModel.registrationNetworkResponseSuccess.observe(viewLifecycleOwner, Observer {
+            Log.i(MY_TAG,"registrationNetworkResponseSuccess.observe $it,  ${it.hasBeenHandled}")
+            if(!it.hasBeenHandled) {
 
-            if (response != null) {
+                it.getContentIfNotHandled()?.let { response ->
+
+                    netResponseRegistration = response
+
+                    //set variable to define if registration process should use call or sms verification
+                    //(requireActivity() as RegistrationAuthorizationActivity).verificationByCallEnabled = response.callVerificationEnabled
+
+                    when (isVerificationByCallEnabled()) {
+
+                        true -> {
+                            // in verifyByCall mode extract number to receive call from (verificationCallerId)
+                            if (response.verificationCallerId.isNotEmpty()) {
+                                (requireActivity() as RegistrationAuthorizationActivity).verificationCallerId =
+                                    response.verificationCallerId
+                            }
+
+                            if (checkForPermissions()) checkResponseSuccessAndActAccordingly(
+                                response = response
+                            )
+
+                        }
+                        false -> {
+                            checkResponseSuccessAndActAccordingly(response = response)
+
+                        }
+
+
+                    }
+                }
+            }
+            /*if (response != null) {
 
                //set variable to define if registration process should use call or sms verification
                 //(requireActivity() as RegistrationAuthorizationActivity).verificationByCallEnabled = response.callVerificationEnabled
@@ -154,7 +195,7 @@ class RegistrationFragment : Fragment() {
 
                 }
 
-            }
+            }*/
 
         })
     }
@@ -168,19 +209,19 @@ class RegistrationFragment : Fragment() {
                 if(!isVerificationByCallEnabled()) activityViewModel.startSMSRetreiverFunction()
 
                 showToast(response.userMessage)
-                activityViewModel.resetRegistrationNetSuccess()
+                //activityViewModel.resetRegistrationNetSuccess()
                 findNavController().navigate(RegistrationFragmentDirections.actionRegistrationFragmentToAuthorizationFragment())
             }
 
             response.success == true && response.phoneNumberAlreadyAssigned == true -> {
                 //showToast(response.userMessage)
-                activityViewModel.resetRegistrationNetSuccess()
+               // activityViewModel.resetRegistrationNetSuccess()
                 findNavController().navigate(RegistrationFragmentDirections.actionRegistrationFragmentToNumberExistsInDatabase())
             }
 
             response.success == false -> {
                 showSnackBar(response.userMessage)
-                activityViewModel.resetRegistrationNetSuccess()
+               // activityViewModel.resetRegistrationNetSuccess()
             }
 
         }
@@ -209,6 +250,7 @@ class RegistrationFragment : Fragment() {
                     smsResend = false,
                     verificationMethod = VERIFICATION_METHOD_SMS
                 )
+                activityViewModel.startSMSRetreiverFunction()
             }
 
         }
@@ -323,7 +365,7 @@ class RegistrationFragment : Fragment() {
                     if(grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED){
                             checkResponseSuccessAndActAccordingly(netResponseRegistration)
                     }else {
-                        activityViewModel.resetRegistrationNetSuccess()
+                        //activityViewModel.resetRegistrationNetSuccess()
                         binding.registerButton.isEnabled = true
                         showProgressBar(false)
                         showSnackBar(getString(R.string.call_log_permission_not_granted))
