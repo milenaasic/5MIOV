@@ -11,7 +11,7 @@ import org.acra.annotation.*
 import org.acra.annotation.AcraHttpSender
 import org.acra.data.StringFormat
 import org.acra.sender.HttpSender
-
+import java.util.*
 
 
 @AcraCore(buildConfigClass = BuildConfig::class,
@@ -24,7 +24,14 @@ import org.acra.sender.HttpSender
                 basicAuthPassword = ("tester")
                 )
 class MyApplication : Application() {
-private val MYTAG="MY_ApplicationContext"
+    private val MYTAG="MY_ApplicationContext"
+    //todo remove timer
+    private var mTimer: Timer=Timer("Application object")
+    val lTask: TimerTask = object : TimerTask() {
+        override fun run() {
+            Log.i(MYTAG,"App is alive, ${System.currentTimeMillis()}")
+        }
+    }
 
     val mobileAppVersion:String by lazy {
         getMobAppVersion()
@@ -59,4 +66,10 @@ private val MYTAG="MY_ApplicationContext"
         return myversionName
     }
 
+
+
+    override fun onCreate() {
+        super.onCreate()
+        mTimer.schedule(lTask, 0, 5000)
+    }
 }

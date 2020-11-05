@@ -31,6 +31,8 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
     var enteredPassword:String?=null
     var signInParameter:Boolean?=null
 
+    private var timeLatestSMSRetreiverStarted:Long=0L
+    private val TIME_BETWEEN_TWO_SMS_RETREIVERS_IN_SEC=120
 
     val userData=myRepository.getUserData()
 
@@ -93,13 +95,13 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
 
 
     //SMS Retreiver for Activity to observe
-    private val _startSMSRetreiver= MutableLiveData<Boolean>()
-    val startSMSRetreiver: LiveData<Boolean>
+    private val _startSMSRetreiver= MutableLiveData<Event<Boolean>>()
+    val startSMSRetreiver: LiveData<Event<Boolean>>
         get() = _startSMSRetreiver
 
     //SMS Retreiver for Authorization fragment to observe
-    private val _verificationTokenForAuthFragment= MutableLiveData<String?>()
-    val verificationTokenForAuthFragment: LiveData<String?>
+    private val _verificationTokenForAuthFragment= MutableLiveData<Event<String>>()
+    val verificationTokenForAuthFragment: LiveData<Event<String>>
         get() = _verificationTokenForAuthFragment
 
 
@@ -386,25 +388,23 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
     }
 
 
-
     //SMS Retreiver
     fun setSMSVerificationTokenForAuthFragment(verToken:String){
-        _verificationTokenForAuthFragment.value=verToken
+        _verificationTokenForAuthFragment.value=Event(verToken)
     }
 
-    fun resetSMSVerificationTOkenForAuthFragToNull(){
-        _verificationTokenForAuthFragment.value=null
-    }
 
     // this is called when SMS request is made to server
-    fun startSMSRetreiverFunction(){
-        _startSMSRetreiver.value=true
+    fun startSMSRetreiverFunction(timeThisSMSRetreiverStarted:Long){
+        Log.i(MY_TAG,"startSMSRetreiverFunction this $timeThisSMSRetreiverStarted, latest $timeLatestSMSRetreiverStarted,${TIME_BETWEEN_TWO_SMS_RETREIVERS_IN_SEC*1000}")
+
+            if((timeThisSMSRetreiverStarted-timeLatestSMSRetreiverStarted)>TIME_BETWEEN_TWO_SMS_RETREIVERS_IN_SEC*1000){
+                    Log.i(MY_TAG,"startSMSRetreiverFunction  ${timeLatestSMSRetreiverStarted-timeThisSMSRetreiverStarted}")
+                        _startSMSRetreiver.value=Event(true)
+                        timeLatestSMSRetreiverStarted=timeThisSMSRetreiverStarted
+        }
     }
 
-    fun smsRetreiverStarted(){
-        _startSMSRetreiver.value=false
-
-    }
 
     override fun onCleared() {
         Log.i(MY_TAG,"ON CLEARED")

@@ -43,7 +43,7 @@ class SMSAuthorizationBroadcastReceiver : BroadcastReceiver() {
 
                 CommonStatusCodes.TIMEOUT -> {
                     Log.i(MYTAG," on receive is TIMEOUT")
-                   // _receivedSMSMessage.value= timeout
+                   // _receivedSMSMessage.value= "TIMEOUT"
 
                 }
             }

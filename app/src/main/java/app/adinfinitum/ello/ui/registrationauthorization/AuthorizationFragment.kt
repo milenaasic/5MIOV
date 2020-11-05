@@ -122,11 +122,11 @@ class AuthorizationFragment : Fragment() {
             showProgressBar(true)
             when (isVerificationByCallEnabled()){
                 true->{
-                    activityViewModel.startSMSRetreiverFunction()
+                    activityViewModel.startSMSRetreiverFunction(System.currentTimeMillis())
                      verifyBySMSorCallAgain(VERIFICATION_METHOD_SMS)
                 }
                 false->{
-                    activityViewModel.startSMSRetreiverFunction()
+                    activityViewModel.startSMSRetreiverFunction(System.currentTimeMillis())
                     verifyBySMSorCallAgain(VERIFICATION_METHOD_SMS)
                 }
 
@@ -206,14 +206,11 @@ class AuthorizationFragment : Fragment() {
 
         //SMS verification token
         activityViewModel.verificationTokenForAuthFragment.observe(viewLifecycleOwner, Observer {
-            if(it!=null){
-                binding.tokenEditText.setText(it)
-                activityViewModel.resetSMSVerificationTOkenForAuthFragToNull()
+            if(!it.hasBeenHandled){
+                binding.tokenEditText.setText(it.getContentIfNotHandled())
 
             }
-
         })
-
 
     }
 

@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.graphics.text.LineBreaker
 import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
 import android.text.Layout
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -204,24 +205,17 @@ class RegistrationFragment : Fragment() {
 
         when {
             response.success == true && response.phoneNumberAlreadyAssigned == false -> {
-
-                // in verifyBySMS mode start listening for SMS
-                if(!isVerificationByCallEnabled()) activityViewModel.startSMSRetreiverFunction()
-
                 showToast(response.userMessage)
-                //activityViewModel.resetRegistrationNetSuccess()
                 findNavController().navigate(RegistrationFragmentDirections.actionRegistrationFragmentToAuthorizationFragment())
             }
 
             response.success == true && response.phoneNumberAlreadyAssigned == true -> {
                 //showToast(response.userMessage)
-               // activityViewModel.resetRegistrationNetSuccess()
                 findNavController().navigate(RegistrationFragmentDirections.actionRegistrationFragmentToNumberExistsInDatabase())
             }
 
             response.success == false -> {
                 showSnackBar(response.userMessage)
-               // activityViewModel.resetRegistrationNetSuccess()
             }
 
         }
@@ -250,7 +244,7 @@ class RegistrationFragment : Fragment() {
                     smsResend = false,
                     verificationMethod = VERIFICATION_METHOD_SMS
                 )
-                activityViewModel.startSMSRetreiverFunction()
+                activityViewModel.startSMSRetreiverFunction(System.currentTimeMillis())
             }
 
         }
@@ -306,7 +300,7 @@ class RegistrationFragment : Fragment() {
                     DialogInterface.OnClickListener { _, id ->
                         // sign in the user ...
                        startRegistraion(enteredPhoneNumber)
-                        //activityViewModel.startSMSRetreiverFunction()
+
                     })
                 .setNegativeButton(resources.getString(R.string.terms_of_use_cancel),
                     DialogInterface.OnClickListener { dialog, id ->

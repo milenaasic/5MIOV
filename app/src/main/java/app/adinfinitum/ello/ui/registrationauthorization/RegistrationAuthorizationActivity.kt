@@ -126,12 +126,9 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
          viewModel.startSMSRetreiver.observe(this, Observer {
 
-             if(it!=null) {
-                 if (it) {
-                     startMySMSRetreiver()
+             if(!it.hasBeenHandled) {
+                 if(it.getContentIfNotHandled()==true) startMySMSRetreiver()
 
-                     viewModel.smsRetreiverStarted()
-                 }
              }
 
          })

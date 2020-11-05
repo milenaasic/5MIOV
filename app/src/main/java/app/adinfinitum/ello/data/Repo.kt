@@ -20,7 +20,28 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
     // Registration fragment
     suspend fun sendRegistationToServer(phone:String,smsResend:Boolean,verificationMethod:String): Result<NetResponse_Registration> {
 
-        val defResponse=myAPI.sendRegistrationToServer(
+        try{
+            val result=myAPI.sendRegistrationToServer(
+                phoneNumber = phone,
+                signature = produceJWtToken(Pair(Claim.NUMBER.myClaim,phone)),
+                mobileAppVersion = mobileAppVer,
+                request = NetRequest_Registration(phoneNumber = phone,verificationMethod = verificationMethod )
+            ).await()
+
+            return Result.Success(result)
+
+        }catch (e:Exception){
+            GlobalScope.launch {
+                withContext(IO){
+                    SendErrorrToServer(myAPI,phone,"sendRegistationToServer,$phone,smsResend_$smsResend",e.message.toString()).sendError()
+                } }
+
+            return Result.Error(e)
+
+        }
+
+
+        /*val defResponse=myAPI.sendRegistrationToServer(
                 phoneNumber = phone,
                 signature = produceJWtToken(Pair(Claim.NUMBER.myClaim,phone)),
                 mobileAppVersion = mobileAppVer,
@@ -40,7 +61,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
 
             return Result.Error(e)
 
-        }
+        }*/
 
     }
 
@@ -270,14 +291,11 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
 
     suspend fun getUser()=withContext(Dispatchers.IO){
         myDatabaseDao.getUserNoLiveData()
-
     }
-
 
     fun updateUsersPhoneTokenEmail(phone: String,token: String,email: String){
         myDatabaseDao.updateUsersPhoneTokenEmail(phoneNb = phone,token = token,email = email)
     }
-
 
     fun updateUsersPhoneAndToken (phone:String,token:String) {
         myDatabaseDao.updateUsersPhoneAndToken(phoneNb = phone,token =  token)
@@ -298,23 +316,20 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
     //Log state to our server
     fun logStateToServer(process:String="No_Process_Defined",state:String="No_State_Defined"){
         GlobalScope.launch {
-            with(Dispatchers.IO){
-                val phoneNumberDef=async {
-                    myDatabaseDao.getPhone()
-                }
                 try {
-                    val phoneNumber=phoneNumberDef.await()
+                    val phoneNumber= withContext(IO) {
+                        myDatabaseDao.getPhone()
+                    }
                     SendErrorrToServer(myAPIService = myAPI,phoneNumber = phoneNumber,
-                        process = process,errorMsg = state).sendError()
+                            process = process,errorMsg = state).sendError()
 
                 }catch (t:Throwable){
                     Log.i(MY_TAG, "error in logStateToServer ${t.message}")
 
                 }
-            }
         }
-
     }
+
 
 }
 

@@ -29,7 +29,7 @@ fun isOnline(application: Application):Boolean{
 
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
         if (connMgr.activeNetworkInfo != null) {
-            online = connMgr.activeNetworkInfo.isConnected
+            online = connMgr.activeNetworkInfo!!.isConnected
         } else online = false
     }
 

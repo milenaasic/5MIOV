@@ -183,18 +183,12 @@ class AddNumberToAccount : Fragment() {
 
         when {
             response.success == true -> {
-
-                // in verifyBySMS mode start listening for SMS
-                if(!isVerificationByCallEnabled()) activityViewModel?.startSMSRetreiverFunction()
-
                 showToast(response.usermessage)
-                //activityViewModel?.resetAddNumberToAccountNetSuccess()
                 findNavController().navigate(AddNumberToAccountDirections.actionAddNumberToAccountToAuthorizationFragment())
             }
 
             response.success == false -> {
                 showSnackBar(response.usermessage)
-                //activityViewModel?.resetAddNumberToAccountNetSuccess()
             }
         }
 
@@ -302,7 +296,7 @@ class AddNumberToAccount : Fragment() {
                     DialogInterface.OnClickListener { _, id ->
                         // sign in the user ...
                         startAddNumberToAccount(phone,email,password)
-                        //activityViewModel?.startSMSRetreiverFunction()
+                        activityViewModel?.startSMSRetreiverFunction(System.currentTimeMillis())
                     })
                 .setNegativeButton(resources.getString(R.string.terms_of_use_cancel),
                     DialogInterface.OnClickListener { dialog, _ ->

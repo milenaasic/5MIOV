@@ -66,10 +66,12 @@ class NumberExistsInDatabase : Fragment() {
                             verificationMethod = VERIFICATION_METHOD_SMS
                         )
 
+                        activityViewModel?.startSMSRetreiverFunction(System.currentTimeMillis())
+
                     }
 
                 }
-                //activityViewModel?.startSMSRetreiverFunction()
+
 
             }else{
                 it.isEnabled=true
@@ -108,6 +110,8 @@ class NumberExistsInDatabase : Fragment() {
 
                 false->{
                     activityViewModel?.numberExistsInDb_NoAccount(verificationMethod = VERIFICATION_METHOD_SMS)
+                    // in verifyBySMS mode start SMS retreival
+                    if (!isVerificationByCallEnabled()) activityViewModel?.startSMSRetreiverFunction(System.currentTimeMillis())
 
                 }
 
@@ -156,15 +160,11 @@ class NumberExistsInDatabase : Fragment() {
 
                     when {
                         response.success == true -> {
-                            // in verifyBySMS mode start SMS retreival
-                            if (!isVerificationByCallEnabled()) activityViewModel?.startSMSRetreiverFunction()
-
                             showToast(response.userMessage)
                             findNavController().navigate(NumberExistsInDatabaseDirections.actionNumberExistsInDatabaseToAuthorizationFragment())
                         }
                         response.success == false -> {
                             showSnackBar(response.userMessage)
-
                         }
                     }
                 }
@@ -200,8 +200,6 @@ class NumberExistsInDatabase : Fragment() {
 
                     when {
                         response.success == true -> {
-                            // in verifyBySMS mode start SMS retreival
-                            if (!isVerificationByCallEnabled()) activityViewModel?.startSMSRetreiverFunction()
                             showToast(response.userMessage)
                             findNavController().navigate(NumberExistsInDatabaseDirections.actionNumberExistsInDatabaseToAuthorizationFragment())
                         }
