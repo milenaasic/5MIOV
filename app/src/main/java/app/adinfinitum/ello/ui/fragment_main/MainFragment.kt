@@ -262,6 +262,7 @@ class MainFragment : Fragment(){
                 // If request is cancelled, the result arrays are empty.
                 if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                     viewModel.populateContactList("")
+                    //phonebook is exported only once from this fragment
                     if(shouldExportPhoneBook()) viewModel.getPhoneBook()
                 } else {
                     showSnackBar(resources.getString(R.string.no_permission_read_contacts))

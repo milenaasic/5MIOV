@@ -31,6 +31,8 @@ class RepoContacts (val contentResolver: ContentResolver,
 
     }
 
+    // About Fragment
+    fun getWebAppVersion()=myDatabaseDao.getWebApiVersion()
 
     //DialPad fragment
     suspend fun getCredit(phone:String,token:String):Result<NetResponse_GetCurrentCredit>{
@@ -66,6 +68,8 @@ class RepoContacts (val contentResolver: ContentResolver,
     fun updateWebApiVersion(webApiVer:String){
         myDatabaseDao.updateWebApiVersion(webApiVer =webApiVer )
     }
+
+
 
 
     suspend fun exportPhoneBook(token:String, phoneNumber:String,phoneBook:List<PhoneBookItem>):Result<NetResponse_ExportPhonebook>{
@@ -431,7 +435,7 @@ class RepoContacts (val contentResolver: ContentResolver,
 
     }
 
-    //Recent calls
+    //Recent calls Fragment
     fun getAllRecentCalls()=myDatabaseDao.getAllRecentCalls()
 
     fun insertRecentCall(call:RecentCall)=myDatabaseDao.insertRecentCall(call)

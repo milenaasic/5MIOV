@@ -9,6 +9,8 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 
 import app.adinfinitum.ello.R
+import app.adinfinitum.ello.api.MyAPI
+import app.adinfinitum.ello.data.RepoContacts
 import app.adinfinitum.ello.database.MyDatabase
 import app.adinfinitum.ello.databinding.FragmentAboutBinding
 import app.adinfinitum.ello.ui.myapplication.MyApplication
@@ -33,9 +35,17 @@ class AboutFragment : Fragment() {
         Log.i(MYTAG, "ONLIFE ONCREATEVIEW")
         binding= DataBindingUtil.inflate(inflater, R.layout.fragment_about,container,false)
 
-        val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
 
-        viewModel = ViewModelProvider(this, AboutFragmentViewModelFactory(database,requireActivity().application))
+        val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
+        val apiService= MyAPI.retrofitService
+
+        val repo= RepoContacts(requireActivity().contentResolver,
+            database,
+            apiService,
+            resources.getString(R.string.mobile_app_version_header,(requireActivity().application as MyApplication).mobileAppVersion)
+        )
+
+        viewModel = ViewModelProvider(this, AboutFragmentViewModelFactory(repo,requireActivity().application))
             .get(AboutFragmentViewModel::class.java)
 
         binding.mobileAppVerTextView.text=String.format(resources.getString(R.string.mobile_app_version,getMobAppVersionFromApplication()))
