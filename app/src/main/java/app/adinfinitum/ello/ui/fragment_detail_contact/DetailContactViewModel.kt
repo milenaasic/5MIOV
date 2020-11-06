@@ -24,22 +24,17 @@ class DetailContactViewModel(val contactLookUp:String,val myRepository: RepoCont
     val prefixNumber=myRepository.getPremunber()
 
     init {
-
         getContactPhoneNumbers()
-
-
     }
 
     fun getContactPhoneNumbers() {
 
-
         viewModelScope.launch {
 
                 try {
-                    val defList = viewModelScope.async(IO) {
+                    val list = withContext(IO) {
                         myRepository.getPhoneNumbersForContact(contactLookUp)
                     }
-                    val list=defList.await()
                     _phoneList.value=list
 
                 }catch (e: Exception) {

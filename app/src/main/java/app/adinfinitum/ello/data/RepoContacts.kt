@@ -7,10 +7,7 @@ import android.telephony.PhoneNumberUtils
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import app.adinfinitum.ello.api.MyAPIService
-import app.adinfinitum.ello.api.NetRequest_ExportPhonebook
-import app.adinfinitum.ello.api.NetRequest_GetCurrentCredit
-import app.adinfinitum.ello.api.NetResponse_GetCurrentCredit
+import app.adinfinitum.ello.api.*
 import app.adinfinitum.ello.database.MyDatabaseDao
 import app.adinfinitum.ello.model.*
 import kotlinx.coroutines.*
@@ -28,153 +25,81 @@ class RepoContacts (val contentResolver: ContentResolver,
     // Live Data
     fun getPremunber() = myDatabaseDao.getPrenumber()
 
-    //set sharedPref to false because of Log out
-    private val _loggingOut= MutableLiveData<Boolean>()
-    val loggingOut: LiveData<Boolean>
-        get() = _loggingOut
-
-    //getCredit DialPad fragment network response
-    private val _getCredit_NetSuccess= MutableLiveData<NetResponse_GetCurrentCredit?>()
-    val getCredit_NetSuccess: LiveData<NetResponse_GetCurrentCredit?>
-        get() = _getCredit_NetSuccess
-
-    private val _getCredit_NetError= MutableLiveData<String?>()
-    val getCredit_NetError: LiveData<String?>
-        get() = _getCredit_NetError
-
-
-    //initial export phonebook network response
-    private val _initialexportPhoneBookNetworkSuccess = MutableLiveData<Boolean>()
-    val initialexportPhoneBookNetworkSuccess: LiveData<Boolean>
-        get() = _initialexportPhoneBookNetworkSuccess
-
-    // export phonebook from webview network response
-    private val _exportPhoneBookWebViewNetworkSuccess = MutableLiveData<Boolean>()
-    val exportPhoneBookWebViewNetworkSuccess: LiveData<Boolean>
-        get() = _exportPhoneBookWebViewNetworkSuccess
-
-
 
     suspend fun getUser()=withContext(Dispatchers.IO){
             myDatabaseDao.getUserNoLiveData()
 
     }
 
-    //reset Logging Out
-    fun resetLoggingOutToFalse(){
-        _loggingOut.value=false
-    }
 
-    //getCredit DialPad fragment
-    suspend fun getCredit(phone:String,token:String){
+    //DialPad fragment
+    suspend fun getCredit(phone:String,token:String):Result<NetResponse_GetCurrentCredit>{
 
-
-        val deferredRes = myAPIService.getCurrentCredit(
-            phoneNumber = phone,
-            signature = produceJWtToken(
-                    Pair(Claim.TOKEN.myClaim,token),
-                    Pair(Claim.PHONE.myClaim,phone)
-            ),
-            mobileAppVersion = mobileAppVer,
-            request = NetRequest_GetCurrentCredit(authToken= token,phoneNumber= phone)
-        )
         try {
-            val result = deferredRes.await()
-            if (result.authTokenMismatch == true) {
-                _loggingOut.value=true
-                coroutineScope {
-                    withContext(Dispatchers.IO) {
-                        logoutAll(myDatabaseDao)
-                    }
-                }
-            } else {
-                if(result.success==true && !result.e1phone.isNullOrEmpty()){
-                   coroutineScope {
-                       withContext(Dispatchers.IO){
-                                myDatabaseDao.updatePrenumber(result.e1phone, System.currentTimeMillis())
-                                if(!result.appVersion.isNullOrEmpty())  myDatabaseDao.updateWebApiVersion(result.appVersion)
-                       }
-                   }
-                }
-                _getCredit_NetSuccess.value=result
-            }
+                val result = myAPIService.getCurrentCredit(
+                    phoneNumber = phone,
+                    signature = produceJWtToken(
+                            Pair(Claim.TOKEN.myClaim,token),
+                            Pair(Claim.PHONE.myClaim,phone)
+                    ),
+                    mobileAppVersion = mobileAppVer,
+                    request = NetRequest_GetCurrentCredit(authToken= token,phoneNumber= phone)
+                ).await()
 
-        } catch (t: Throwable) {
-            val errorMessage:String?=t.message
-            GlobalScope.launch {
-                withContext(IO){
-                    SendErrorrToServer( myAPIService,phone,"getCredit $phone, $token",t.message.toString()).sendError()
-                } }
-            _getCredit_NetError.value=t.toString()
+                return Result.Success(result)
+
+            } catch (e: Exception) {
+
+                GlobalScope.launch {
+                    withContext(IO){
+                        SendErrorrToServer( myAPIService,phone,"getCredit $phone, $token",e.message.toString()).sendError()
+                    } }
+                return Result.Error(e)
 
         }
     }
 
-    //getCredit DialPadFragment funkcije resetovanja stanja
-    fun resetGetCreditNetSuccess(){
-        _getCredit_NetSuccess.value=null
+    fun updatePrenumber(e1Phone:String, timestamp:Long){
+        myDatabaseDao.updatePrenumber(prenumber = e1Phone,timestamp = timestamp)
     }
 
-    fun resetGetCreditNetError(){
-        _getCredit_NetError.value=null
+    fun updateWebApiVersion(webApiVer:String){
+        myDatabaseDao.updateWebApiVersion(webApiVer =webApiVer )
     }
 
 
-
-    suspend fun exportPhoneBook(token:String, phoneNumber:String,phoneBook:List<PhoneBookItem>,initialExport:Boolean=false){
+    suspend fun exportPhoneBook(token:String, phoneNumber:String,phoneBook:List<PhoneBookItem>):Result<NetResponse_ExportPhonebook>{
         Log.i(MY_TAG, "EXPORTING PHONEBOOK")
 
-            val deferredRes = myAPIService.exportPhoneBook(
-                phoneNumber=phoneNumber,
-                signature = produceJWtTokenWithArrayInput(
-                    inputArray=Pair(Claim.PHONEBOOK.myClaim,phoneBook.toTypedArray()),
-                    claimsAndValues1 = Pair(Claim.TOKEN.myClaim,token),
-                    claimsAndValues2 = Pair(Claim.PHONENUMBER.myClaim,phoneNumber)
-                ),
-                mobileAppVersion = mobileAppVer,
-                request = NetRequest_ExportPhonebook(
-                    token,
-                    phoneNumber,
-                    phoneBook.toTypedArray()
-                )
-            )
             try {
-                val result = deferredRes.await()
 
-                if (result.authTokenMismatch == true) {
-                    _loggingOut.value=true
-                    coroutineScope {
-                        withContext(Dispatchers.IO) {
-                            logoutAll(myDatabaseDao)
-                        }
-                    }
-                }
-                else {
-                    if (initialExport) _initialexportPhoneBookNetworkSuccess.value = true
-                    else _exportPhoneBookWebViewNetworkSuccess.value = true
-                    Log.i(MY_TAG, "EXPORTING PHONEBOOK SUCCESS")
-                }
+                val result = myAPIService.exportPhoneBook(
+                    phoneNumber=phoneNumber,
+                    signature = produceJWtTokenWithArrayInput(
+                        inputArray=Pair(Claim.PHONEBOOK.myClaim,phoneBook.toTypedArray()),
+                        claimsAndValues1 = Pair(Claim.TOKEN.myClaim,token),
+                        claimsAndValues2 = Pair(Claim.PHONENUMBER.myClaim,phoneNumber)
+                    ),
+                    mobileAppVersion = mobileAppVer,
+                    request = NetRequest_ExportPhonebook(
+                        token,
+                        phoneNumber,
+                        phoneBook.toTypedArray()
+                    )
+                ).await()
 
-            } catch (t: Throwable) {
-                    Log.i(MY_TAG, "EXPORTING PHONEBOOK FAILURE")
+                  return Result.Success(result)
+
+            } catch (e: Exception) {
+                Log.i(MY_TAG, "EXPORTING PHONEBOOK FAILURE")
                 GlobalScope.launch {
                     withContext(IO){
-                        SendErrorrToServer(myAPIService,phoneNumber,"exportPhoneBook $phoneNumber, $token, $phoneBook, $initialExport",t.message.toString()).sendError()
+                        SendErrorrToServer(myAPIService,phoneNumber,"exportPhoneBook $phoneNumber, $token, $phoneBook",e.message.toString()).sendError()
                     }
                 }
+                return Result.Error(e)
             }
     }
-
-    fun initialPhoneBookExportFinished(){
-        _initialexportPhoneBookNetworkSuccess.value=false
-    }
-
-    fun phoneBookExportFinishedFromWebView(){
-        _exportPhoneBookWebViewNetworkSuccess.value=false
-    }
-
-
-     fun getE1Timestamp()= myDatabaseDao.getE1Timestamp()
 
 
 
@@ -185,14 +110,12 @@ class RepoContacts (val contentResolver: ContentResolver,
         val CURSOR_PHONE=1
         val CURSOR_PHONE_TYPE=2
         val CURSOR_PHOTO_URI=3
-        val CURSOR_PHOTO_FILE_ID=4
 
         val PROJECTION: Array<out String> = arrayOf(
             ContactsContract.CommonDataKinds.Phone._ID,
             ContactsContract.CommonDataKinds.Phone.NUMBER,
             ContactsContract.CommonDataKinds.Phone.TYPE,
             ContactsContract.CommonDataKinds.Photo.PHOTO_URI,
-            ContactsContract.CommonDataKinds.Photo.PHOTO_FILE_ID
         )
 
         val SELECTION: String = "${ContactsContract.CommonDataKinds.Phone.LOOKUP_KEY} = ?"
@@ -215,7 +138,7 @@ class RepoContacts (val contentResolver: ContentResolver,
             while (cursor.moveToNext()) {
                 list.add(
                     PhoneItem(
-                        cursor.getString(CURSOR_PHONE),
+                        PhoneNumberUtils.normalizeNumber(cursor.getString(CURSOR_PHONE)),
                         cursor.getInt(CURSOR_PHONE_TYPE),
                         cursor.getString(CURSOR_PHOTO_URI),
 
@@ -228,7 +151,7 @@ class RepoContacts (val contentResolver: ContentResolver,
         }
         Log.i(MY_TAG,"convert cursor u listu $list")
 
-        return list
+        return list.distinctBy {it.phoneNumber}
 
     }
 
@@ -408,7 +331,7 @@ class RepoContacts (val contentResolver: ContentResolver,
     }*/
 
 
-
+    // Called from WebViewViewModel and MainFragment when exporting phonebook to server
     suspend fun getRawContactsPhonebook():List<PhoneBookItem>{
 
         var resultList= listOf<PhoneBookItem>()
@@ -492,7 +415,10 @@ class RepoContacts (val contentResolver: ContentResolver,
             )
         }
 
-        return phoneBookItemsList.distinctBy { it.name }
+        return phoneBookItemsList.apply {
+                    filter { item: PhoneBookItem? -> item != null }
+                    distinctBy { it.name }
+                }
     }
 
     private fun makePhoneArrayForSameContact(list:List<ContactItemWithNumber>):Array<String>{
@@ -509,6 +435,7 @@ class RepoContacts (val contentResolver: ContentResolver,
     fun getAllRecentCalls()=myDatabaseDao.getAllRecentCalls()
 
     fun insertRecentCall(call:RecentCall)=myDatabaseDao.insertRecentCall(call)
+
 
     //Log state to our server
     fun logStateToServer(process:String="No_Process_Defined",state:String="No_State_Defined"){

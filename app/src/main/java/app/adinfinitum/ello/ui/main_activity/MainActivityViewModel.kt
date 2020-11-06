@@ -30,29 +30,9 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
         get() = _shouldShowSetAccountDisclaimer
 
 
-    private val _fullContactListWithInternationalNumbers = MutableLiveData<List<ContactItemWithInternationalNumbers>>()
-    val  fullContactListWithInternationalNumbers: LiveData<List<ContactItemWithInternationalNumbers>>
-        get() = _fullContactListWithInternationalNumbers
-
-
-    //phonebook
-    private val _phoneBook = MutableLiveData<List<PhoneBookItem>>()
-    val phoneBook: LiveData<List<PhoneBookItem>>
-        get() = _phoneBook
-
-    val phoneBookExported=myRepository.initialexportPhoneBookNetworkSuccess
-
-    //logging out zbog token mismatch
-    val loggingOut=myRepository.loggingOut
-
-
     init {
         Log.i(MY_TAG,("init"))
 
-    }
-
-    fun resetLoggingOutToFalse(){
-        myRepository.resetLoggingOutToFalse()
     }
 
     fun showSetAccountDisclaimer(){
@@ -71,48 +51,6 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
         _shouldShowSetAccountDisclaimer.value=false
     }
 
-
-    fun getPhoneBook(){
-        Log.i(MY_TAG,"get phone boook")
-
-            viewModelScope.launch {
-
-                val deferredList = viewModelScope.async(IO) {
-                    myRepository.getRawContactsPhonebook()
-                }
-                try {
-
-                    val resultList = deferredList.await()
-                    if (!resultList.isNullOrEmpty()) _phoneBook.value = resultList
-
-                } catch (t: Throwable) {
-                    Log.i(MY_TAG, t.message ?: "no message")
-                }
-
-            }
-
-    }
-
-
-
-    fun exportPhoneBook(phoneBook:List<PhoneBookItem>){
-
-        val myUser=userData.value
-        if(myUser!=null
-                && myUser.userPhone!= EMPTY_PHONE_NUMBER && myUser.userPhone.isNotEmpty()
-                && myUser.userToken!= EMPTY_TOKEN && myUser.userToken.isNotEmpty())
-            {
-            viewModelScope.launch {
-                myRepository.exportPhoneBook(myUser.userToken,myUser.userPhone,phoneBook,initialExport = true)
-            }
-        }
-
-    }
-
-    fun phoneBookExportFinished(){
-        myRepository.initialPhoneBookExportFinished()
-
-    }
 
     private fun checkForSharedPrefDisclamerShownValue():Boolean{
 

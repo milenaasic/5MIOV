@@ -119,12 +119,12 @@ object MyAPI {
 
 
     //E1 prenumber
-    @POST("/api/sip/getE1")
+    /*@POST("/api/sip/getE1")
     fun getE1(
         @Header(HEADER_PHONE_KEY) phoneNumber:String,
         @Header(HEADER_SIGNATURE) signature:String,
         @Header(HEADER_MOBILE_APP_VERSION) mobileAppVersion:String,
-        @Body request: NetRequest_GetE1): Deferred<NetResponse_GetE1>
+        @Body request: NetRequest_GetE1): Deferred<NetResponse_GetE1>*/
 
      @POST("/api/sip/setNewE1")
      fun setNewE1(
@@ -136,7 +136,7 @@ object MyAPI {
 
 
      //Sip
-     @POST("api/sip/getSipCallerIds")
+     /*@POST("api/sip/getSipCallerIds")
      fun getSipCallerIds(
          @Header(HEADER_PHONE_KEY) phoneNumber:String,
          @Header(HEADER_SIGNATURE) signature:String,
@@ -149,7 +149,7 @@ object MyAPI {
          @Header(HEADER_PHONE_KEY) phoneNumber:String,
          @Header(HEADER_SIGNATURE) signature:String,
          @Header(HEADER_MOBILE_APP_VERSION) mobileAppVersion:String,
-         @Body request: NetRequest_SetSipCallerId): Deferred<NetResponse_SetSipCallerId>
+         @Body request: NetRequest_SetSipCallerId): Deferred<NetResponse_SetSipCallerId>*/
 
 
      @POST("api/sip/resetSipAccess")

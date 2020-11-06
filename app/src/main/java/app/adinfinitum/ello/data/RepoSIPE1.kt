@@ -63,7 +63,7 @@ class RepoSIPE1 (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIService,val m
                 _loggingOut.value=true
                 coroutineScope {
                     withContext(Dispatchers.IO) {
-                        logoutAll(myDatabaseDao)
+                        //logoutAll(myDatabaseDao)
                     }
                 }
             }

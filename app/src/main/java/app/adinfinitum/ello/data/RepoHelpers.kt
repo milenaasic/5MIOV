@@ -1,41 +1,45 @@
 package app.adinfinitum.ello.data
 
+import android.app.Application
+import android.content.Context
 import android.util.Log
+import app.adinfinitum.ello.database.MyDatabase
 import app.adinfinitum.ello.database.MyDatabaseDao
 import app.adinfinitum.ello.model.PhoneBookItem
+import app.adinfinitum.ello.ui.myapplication.MyApplication
+import app.adinfinitum.ello.utils.DEFAULT_SHARED_PREFERENCES
+import app.adinfinitum.ello.utils.DISCLAIMER_WAS_SHOWN
+import app.adinfinitum.ello.utils.PHONEBOOK_IS_EXPORTED
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.*
 
 
 private const val MY_TAG="MY_REPO_HELPERS"
-suspend fun logoutAll( myDatabaseDao: MyDatabaseDao){
 
-    coroutineScope {
+suspend fun logoutAll(applicationContext:Context){
+        val myDatabase= MyDatabase.getInstance(applicationContext).myDatabaseDao
 
-        val deferreds = listOf(
-            async(Dispatchers.IO) { myDatabaseDao.logoutE1Table() },
-            async(Dispatchers.IO) {  myDatabaseDao.logoutSipAccount() },
-            async(Dispatchers.IO) { myDatabaseDao.logoutWebApiVersion() },
-            async(Dispatchers.IO) { myDatabaseDao.logoutRecentCalls() }
-        )
+        val sharedPreferences=applicationContext.getSharedPreferences(DEFAULT_SHARED_PREFERENCES, Context.MODE_PRIVATE)
 
-        try {
-            val result=deferreds.awaitAll()
-
-            Log.i(MY_TAG,"user data before logging out ${myDatabaseDao.getUserNoLiveData()}")
-            val defa=async (Dispatchers.IO) {  myDatabaseDao.logoutUser()}
-            defa.await()
-            Log.i(MY_TAG,"user data after logging out ${myDatabaseDao.getUserNoLiveData()}")
-
-        }catch(t:Throwable){
-            Log.i(MY_TAG, "Error logging out ${t.message}")
+        sharedPreferences.edit().apply{
+            putBoolean(DISCLAIMER_WAS_SHOWN,false).apply()
+            putBoolean(PHONEBOOK_IS_EXPORTED,false).apply()
         }
 
-    }
+
+        try {
+            withContext(Dispatchers.IO) {
+                myDatabase.logoutE1Table()
+                myDatabase.logoutSipAccount()
+                myDatabase.logoutWebApiVersion()
+                myDatabase.logoutRecentCalls()
+                myDatabase.logoutUser()
+            }
+        }catch (e:Exception){
+            Log.i(MY_TAG, "Error logging out ${e.message}")
+        }
+
 }
 
 

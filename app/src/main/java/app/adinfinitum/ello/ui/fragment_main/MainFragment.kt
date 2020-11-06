@@ -26,7 +26,6 @@ import app.adinfinitum.ello.database.MyDatabase
 import app.adinfinitum.ello.databinding.FragmentMainLinLayoutBinding
 import app.adinfinitum.ello.model.ContactItem
 import app.adinfinitum.ello.model.ContactItemWithInternationalNumbers
-import app.adinfinitum.ello.ui.initializeSharedPrefToFalse
 import app.adinfinitum.ello.ui.main_activity.MainActivity
 import app.adinfinitum.ello.ui.main_activity.MainActivityViewModel
 import app.adinfinitum.ello.ui.myapplication.MyApplication
@@ -116,7 +115,7 @@ class MainFragment : Fragment(){
         binding.mainFregmRecViewLinLayout.setHasFixedSize(true)
         binding.mainFregmRecViewLinLayout.adapter=contactsAdapter
 
-        viewModel.populateContactList("")
+        if(checkForPermissions()) viewModel.populateContactList("")
 
     }
 
@@ -124,40 +123,16 @@ class MainFragment : Fragment(){
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-       /*activityViewModel.fullContactListWithInternationalNumbers.observe(viewLifecycleOwner,Observer{
-        if(it!=null){
-            contactsAdapter.dataList=convertListWithPhonesToContactItemList(it)
-        }
-       })*/
-
         viewModel.contactList.observe(viewLifecycleOwner, Observer {list->
-
             if(list!=null) contactsAdapter.dataList=list
-
          })
 
         viewModel.numberOfSelectedContacts.observe(viewLifecycleOwner, Observer {
             if(it!=null) binding.nbOfContactsTextView.text=String.format(resources.getString(R.string.nb_of_contacts_found,it))
-
          })
 
-
         viewModel.currentSearchString.observe(viewLifecycleOwner, Observer {
-            contactsAdapter.stringToColor=it
-
-        })
-
-
-
-
-        viewModel.loggingOut.observe(viewLifecycleOwner, Observer {
-            if(it!=null){
-                if(it) {
-                    initializeSharedPrefToFalse(requireActivity().application)
-                    viewModel.resetLoggingOutToFalse()
-                }
-
-            }
+            if(it!=null)contactsAdapter.stringToColor=it
         })
     }
 
@@ -231,8 +206,7 @@ class MainFragment : Fragment(){
     override fun onStart() {
         super.onStart()
         if(checkForPermissions()){
-                    //viewModel.populateContactList()
-                    if(shouldExportPhoneBook()) (requireActivity() as MainActivity).exportPhoneBook()
+                    if(shouldExportPhoneBook()) viewModel.getPhoneBook()
         }
 
 
@@ -288,7 +262,7 @@ class MainFragment : Fragment(){
                 // If request is cancelled, the result arrays are empty.
                 if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                     viewModel.populateContactList("")
-                    if(shouldExportPhoneBook()) (requireActivity() as MainActivity).exportPhoneBook()
+                    if(shouldExportPhoneBook()) viewModel.getPhoneBook()
                 } else {
                     showSnackBar(resources.getString(R.string.no_permission_read_contacts))
                 }
@@ -315,17 +289,6 @@ class MainFragment : Fragment(){
     override fun onStop() {
         super.onStop()
         hidekeyboard()
-    }
-
-    private fun convertListWithPhonesToContactItemList(list:List<ContactItemWithInternationalNumbers>):List<ContactItem>{
-        var resultList= mutableListOf<ContactItem>()
-
-        for (item in list){
-            resultList.add(ContactItem(lookUpKey = item.lookUpKey, name = item.name, photoThumbUri = item.photoThumbUri))
-
-        }
-        return resultList
-
     }
 
 

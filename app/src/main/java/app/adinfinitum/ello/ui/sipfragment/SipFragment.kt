@@ -23,7 +23,6 @@ import app.adinfinitum.ello.api.MyAPI
 import app.adinfinitum.ello.data.RepoSIPE1
 import app.adinfinitum.ello.database.MyDatabase
 import app.adinfinitum.ello.databinding.FragmentSipBinding
-import app.adinfinitum.ello.ui.initializeSharedPrefToFalse
 import app.adinfinitum.ello.ui.myapplication.MyApplication
 import org.linphone.core.*
 import java.util.*
@@ -247,7 +246,7 @@ class SipFragment : Fragment() {
 
           })
 
-        viewModel.loggingOut.observe(viewLifecycleOwner, Observer {
+        /*viewModel.loggingOut.observe(viewLifecycleOwner, Observer {
             if(it!=null){
                 if(it) {
                     viewModel.logStateToMyServer("SIP", "loggingOut")
@@ -255,7 +254,7 @@ class SipFragment : Fragment() {
                     viewModel.resetLoggingOutToFalse()
                 }
             }
-        })
+        })*/
 
     }
 

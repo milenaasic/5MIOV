@@ -1,6 +1,7 @@
 package app.adinfinitum.ello.ui.fragment_main
 
 import android.app.Application
+import android.content.Context
 import android.net.Uri
 import android.provider.ContactsContract
 import android.util.Log
@@ -9,11 +10,18 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import app.adinfinitum.ello.data.RepoContacts
+import app.adinfinitum.ello.data.Result
+import app.adinfinitum.ello.data.logoutAll
 import app.adinfinitum.ello.model.ContactItem
+import app.adinfinitum.ello.model.PhoneBookItem
+import app.adinfinitum.ello.model.User
+import app.adinfinitum.ello.ui.myapplication.MyApplication
+import app.adinfinitum.ello.utils.DEFAULT_SHARED_PREFERENCES
+import app.adinfinitum.ello.utils.EMPTY_PHONE_NUMBER
+import app.adinfinitum.ello.utils.EMPTY_TOKEN
+import app.adinfinitum.ello.utils.PHONEBOOK_IS_EXPORTED
+import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.lang.Exception
 import java.util.*
 
@@ -24,7 +32,6 @@ class MainFragmentViewModel(val repoContacts: RepoContacts,application: Applicat
 
     //live data from database
     val userData=repoContacts.getUserData()
-    //var fullContactListWithInternationalNumbers:List<ContactItem>?=null
 
     private val _contactList = MutableLiveData<List<ContactItem>>()
     val contactList: LiveData<List<ContactItem>>
@@ -39,21 +46,6 @@ class MainFragmentViewModel(val repoContacts: RepoContacts,application: Applicat
         get() = _currentSearchString
 
 
-
-    //logging out zbog token mismatch
-    val loggingOut=repoContacts.loggingOut
-    fun resetLoggingOutToFalse(){
-        repoContacts.resetLoggingOutToFalse()
-    }
-
-
-
-    /*fun populateContactList2() {
-        viewModelScope.launch {
-           getAllRawContacts()
-        }
-    }*/
-
     fun populateContactList(searchString:String?) {
 
         viewModelScope.launch {
@@ -67,70 +59,77 @@ class MainFragmentViewModel(val repoContacts: RepoContacts,application: Applicat
         }
     }
 
-    private fun getContacts(uri: Uri){
+    suspend private fun getContacts(uri: Uri){
 
-        viewModelScope.launch {
-
-            val defResultList=async  (IO) {
-                repoContacts.getAllContacts(uri)
-            }
             try {
-                val resultList=defResultList.await()
+                val resultList= withContext(Dispatchers.IO) {
+                    repoContacts.getAllContacts(uri)
+                }
+
                 _contactList.value=resultList
                 _numberOfSelectedContacts.value=resultList.size
 
             }catch (e: Exception){
                 Log.i(MYTAG,e.message?:"no message")
             }
-        }
-
 
     }
 
 
+    fun getPhoneBook(){
+        Log.i(MYTAG,"get phone boook from Main fragment")
 
-
-    /*fun querryContactList(query:String?){
-        val fullList=fullContactListWithInternationalNumbers
-
-        if(!fullList.isNullOrEmpty()){
-            if(query!=null) {
-                val lowerCaseQuery: String = query.toLowerCase(Locale.getDefault())
-
-                val filteredContactsList: MutableList<ContactItem> = ArrayList()
-                for (item in fullList) {
-                    if (item.name.toLowerCase(Locale.getDefault()).contains(lowerCaseQuery)) {
-                        filteredContactsList.add(item)
-                    }
-                }
-                _contactList.value=filteredContactsList
-                _numberOfSelectedContacts.value=filteredContactsList.size
-            }
-        }
-
-
-    }*/
-
-
-
-  /* private fun  getAllRawContacts(){
         viewModelScope.launch {
 
-            val defResultLIst= async(IO) {
-                repoContacts.getAllRawContactWithInternPhoneNumber()
-            }
             try {
-                val resultList=defResultLIst.await()
-                fullContactListWithInternationalNumbers=resultList
-                _contactList.value=resultList
-                _numberOfSelectedContacts.value=resultList.size
+                withContext(IO) {
+                    val resultList= repoContacts.getRawContactsPhonebook()
+                    val user=repoContacts.getUser()
+                    if (!resultList.isNullOrEmpty()) exportPhoneBook(user,resultList)
+                }
 
-            }catch (t:Throwable){
-                Log.i(MYTAG, " getAllRawContacts error ${t.message}")
-
+            } catch (t: Throwable) {
+                Log.i(MYTAG, t.message ?: "no message")
             }
         }
-    }*/
+    }
+
+
+    private suspend fun exportPhoneBook(myUser: User, phoneBook:List<PhoneBookItem>) {
+
+        if (myUser.userPhone != EMPTY_PHONE_NUMBER && myUser.userPhone.isNotEmpty()
+            && myUser.userToken != EMPTY_TOKEN && myUser.userToken.isNotEmpty()
+        ) {
+            try {
+                val result =
+                    repoContacts.exportPhoneBook(myUser.userToken, myUser.userPhone, phoneBook)
+
+                when(result){
+                    is Result.Success->{
+                        if(result.data.authTokenMismatch==true) logoutAll(getApplication())
+                        else {
+                            val sharedPreferences = getApplication<MyApplication>().getSharedPreferences(
+                                DEFAULT_SHARED_PREFERENCES,
+                                Context.MODE_PRIVATE
+                            )
+                            if (sharedPreferences.contains(PHONEBOOK_IS_EXPORTED)) {
+                                sharedPreferences.edit().putBoolean(PHONEBOOK_IS_EXPORTED, true)
+                                    .apply()
+
+                            }
+                        }
+                    }
+                    is Result.Error->{}
+                }
+
+            } catch (e: Exception) {
+                Log.i(MYTAG, "export phonebook Failed from main fragment")
+            }
+
+        }
+    }
+
+
 
      fun logStateToServer(process:String, state:String){
         repoContacts.logStateToServer(process = process,state = state)

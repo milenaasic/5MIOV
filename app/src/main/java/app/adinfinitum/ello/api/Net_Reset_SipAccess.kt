@@ -26,8 +26,5 @@ data class NetResponse_ResetSipAccess(
     @Json(name="message")
     val message:String,
 
-    @Json(name="authTokenMismatch")
-    val authTokenMismatch:Boolean
-
 
 )

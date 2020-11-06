@@ -30,7 +30,6 @@ import app.adinfinitum.ello.api.MyAPI
 import app.adinfinitum.ello.data.RepoContacts
 import app.adinfinitum.ello.database.MyDatabase
 import app.adinfinitum.ello.databinding.ActivityMainBinding
-import app.adinfinitum.ello.ui.initializeSharedPrefToFalse
 import app.adinfinitum.ello.ui.myapplication.MyApplication
 import app.adinfinitum.ello.ui.registrationauthorization.RegistrationAuthorizationActivity
 import app.adinfinitum.ello.ui.webView.WebViewActivity
@@ -180,27 +179,6 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-        viewModel.phoneBook.observe(this, Observer {
-            if (it != null) {
-                viewModel.exportPhoneBook(it)
-            }
-        })
-
-        viewModel.phoneBookExported.observe(this, Observer {
-        if(it!=null) {
-            if (it) {
-                viewModel.phoneBookExportFinished()
-                val sharedPreferences =
-                    application.getSharedPreferences(DEFAULT_SHARED_PREFERENCES, Context.MODE_PRIVATE)
-                if (sharedPreferences.contains(PHONEBOOK_IS_EXPORTED)) {
-                    sharedPreferences.edit().putBoolean(PHONEBOOK_IS_EXPORTED, true).apply()
-
-                }
-            }
-        }
-
-        })
-
 
         viewModel.shouldShowSetAccountDisclaimer.observe(this, Observer {
 
@@ -210,18 +188,6 @@ class MainActivity : AppCompatActivity() {
                     viewModel.setAccountDialogDiscalimerShown()
                 }
             }
-         })
-
-        viewModel.loggingOut.observe(this, Observer {
-
-            if(it!=null){
-                if(it) {
-                        initializeSharedPrefToFalse(application)
-                        viewModel.resetLoggingOutToFalse()
-                }
-
-            }
-
          })
 
 
@@ -418,10 +384,6 @@ class MainActivity : AppCompatActivity() {
         super.onSaveInstanceState(outState)
     }
 
-
-    fun exportPhoneBook(){
-        viewModel.getPhoneBook()
-    }
 
     private fun showSetAccountDialog(){
 

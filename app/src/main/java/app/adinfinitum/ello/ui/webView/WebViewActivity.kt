@@ -20,7 +20,6 @@ import app.adinfinitum.ello.data.produceJWtToken
 import app.adinfinitum.ello.database.MyDatabase
 import app.adinfinitum.ello.databinding.ActivityWebViewBinding
 import app.adinfinitum.ello.model.PhoneBookItem
-import app.adinfinitum.ello.ui.initializeSharedPrefToFalse
 import app.adinfinitum.ello.ui.myapplication.MyApplication
 import app.adinfinitum.ello.utils.DEFAULT_SHARED_PREFERENCES
 import app.adinfinitum.ello.utils.PHONEBOOK_IS_EXPORTED
@@ -90,30 +89,18 @@ class WebViewActivity : AppCompatActivity() {
 
         })
 
-        viewModel.startGetingPhoneBook.observe(this, Observer {
-            if (it != null) {
-                if (it == true) {
-                    if(checkForPermissions()){
-                        viewModel.getPhoneBook()
-                        viewModel.resetStartGetingPhoneBook()
-                    }
 
-                }
 
-            }
-
-        })
-
-        viewModel.phoneBook.observe(this, Observer {
+        /*viewModel.phoneBook.observe(this, Observer {
             if (it != null) {
                     val mylist = it.filter { item: PhoneBookItem? -> item != null }
                     viewModel.exportPhoneBook(mylist)
 
             }
-        })
+        })*/
 
 
-        viewModel.phoneBookExported.observe(this, Observer {
+       /* viewModel.phoneBookExported.observe(this, Observer {
             if (it) {
 
                 viewModel.phoneBookExportFinished()
@@ -129,9 +116,9 @@ class WebViewActivity : AppCompatActivity() {
 
                 }
             }
-        })
+        })*/
 
-        viewModel.loggingOut.observe(this, Observer {
+        /*viewModel.loggingOut.observe(this, Observer {
             if (it != null) {
                 if (it) {
                     initializeSharedPrefToFalse(application)
@@ -139,16 +126,16 @@ class WebViewActivity : AppCompatActivity() {
                 }
 
             }
-        })
+        })*/
 
 
     }
 
-    private fun checkForPermissions():Boolean{
-
+    /*private fun checkForPermissions():Boolean{
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true
         else return checkSelfPermission(Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED
-    }
+    }*/
+
 
     fun getCustomHeaders(token:String, phone:String): Map<String, String> {
         val map = mutableMapOf<String, String>()

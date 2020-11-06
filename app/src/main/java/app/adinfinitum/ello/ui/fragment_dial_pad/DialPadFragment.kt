@@ -31,7 +31,6 @@ import app.adinfinitum.ello.data.RepoContacts
 import app.adinfinitum.ello.database.MyDatabase
 import app.adinfinitum.ello.databinding.FragmentDialPadBinding
 import app.adinfinitum.ello.model.RecentCall
-import app.adinfinitum.ello.ui.initializeSharedPrefToFalse
 import app.adinfinitum.ello.ui.myapplication.MyApplication
 import app.adinfinitum.ello.utils.*
 import kotlin.math.roundToInt
@@ -205,33 +204,12 @@ class DialPadFragment : Fragment() {
         })
 
 
-        viewModel.getCreditNetSuccess.observe(viewLifecycleOwner, Observer {response->
-
-             if(response!=null){
-                if(response.success==true && response.credit.isNotEmpty() && response.currency.isNotEmpty()){
-                    binding.creditTextView.text=resources.getString(R.string.current_credit,response.credit,response.currency)
-
-                }
-                 viewModel.resetGetCreditNetSuccess()
-
-            }
-
+        viewModel.credit.observe(viewLifecycleOwner, Observer {
+            if(!it.hasBeenHandled) binding.creditTextView.text=it.getContentIfNotHandled()
          })
 
-         viewModel.getCreditNetworkError.observe(viewLifecycleOwner, Observer {
-            if(it!=null) viewModel.resetGetCreditNetErrorr()
 
-          })
 
-          viewModel.loggingOut.observe(viewLifecycleOwner, Observer {
-              if(it!=null){
-                  if(it) {
-                      initializeSharedPrefToFalse(requireActivity().application)
-                      viewModel.resetLoggingOutToFalse()
-                  }
-
-              }
-           })
 
     }
 
