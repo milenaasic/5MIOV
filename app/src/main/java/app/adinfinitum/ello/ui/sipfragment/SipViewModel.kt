@@ -12,6 +12,7 @@ import app.adinfinitum.ello.ui.registrationauthorization.Event
 import app.adinfinitum.ello.data.Result
 import app.adinfinitum.ello.data.logoutAll
 import app.adinfinitum.ello.model.User
+import app.adinfinitum.ello.ui.myapplication.MyApplication
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import kotlin.Exception
@@ -88,8 +89,8 @@ class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : Androi
     //reset sip credentials
     fun resetSipCredentials(){
 
-        GlobalScope.launch {
-            Log.i(MYTAG, "resetSipCredentials(),globalScope.launch $this")
+        getApplication<MyApplication>().applicationScope.launch {
+            Log.i(MYTAG, "resetSipCredentials(),applicationScope.launch $this")
             try {
                 withContext(Dispatchers.IO) {
                     val myUser = mySipRepo.getUserNoLiveData()
@@ -101,7 +102,7 @@ class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : Androi
             }catch (t:Throwable){
                 Log.i(
                     MYTAG,
-                    "resetSipCredentials(), GlobalScope message ${t.message}"
+                    "resetSipCredentials(), applicationScope message ${t.message}"
                 )
             }
         }

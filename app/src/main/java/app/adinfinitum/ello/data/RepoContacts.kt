@@ -26,7 +26,7 @@ class RepoContacts (val contentResolver: ContentResolver,
     fun getPremunber() = myDatabaseDao.getPrenumber()
 
 
-    suspend fun getUser()= myDatabaseDao.getUserNoLiveData()
+    fun getUser()= myDatabaseDao.getUserNoLiveData()
 
     // About Fragment
     fun getWebAppVersion()=myDatabaseDao.getWebApiVersion()

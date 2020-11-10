@@ -5,6 +5,9 @@ import android.content.Context
 import android.content.pm.PackageInfo
 import android.os.Build
 import android.util.Log
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import org.acra.ACRA
 import org.acra.BuildConfig
 import org.acra.annotation.*
@@ -12,6 +15,7 @@ import org.acra.annotation.AcraHttpSender
 import org.acra.data.StringFormat
 import org.acra.sender.HttpSender
 import java.util.*
+import kotlin.coroutines.EmptyCoroutineContext
 
 
 @AcraCore(buildConfigClass = BuildConfig::class,
@@ -25,6 +29,12 @@ import java.util.*
                 )
 class MyApplication : Application() {
     private val MYTAG="MY_ApplicationContext"
+
+    val applicationScope by lazy {
+        CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    }
+
+
     //todo remove timer
     private var mTimer: Timer=Timer("Application object")
     val lTask: TimerTask = object : TimerTask() {

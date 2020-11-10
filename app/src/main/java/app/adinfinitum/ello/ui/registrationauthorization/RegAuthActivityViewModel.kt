@@ -18,7 +18,6 @@ import app.adinfinitum.ello.database.MyDatabase
 import app.adinfinitum.ello.ui.myapplication.MyApplication
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -323,7 +322,7 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
         val myphoneNumber = enteredPhoneNumber
         if( myphoneNumber == null || authData.authToken.isEmpty() || authData.authToken.isBlank()) return
 
-        GlobalScope.launch {
+        getApplication<MyApplication>().applicationScope.launch {
 
             // if Sip Access is not set -invoke it again
             if (authData.sipReady == false) {
