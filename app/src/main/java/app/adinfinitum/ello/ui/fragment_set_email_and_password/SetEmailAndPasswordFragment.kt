@@ -75,7 +75,7 @@ class SetEmailAndPasswordFragment : Fragment() {
             } else  it.isEnabled=true
          }
 
-        binding.setAccountConfirmpassEditText.setOnEditorActionListener { view, action, keyEvent ->
+        binding.setAccountConfirmpassEditText.setOnEditorActionListener { view, action, _ ->
 
             when (action){
                 EditorInfo.IME_ACTION_DONE, EditorInfo.IME_ACTION_UNSPECIFIED-> {
@@ -90,21 +90,21 @@ class SetEmailAndPasswordFragment : Fragment() {
         binding.apply {
             setAccountEmailEditText.apply {
                     afterTextChanged { binding.setAccountEmailTextInputLayout.error=null }
-                    setOnFocusChangeListener { view, hasFocus ->
+                    setOnFocusChangeListener {  _, hasFocus ->
                         if(hasFocus)  binding.setAccountEmailTextInputLayout.error=null
                      }
              }
 
              setAccountPassEditText.apply {
                     afterTextChanged { binding.setAccountPassTextInputLayout.error=null }
-                    setOnFocusChangeListener { view, hasFocus ->
+                    setOnFocusChangeListener { _, hasFocus ->
                      if(hasFocus)  binding.setAccountPassTextInputLayout.error=null
                     }
               }
 
               setAccountConfirmpassEditText.apply {
                 afterTextChanged { binding.setAccountConfirmpassTextInputLayout.error=null }
-                  setOnFocusChangeListener { view, hasFocus ->
+                  setOnFocusChangeListener { _, hasFocus ->
                       if(hasFocus)  binding.setAccountConfirmpassTextInputLayout.error=null
                   }
                }
@@ -117,21 +117,23 @@ class SetEmailAndPasswordFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.setAccountEmailAndPassSuccess.observe(viewLifecycleOwner, Observer {response->
-            if(response!=null){
+        viewModel.setAccountEmailAndPassSuccess.observe(viewLifecycleOwner, Observer {
+
+            if(!it.hasBeenHandled){
                 showProgressBar(false)
-                showToast(response.userMsg)
-                if(response.success==true){
-                    findNavController().navigate(SetEmailAndPasswordFragmentDirections.actionSetEmailAndPasswordFragmentToDialPadFragment())
-                }else binding.setAccountSubmitButton.isEnabled=true
-                viewModel.resetSetEmailAndPassNetSuccess()
+                it.getContentIfNotHandled()?.let{response->
+                    showToast(response.userMsg)
+                    if(response.success==true){
+                        findNavController().navigate(SetEmailAndPasswordFragmentDirections.actionSetEmailAndPasswordFragmentToDialPadFragment())
+                    }else binding.setAccountSubmitButton.isEnabled=true
+
+                }
+
             }
          })
 
          viewModel.setAccountEmailAndPassError.observe(viewLifecycleOwner, Observer {
-             if(it!=null){
-                viewModel.resetSetEmailAndPasstNetErrorr()
-
+             if(!it.hasBeenHandled){
                  showSnackBar(getString(R.string.something_went_wrong))
                  showProgressBar(false)
                  binding.setAccountSubmitButton.isEnabled=true

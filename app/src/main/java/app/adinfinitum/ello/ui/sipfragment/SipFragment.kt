@@ -215,46 +215,41 @@ class SipFragment : Fragment() {
             }
         })
 
-        viewModel.getSipCredentialsNetSuccess.observe(viewLifecycleOwner, Observer{response->
-            if(response!=null) {
-                if (   response.sipUserName.isNotEmpty() && response.sipUserName.isNotBlank()
+        viewModel.getSipCredentialsNetSuccess.observe(viewLifecycleOwner, Observer{
+
+            if(!it.hasBeenHandled) {
+                it.getContentIfNotHandled()?.let { response ->
+
+                    if (response.sipUserName.isNotEmpty() && response.sipUserName.isNotBlank()
                         && response.sipPassword.isNotEmpty() && response.sipPassword.isNotBlank()
                         && response.sipServer.isNotEmpty() && response.sipServer.isNotBlank()
-                ){
-                    initializeCore( sipUserName = response.sipUserName,
-                                    sipPassword = response.sipPassword,
-                                    sipServer = response.sipServer,
-                                    sipCallerId = response.sipCallerId,
-                                    stunServer = response.stunServer)
-                    viewModel.resetgetSipAccountCredentialsNetSuccess()
-                }else {
+                    ) {
+                        initializeCore(
+                            sipUserName = response.sipUserName,
+                            sipPassword = response.sipPassword,
+                            sipServer = response.sipServer,
+                            sipCallerId = response.sipCallerId,
+                            stunServer = response.stunServer
+                        )
+
+                    } else {
                         showToast(resources.getString(R.string.something_went_wrong))
-                        viewModel.resetgetSipAccountCredentialsNetSuccess()
                         viewModel.navigateBack()
-                        Log.i(MYTAG,"get sip credentials net success, but response is $response")
+                        Log.i(MYTAG, "get sip credentials net success, but response is $response")
+                    }
                 }
             }
          })
 
          viewModel.getSipAccessCredentialsNetError.observe(viewLifecycleOwner, Observer {
-            if(it!=null){
-                viewModel.resetgetSipAccountCredentialsNetError()
+
+             if(!it.hasBeenHandled) {
                 showToast(resources.getString(R.string.something_went_wrong))
                 viewModel.navigateBack()
                 Log.i(MYTAG,"getsip credentials error $it")
             }
 
           })
-
-        /*viewModel.loggingOut.observe(viewLifecycleOwner, Observer {
-            if(it!=null){
-                if(it) {
-                    viewModel.logStateToMyServer("SIP", "loggingOut")
-                    initializeSharedPrefToFalse(requireActivity().application)
-                    viewModel.resetLoggingOutToFalse()
-                }
-            }
-        })*/
 
     }
 

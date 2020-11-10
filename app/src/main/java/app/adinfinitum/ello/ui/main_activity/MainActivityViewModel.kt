@@ -37,12 +37,19 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
 
     fun showSetAccountDisclaimer(){
         viewModelScope.launch {
+            try {
+                val user= withContext(Dispatchers.IO) {
+                        myRepository.getUser()
+                }
+                if(user.userEmail.equals(EMPTY_EMAIL) && !checkForSharedPrefDisclamerShownValue()){
+                    Log.i(MY_TAG,"user is $user, disclaimer was not shown")
+                    _shouldShowSetAccountDisclaimer.value=true}
 
-            val user=myRepository.getUser()
+            }catch (e:Exception){
+                Log.i(MY_TAG,"showSetAccountDisclaimer(), ${e.message}")
+            }
 
-            if(user.userEmail.equals(EMPTY_EMAIL) && !checkForSharedPrefDisclamerShownValue()){
-                Log.i(MY_TAG,"user is $user, disclaimer was not shown")
-                _shouldShowSetAccountDisclaimer.value=true}
+
         }
 
     }

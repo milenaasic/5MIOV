@@ -109,6 +109,12 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
 
     init {
         Log.i(MY_TAG,("init"))
+        viewModelScope.launch {
+            withContext(IO){
+            val db=MyDatabase.getInstance(getApplication()).myDatabaseDao
+                Log.i(MY_TAG,"${db.getWebApiVersion()},${db.getUser()}")
+            }
+        }
     }
 
     fun resetSignUpParameters(){

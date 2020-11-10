@@ -10,6 +10,7 @@ import app.adinfinitum.ello.api.NetResponse_Registration
 import app.adinfinitum.ello.api.NetResponse_SetAccountEmailAndPass
 import app.adinfinitum.ello.data.Repo
 import app.adinfinitum.ello.data.Result
+import app.adinfinitum.ello.ui.registrationauthorization.Event
 import app.adinfinitum.ello.utils.EMPTY_PHONE_NUMBER
 import app.adinfinitum.ello.utils.EMPTY_TOKEN
 import kotlinx.coroutines.Dispatchers
@@ -24,12 +25,12 @@ private val MYTAG="MY_SetEmailPass_VIEWMOD"
 class SetEmailPassFragmentViewModel(val myrepository: Repo, application: Application) : AndroidViewModel(application) {
 
 
-    private val _setAccountEmailAndPassSuccess= MutableLiveData<NetResponse_SetAccountEmailAndPass?>()
-    val setAccountEmailAndPassSuccess: LiveData<NetResponse_SetAccountEmailAndPass?>
+    private val _setAccountEmailAndPassSuccess= MutableLiveData<Event<NetResponse_SetAccountEmailAndPass>>()
+    val setAccountEmailAndPassSuccess: LiveData<Event<NetResponse_SetAccountEmailAndPass>>
         get() = _setAccountEmailAndPassSuccess
 
-    private val _setAccountEmailAndPassError= MutableLiveData<String?>()
-    val setAccountEmailAndPassError: LiveData<String?>
+    private val _setAccountEmailAndPassError= MutableLiveData<Event<String?>>()
+    val setAccountEmailAndPassError: LiveData<Event<String?>>
         get() = _setAccountEmailAndPassError
 
     fun setAccountAndEmailForUser(email:String,password:String){
@@ -71,33 +72,21 @@ class SetEmailPassFragmentViewModel(val myrepository: Repo, application: Applica
                                         Log.e(MYTAG,"insertion into DB failed")
                                    }
 
-                                    _setAccountEmailAndPassSuccess.value=result.data
+                                    _setAccountEmailAndPassSuccess.value=Event(result.data)
                                 }
-                                is Result.Error->_setAccountEmailAndPassError.value=result.exception.message
+                                is Result.Error->_setAccountEmailAndPassError.value=Event(result.exception.message)
                             }
 
                         }catch (e:Exception){
                             Log.i(MYTAG,"set email and account for user ${e.message}")
                         }
-
                     }
 
                 } catch (e: Exception) {
                     Log.i(MYTAG,"DB error ${e.message}")
                 }
 
-
-
             }
-
-    }
-
-    fun resetSetEmailAndPassNetSuccess(){
-        _setAccountEmailAndPassSuccess.value=null
-    }
-
-    fun resetSetEmailAndPasstNetErrorr(){
-       _setAccountEmailAndPassError.value=null
     }
 
 

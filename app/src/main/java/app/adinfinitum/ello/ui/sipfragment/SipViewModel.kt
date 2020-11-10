@@ -6,10 +6,15 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import app.adinfinitum.ello.api.NetResponse_GetSipAccessCredentials
 import app.adinfinitum.ello.data.RepoSIPE1
+import app.adinfinitum.ello.ui.registrationauthorization.Event
+import app.adinfinitum.ello.data.Result
+import app.adinfinitum.ello.data.logoutAll
+import app.adinfinitum.ello.model.User
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
-import java.lang.Exception
+import kotlin.Exception
 
 private val MYTAG="MY_SIPVIEWMODEL"
 
@@ -25,23 +30,20 @@ class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : Androi
     val timeoutReg:LiveData<Boolean>
         get() = _timeoutReg*/
 
-    private val _setMicMode= MutableLiveData<Boolean>()
-    val setMicMode:LiveData<Boolean>
-        get() = _setMicMode
-
     private val _navigateUp= MutableLiveData<Boolean>()
     val navigateUp:LiveData<Boolean>
         get() = _navigateUp
 
+    private val _getSipCredentialsNetSuccess= MutableLiveData<Event<NetResponse_GetSipAccessCredentials>>()
+    val getSipCredentialsNetSuccess:LiveData<Event<NetResponse_GetSipAccessCredentials>>
+        get() = _getSipCredentialsNetSuccess
 
-    val getSipCredentialsNetSuccess=mySipRepo.getSipAccessCredentialsNetSuccess
-    val getSipAccessCredentialsNetError=mySipRepo.getSipAccessCredentialsNetError
+    private val _getSipAccessCredentialsNetError= MutableLiveData<Event<String>>()
+    val getSipAccessCredentialsNetError:LiveData<Event<String>>
+        get() = _getSipAccessCredentialsNetError
 
-    //token mismatch logging out
-    val loggingOut=mySipRepo.loggingOut
-    fun resetLoggingOutToFalse(){
-        mySipRepo.resetLoggingOutToFalse()
-    }
+
+
 
     // new sip credentials
     fun getSipAccountCredentials(){
@@ -51,40 +53,60 @@ class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : Androi
                 val myUser= withContext(Dispatchers.IO){
                     mySipRepo.getUserNoLiveData()
                 }
-                if(myUser.userToken.isNotEmpty() && myUser.userPhone.isNotEmpty()) mySipRepo.getSipAccessCredentials(token = myUser.userToken,phone = myUser.userPhone)
+                if(myUser.userToken.isNotEmpty() && myUser.userPhone.isNotEmpty()) {
+                    val result = withContext(Dispatchers.IO) {
+                        mySipRepo.getSipAccessCredentials(
+                            token = myUser.userToken,
+                            phone = myUser.userPhone
+                        )
+                    }
+
+                    when(result){
+
+                        is Result.Success->{
+                            if (result.data.authTokenMismatch == true) {
+                                    withContext(Dispatchers.IO) {
+                                        logoutAll(getApplication())
+                                    }
+                            } else {
+                                _getSipCredentialsNetSuccess.value=Event(result.data)
+                            }
+                        }
+                        is Result.Error->{
+                            _getSipAccessCredentialsNetError.value=Event(result.exception.message?:"")
+                        }
+                    }
+                }
+
             }catch (e: Exception) {
-                Log.i(MYTAG,"db error in GetSipAccountCredentials ${e.message}")
+                Log.i(MYTAG,"error in GetSipAccountCredentials ${e.message}")
             }
-
-            /*val deferredUser = viewModelScope.async(IO) {
-
-                mySipRepo.getUserNoLiveData()
-            }
-            try {
-                val myUser = deferredUser.await()
-                if(myUser.userToken.isNotEmpty() && myUser.userPhone.isNotEmpty()) mySipRepo.getSipAccessCredentials(token = myUser.userToken,phone = myUser.userPhone)
-
-            } catch (e: Exception) {
-                Log.i(MYTAG,"db error in GetSipAccountCredentials ${e.message}")
-            }*/
-
 
          }
     }
 
-    //reset getCredentials
-    fun resetgetSipAccountCredentialsNetSuccess(){
-        mySipRepo.resetGetSipAccessCredentialsNetSuccess()
-    }
-    fun resetgetSipAccountCredentialsNetError(){
-        mySipRepo.resetGetSipAccessCredentialsNetError()
-    }
-
-
     //reset sip credentials
     fun resetSipCredentials(){
-       mySipRepo.resetSipAccessInBackGround()
+
+        GlobalScope.launch {
+            Log.i(MYTAG, "resetSipCredentials(),globalScope.launch $this")
+            try {
+                withContext(Dispatchers.IO) {
+                    val myUser = mySipRepo.getUserNoLiveData()
+                    mySipRepo.resetSipAccess(
+                        authToken = myUser.userToken,
+                        phone = myUser.userPhone
+                    )
+                }
+            }catch (t:Throwable){
+                Log.i(
+                    MYTAG,
+                    "resetSipCredentials(), GlobalScope message ${t.message}"
+                )
+            }
+        }
     }
+
 
 
     fun startTimeout(){
@@ -107,17 +129,6 @@ class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : Androi
 
     fun timeoutRegFinished(){
         _timeoutReg.value=false
-    }*/
-
-    /*fun setMicroophoneMode(){
-        viewModelScope.launch {
-            delay(TIMEOUT_IN_MILLIS_FOR_SETTING_MIC_MODE)
-            _setMicMode.value=true
-        }
-    }
-
-    fun setMicroophoneModeFinished(){
-        _setMicMode.value=false
     }*/
 
 

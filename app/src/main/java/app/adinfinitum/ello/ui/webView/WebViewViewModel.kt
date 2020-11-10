@@ -80,6 +80,7 @@ class WebViewViewModel(val myRepository: RepoContacts, application: Application)
 
                 when(result){
                     is Result.Success->{
+
                         if(result.data.authTokenMismatch==true) logoutAll(getApplication())
                         else {
                             val sharedPreferences = getApplication<MyApplication>().getSharedPreferences(

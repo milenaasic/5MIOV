@@ -1,6 +1,5 @@
 package app.adinfinitum.ello.data
 
-import android.app.Application
 import android.content.Context
 import android.util.Log
 import app.adinfinitum.ello.database.MyDatabase
@@ -17,6 +16,7 @@ import kotlinx.coroutines.*
 
 private const val MY_TAG="MY_REPO_HELPERS"
 
+//logout due to authTokenMismatch can be called after: getSipAccessCredentials , getCredit and exportPhoneBook routes
 suspend fun logoutAll(applicationContext:Context){
         val myDatabase= MyDatabase.getInstance(applicationContext).myDatabaseDao
 
