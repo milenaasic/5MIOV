@@ -75,6 +75,7 @@ class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : Androi
                         }
                         is Result.Error->{
                             _getSipAccessCredentialsNetError.value=Event(result.exception.message?:"")
+                            //todo log error to server
                         }
                     }
                 }
@@ -144,14 +145,19 @@ class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : Androi
         _navigateUp.value=false
     }
 
-    fun logCredentialsForSipCall(sipUsername:String?,sipPassword:String?,sipDisplayname:String?,sipServer:String?,stunServer:String?){
+   /* fun logCredentialsForSipCall(sipUsername:String?,sipPassword:String?,sipDisplayname:String?,sipServer:String?,stunServer:String?){
         mySipRepo.logCredentialsForSipCall(sipUsername = sipUsername,sipPassword = sipPassword,
             sipDisplayname = sipDisplayname,sipServer = sipServer,stunServer = stunServer)
 
-    }
+    }*/
 
-    fun logStateToMyServer(process:String,state:String){
-        mySipRepo.logStateToServer(process = process,state = state)
+     fun logStateOrErrorToServer(options:Map<String,String>){
+        getApplication<MyApplication>().applicationScope.launch {
+            withContext(Dispatchers.IO) {
+                mySipRepo.logStateOrErrorToOurServer(myoptions = options)
+            }
+        }
+
     }
 }
 

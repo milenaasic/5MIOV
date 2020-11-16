@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
@@ -52,19 +53,15 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
         binding=DataBindingUtil.setContentView(this,R.layout.activity_registration_authorization)
 
+        viewModel = ViewModelProvider(this, RegAuthViewModelFactory((application as MyApplication).myContainer.repo,application))
+            .get(RegAuthActivityViewModel::class.java)
 
-        val myDatabaseDao= MyDatabase.getInstance(this).myDatabaseDao
+       /* val myDatabaseDao= MyDatabase.getInstance(this).myDatabaseDao
         val myApi= MyAPI.retrofitService
         val mobileAppVersion=(application as MyApplication).mobileAppVersion
-        val myRepository= Repo(myDatabaseDao,myApi, mobileAppVer = resources.getString(R.string.mobile_app_version_header,mobileAppVersion))
-        val mySIPE1Repo=RepoSIPE1(myDatabaseDao,myApi, mobileAppVer =resources.getString(R.string.mobile_app_version_header,mobileAppVersion))
+        val myRepository= Repo(myDatabaseDao,myApi, mobileAppVer = resources.getString(R.string.mobile_app_version_header,mobileAppVersion))*/
 
         if(!isOnline(application)) showSnackbar(resources.getString(R.string.no_internet))
-
-
-
-        viewModel = ViewModelProvider(this, RegAuthViewModelFactory(myRepository,mySIPE1Repo,application))
-            .get(RegAuthActivityViewModel::class.java)
 
         if (savedInstanceState != null) {
 
@@ -100,7 +97,7 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
             if(user!=null) {
                 if (user.userPhone != EMPTY_PHONE_NUMBER && !user.userPhone.isNullOrEmpty() && user.userToken!= EMPTY_TOKEN && !user.userToken.isNullOrEmpty()) {
                     //halt for splash screen to be seen
-                     Handler().postDelayed(Runnable {
+                     Handler(Looper.getMainLooper()).postDelayed(Runnable {
                         gotoMainActivity()
                     }, SPLASH_SCREEN_DURATION_IN_MILLIS)
 
@@ -108,7 +105,7 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
                 } else {
 
                     if(savedInstanceState==null) {
-                        Handler().postDelayed(Runnable {
+                        Handler(Looper.getMainLooper()).postDelayed(Runnable {
                             findNavController(R.id.registration_navhost_fragment).navigate(
                                 EmptyLogoFragmentDirections.actionEmptyLogoFragmentToRegistrationFragment()
                             )
@@ -191,17 +188,12 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
             // Failed to start retriever, inspect Exception for more details
         }
 
-        
-
     }
 
 
-
-
     override fun onDestroy() {
-        //application.unregisterReceiver(smsBroadcastReceiver)
         unregisterReceiver(smsBroadcastReceiver)
-         super.onDestroy()
+        super.onDestroy()
         Log.i(MYTAG,"On Destroy")
 
     }

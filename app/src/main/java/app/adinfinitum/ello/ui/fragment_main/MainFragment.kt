@@ -62,17 +62,17 @@ class MainFragment : Fragment(){
 
         binding= DataBindingUtil.inflate(inflater,R.layout.fragment_main_lin_layout,container,false)
 
-        val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
-        val apiService= MyAPI.retrofitService
+        /*val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
+        val apiService= MyAPI.retrofitService*/
 
-        val repo=RepoContacts(requireActivity().contentResolver,
+       /* val repo=RepoContacts(requireActivity().contentResolver,
                                 database,
                                 apiService,
                                 resources.getString(R.string.mobile_app_version_header,(requireActivity().application as MyApplication).mobileAppVersion)
-                                )
+                                )*/
 
 
-        viewModel = ViewModelProvider(this, MainFragmentViewModelFactory(repo,requireActivity().application))
+        viewModel = ViewModelProvider(this, MainFragmentViewModelFactory((requireActivity().application as MyApplication).myContainer.repoContacts,requireActivity().application))
             .get(MainFragmentViewModel::class.java)
 
         activityViewModel = requireActivity().run {
@@ -224,7 +224,14 @@ class MainFragment : Fragment(){
         }
         catch (t:Throwable){
             Log.i(MYTAG, "can not get color as string, ${t.message}")
-            viewModel.logStateToServer("Main_Fragment (Contacts List)","getColorForHighlightLetters() exception ${t.message} ")
+
+            viewModel.logStateOrErrorToMyServer(
+                mapOf(
+                    Pair("process","Main_Fragment (Contacts List)"),
+                    Pair("state error","getColorForHighlightLetters() exception ${t.message} ")
+                )
+            )
+
         }
         return colorStr
 

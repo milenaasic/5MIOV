@@ -9,7 +9,7 @@ import kotlin.Exception
 
 private const val MYTAG="MY_SIP_REPO"
 
-class RepoSIPE1 (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIService,val mobileAppVer:String="0.0"){
+class RepoSIPE1 (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIService,val mobileAppVer:String="0.0"):LogStateOrErrorToServer{
 
     fun getUserNoLiveData()=myDatabaseDao.getUserNoLiveData()
 
@@ -28,11 +28,6 @@ class RepoSIPE1 (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIService,val m
             return Result.Success(response)
 
         }catch (e:Exception){
-
-            GlobalScope.launch {
-                withContext(Dispatchers.IO){
-                    SendErrorrToServer(myAPI,phone,"getSipAccessCredentials $phone, $token",e.message.toString()).sendError()
-                } }
 
             return Result.Error(e)
 
@@ -61,21 +56,25 @@ class RepoSIPE1 (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIService,val m
             Log.i(MYTAG, "resetSipAccess $result")
         } catch (e: Throwable) {
 
-            GlobalScope.launch {
-                withContext(Dispatchers.IO){
-                    SendErrorrToServer(myAPI,phone,"resetSipAccess $phone, $authToken",e.message.toString()).sendError()
-                } }
         }
     }
 
 
 
+
+    //log errors and states
+    suspend fun logStateOrErrorToOurServer(phoneNumber: String="",myoptions:Map<String,String>){
+        logStateOrErrorToOurServer(phoneNumber=phoneNumber,myDatabaseDao=myDatabaseDao,myAPIService = myAPI,myoptions = myoptions)
+
+    }
+
     fun logCredentialsForSipCall(sipUsername:String?,sipPassword:String?,sipDisplayname:String?,sipServer:String?,stunServer:String?){
         GlobalScope.launch {
             withContext(Dispatchers.IO){
                 try {
-                    myAPI.sendErrorToServer(phoneNumber = "$sipUsername",process="initializeCore function",
-                        errorMsg= "credentials: $sipUsername,$sipPassword,$sipDisplayname,$sipServer,$stunServer")
+                //todo fix ovaj send error
+                    //myAPI.sendErrorToServer(phoneNumber = "$sipUsername",process="initializeCore function",
+                        //errorMsg= "credentials: $sipUsername,$sipPassword,$sipDisplayname,$sipServer,$stunServer")
 
                 }catch (t:Throwable){
                     Log.i("MY_Send Error To Server","${t.message}")
@@ -85,26 +84,6 @@ class RepoSIPE1 (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIService,val m
 
     }
 
-    //Log state to our server
-    fun logStateToServer(process:String="No_Process_Defined",state:String="No_State_Defined"){
-        GlobalScope.launch {
-            with(Dispatchers.IO){
-                val phoneNumberDef=async {
-                    myDatabaseDao.getPhone()
-                }
-                try {
-                    val phoneNumber=phoneNumberDef.await()
-                    SendErrorrToServer(myAPIService = myAPI,phoneNumber = phoneNumber,
-                        process = process,errorMsg = state).sendError()
-
-                }catch (t:Throwable){
-                    Log.i(MYTAG, "error in logStateToServer ${t.message}")
-
-                }
-            }
-        }
-
-    }
 
 
 }

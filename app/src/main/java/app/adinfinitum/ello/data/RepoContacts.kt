@@ -17,7 +17,7 @@ private const val MY_TAG="MY_CONTACTS_REPOSITORY"
 class RepoContacts (val contentResolver: ContentResolver,
                     val myDatabaseDao: MyDatabaseDao,
                     val myAPIService: MyAPIService,
-                    val mobileAppVer:String="0.0") {
+                    val mobileAppVer:String="0.0"):LogStateOrErrorToServer {
 
     //User Live Data
     fun getUserData() = myDatabaseDao.getUser()
@@ -48,13 +48,7 @@ class RepoContacts (val contentResolver: ContentResolver,
                 return Result.Success(result)
 
             } catch (e: Exception) {
-
-                GlobalScope.launch {
-                    withContext(IO){
-                        SendErrorrToServer( myAPIService,phone,"getCredit $phone, $token",e.message.toString()).sendError()
-                    } }
                 return Result.Error(e)
-
         }
     }
 
@@ -93,11 +87,6 @@ class RepoContacts (val contentResolver: ContentResolver,
 
             } catch (e: Exception) {
                 Log.i(MY_TAG, "EXPORTING PHONEBOOK FAILURE")
-                GlobalScope.launch {
-                    withContext(IO){
-                        SendErrorrToServer(myAPIService,phoneNumber,"exportPhoneBook $phoneNumber, $token, $phoneBook",e.message.toString()).sendError()
-                    }
-                }
                 return Result.Error(e)
             }
     }
@@ -139,7 +128,7 @@ class RepoContacts (val contentResolver: ContentResolver,
             while (cursor.moveToNext()) {
                 list.add(
                     PhoneItem(
-                        PhoneNumberUtils.normalizeNumber(cursor.getString(CURSOR_PHONE)),
+                        PhoneNumberUtils.normalizeNumber(cursor.getString(CURSOR_PHONE))?:(cursor.getString(CURSOR_PHONE)),
                         cursor.getInt(CURSOR_PHONE_TYPE),
                         cursor.getString(CURSOR_PHOTO_URI),
 
@@ -438,24 +427,9 @@ class RepoContacts (val contentResolver: ContentResolver,
     fun insertRecentCall(call:RecentCall)=myDatabaseDao.insertRecentCall(call)
 
 
-    //Log state to our server
-    fun logStateToServer(process:String="No_Process_Defined",state:String="No_State_Defined"){
-        GlobalScope.launch {
-            with(Dispatchers.IO){
-                val phoneNumberDef=async {
-                    myDatabaseDao.getPhone()
-                }
-                try {
-                    val phoneNumber=phoneNumberDef.await()
-                    SendErrorrToServer(myAPIService = myAPIService,phoneNumber = phoneNumber,
-                        process = process,errorMsg = state).sendError()
-
-                }catch (t:Throwable){
-                    Log.i(MY_TAG, "error in logStateToServer ${t.message}")
-
-                }
-            }
-        }
+    //log errors and states
+    suspend fun logStateOrErrorToOurServer(phoneNumber: String="",myoptions:Map<String,String>){
+        logStateOrErrorToOurServer(phoneNumber=phoneNumber,myDatabaseDao=myDatabaseDao,myAPIService = myAPIService,myoptions = myoptions)
 
     }
 

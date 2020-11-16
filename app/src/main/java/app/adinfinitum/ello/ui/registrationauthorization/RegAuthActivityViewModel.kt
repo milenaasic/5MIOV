@@ -1,7 +1,6 @@
 package app.adinfinitum.ello.ui.registrationauthorization
 
 import android.app.Application
-import android.provider.Settings
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -11,10 +10,9 @@ import app.adinfinitum.ello.api.NetResponse_AddNumberToAccount
 import app.adinfinitum.ello.api.NetResponse_Authorization
 import app.adinfinitum.ello.api.NetResponse_NmbExistsInDB
 import app.adinfinitum.ello.api.NetResponse_Registration
+import app.adinfinitum.ello.data.LogStateOrErrorToServer
 import app.adinfinitum.ello.data.Repo
-import app.adinfinitum.ello.data.RepoSIPE1
 import app.adinfinitum.ello.data.Result
-import app.adinfinitum.ello.database.MyDatabase
 import app.adinfinitum.ello.ui.myapplication.MyApplication
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
@@ -23,7 +21,7 @@ import kotlinx.coroutines.withContext
 
 private const val MY_TAG="MY_RegAuthActivVieModel"
 
-class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1,application: Application) : AndroidViewModel(application) {
+class RegAuthActivityViewModel(val myRepository: Repo, application: Application) : AndroidViewModel(application) {
 
     var enteredPhoneNumber: String?=null
     var enteredEmail:String?=null
@@ -104,15 +102,30 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
         get() = _verificationTokenForAuthFragment
 
 
-
-
     init {
         Log.i(MY_TAG,("init"))
-        viewModelScope.launch {
-            withContext(IO){
-            val db=MyDatabase.getInstance(getApplication()).myDatabaseDao
-                Log.i(MY_TAG,"${db.getWebApiVersion()},${db.getUser()}")
+        getConfigurationInfo()
+    }
+
+    private fun getConfigurationInfo() {
+        getApplication<MyApplication>().applicationScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    val result = myRepository.getConfigurationInfo()
+                    when (result) {
+                        is Result.Success -> {
+
+                        }
+                        is Result.Error -> {
+
+                        }
+                    }
+
+                }
+            } catch (e: Exception) {
+
             }
+
         }
     }
 
@@ -126,17 +139,16 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
 
 
     //registration fragment
-    fun registerButtonClicked(phoneNumber:String, smsResend:Boolean, verificationMethod:String){
+    fun registerButtonClicked(phoneNumber:String, smsResend:Boolean=false, verificationMethod:String){
         enteredPhoneNumber=phoneNumber
 
-        //send registrtion phone number to server and go to authorization fragment
+        //send registrtion phone number to server
         viewModelScope.launch {
             try {
 
                 val result = withContext(Dispatchers.IO) {
                     myRepository.sendRegistationToServer(
                         phone = phoneNumber,
-                        smsResend = smsResend,
                         verificationMethod = verificationMethod
                     )
                 }
@@ -144,14 +156,42 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
                 when(smsResend){
                     false->{
                             when(result){
+
                                 is Result.Success->_registrationNetworkResponseSuccess.value=Event(result.data)
-                                is Result.Error->_registrationNetworkResponseError.value=Event(result.exception.message)
+
+                                is Result.Error->{
+                                                _registrationNetworkResponseError.value=Event(result.exception.message?:"")
+                                                withContext(Dispatchers.IO) {
+
+                                                       myRepository.logStateOrErrorToOurServer(enteredPhoneNumber?:"",
+                                                       myoptions =
+                                                           mapOf(
+                                                               Pair("process", "registration"),
+                                                               Pair("smsResend", smsResend.toString()),
+                                                               Pair("error", result.exception.message ?: "")
+                                                           )
+                                                       )
+
+                                                }
+                                }
                             }
                     }
                     true->{
                         when(result){
                             is Result.Success->_smsResendNetworkSuccess.value=Event(result.data.code.toString()+result.data.userMessage)
-                            is Result.Error->_smsResendNetworkError.value=Event(result.exception.message?:"")
+                            is Result.Error->{
+                                                _smsResendNetworkError.value=Event(result.exception.message?:"")
+                                                withContext(Dispatchers.IO){
+                                                    myRepository.logStateOrErrorToOurServer(enteredPhoneNumber?:"",
+                                                        mapOf(
+                                                            Pair("process","registration"),
+                                                            Pair("smsResend",smsResend.toString()),
+                                                            Pair("error",result.exception.message?:"")
+                                                        )
+                                                    )
+
+                                                }
+                            }
                         }
                     }
 
@@ -180,7 +220,6 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
                         phone = phoneNumber,
                         email = email,
                         password = password,
-                        smsResend = smsResend,
                         verificationMethod = verificationMethod
                     )
                 }
@@ -189,13 +228,37 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
                     false -> {
                         when (result) {
                             is Result.Success -> _addNumberToAccuntNetworkSuccess.value = Event(result.data)
-                            is Result.Error -> _addNumberToAccuntNetworkError.value = Event(result.exception.message)
+                            is Result.Error ->{
+                                        _addNumberToAccuntNetworkError.value = Event(result.exception.message)
+                                        withContext(Dispatchers.IO){
+                                            myRepository.logStateOrErrorToOurServer(enteredPhoneNumber?:"",
+                                                mapOf(
+                                                    Pair("process","assignPhoneNumberToAccount"),
+                                                    Pair("smsResend",smsResend.toString()),
+                                                    Pair("error",result.exception.message?:"")
+                                                )
+                                            )
+
+                                        }
+                            }
                         }
                     }
                     true -> {
                         when (result) {
                             is Result.Success -> _smsResendNetworkSuccess.value = Event(result.data.code.toString() + result.data.usermessage)
-                            is Result.Error -> _smsResendNetworkError.value = Event(result.exception.message)
+                            is Result.Error -> {
+                                                _smsResendNetworkError.value = Event(result.exception.message)
+                                                withContext(Dispatchers.IO){
+                                                    myRepository.logStateOrErrorToOurServer(enteredPhoneNumber?:"",
+                                                        mapOf(
+                                                            Pair("process","assignPhoneNumberToAccount"),
+                                                            Pair("smsResend",smsResend.toString()),
+                                                            Pair("error",result.exception.message?:"")
+                                                        )
+                                                    )
+
+                                                }
+                            }
                         }
                     }
 
@@ -220,7 +283,6 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
                           enteredPhoneNumber ?: "",
                           email,
                           password,
-                          smsResend,
                           verificationMethod = verificationMethod
                       )
                   }
@@ -229,15 +291,38 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
                       false -> {
                           when (result) {
                               is Result.Success -> _nmbExistsInDBUserHasAccountSuccess.value = Event(result.data)
-                              is Result.Error -> _nmbExistsInDBUserHasAccountError.value = Event(result.exception.message)
+                              is Result.Error -> {
+                                            _nmbExistsInDBUserHasAccountError.value = Event(result.exception.message)
+                                            withContext(Dispatchers.IO){
+                                                  myRepository.logStateOrErrorToOurServer(enteredPhoneNumber?:"",
+                                                      mapOf(
+                                                          Pair("process","numberExistsInDBVerifyAccount"),
+                                                          Pair("smsResend",smsResend.toString()),
+                                                          Pair("error",result.exception.message?:"")
+                                                      )
+                                                  )
+
+                                            }
+                              }
                           }
                       }
                       true -> {
                           when (result) {
                               is Result.Success -> _smsResendNetworkSuccess.value =
                                   Event(result.data.code.toString() + result.data.userMessage)
-                              is Result.Error -> _smsResendNetworkError.value =
-                                  Event(result.exception.message)
+                              is Result.Error -> {
+                                                _smsResendNetworkError.value = Event(result.exception.message)
+                                                withContext(Dispatchers.IO){
+                                                      myRepository.logStateOrErrorToOurServer(enteredPhoneNumber?:"",
+                                                          mapOf(
+                                                              Pair("process","numberExistsInDBVerifyAccount"),
+                                                              Pair("smsResend",smsResend.toString()),
+                                                              Pair("error",result.exception.message?:"")
+                                                          )
+                                                      )
+
+                                                }
+                              }
                           }
                       }
 
@@ -258,7 +343,6 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
                     val result = withContext(IO) {
                         myRepository.numberExistsInDB_NOAccount(
                             enteredPhoneNumber ?: "",
-                            smsResend,
                             verificationMethod = verificationMethod
                         )
                     }
@@ -267,15 +351,38 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
                         false -> {
                             when (result) {
                                 is Result.Success -> _nmbExistsInDB_NoAccountSuccess.value = Event(result.data)
-                                is Result.Error -> _nmbExistsInDB_NoAccountError.value = Event(result.exception.message)
+                                is Result.Error -> {
+                                            _nmbExistsInDB_NoAccountError.value = Event(result.exception.message)
+                                            withContext(Dispatchers.IO){
+                                                myRepository.logStateOrErrorToOurServer(enteredPhoneNumber?:"",
+                                                    mapOf(
+                                                        Pair("process","numberExistsInDB_NOAccount"),
+                                                        Pair("smsResend",smsResend.toString()),
+                                                        Pair("error",result.exception.message?:"")
+                                                    )
+                                                )
+
+                                            }
+                                }
                             }
                         }
                         true -> {
                             when (result) {
                                 is Result.Success -> _smsResendNetworkSuccess.value =
                                     Event(result.data.code.toString() + result.data.userMessage)
-                                is Result.Error -> _smsResendNetworkError.value =
-                                    Event(result.exception.message)
+                                is Result.Error -> {
+                                        _smsResendNetworkError.value = Event(result.exception.message)
+                                        withContext(Dispatchers.IO){
+                                            myRepository.logStateOrErrorToOurServer(enteredPhoneNumber?:"",
+                                                mapOf(
+                                                    Pair("process","numberExistsInDB_NOAccount"),
+                                                    Pair("smsResend",smsResend.toString()),
+                                                    Pair("error",result.exception.message?:"")
+                                                )
+                                            )
+
+                                        }
+                                }
                             }
                         }
 
@@ -307,7 +414,18 @@ class RegAuthActivityViewModel(val myRepository: Repo, val mySIPE1Repo:RepoSIPE1
 
                 when(result){
                     is Result.Success-> _authorizationNetworkSuccess.value=Event(result.data)
-                    is Result.Error-> _authorizationNetworkError.value=Event(result.exception.message)
+                    is Result.Error->{
+                                 _authorizationNetworkError.value=Event(result.exception.message)
+                                withContext(Dispatchers.IO){
+                                    myRepository.logStateOrErrorToOurServer(enteredPhoneNumber?:"",
+                                        mapOf(
+                                            Pair("process","authorizeThisUser"),
+                                            Pair("error",result.exception.message?:"")
+                                        )
+                                    )
+
+                                }
+                    }
                 }
 
             }

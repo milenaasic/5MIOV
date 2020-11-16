@@ -11,14 +11,28 @@ import kotlinx.coroutines.Dispatchers.IO
 
 
 private const val MY_TAG="MY_Repository"
-class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobileAppVer:String="0.0"){
+class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobileAppVer:String="0.0"):LogStateOrErrorToServer{
+
 
     //User Live Data
     fun getUserData()=myDatabaseDao.getUser()
 
+    //configuration route
+    suspend fun getConfigurationInfo():Result<NetResponse_Config>{
+        try{
+            val result=myAPI.getConfigurationInfo().await()
+            return Result.Success(result)
+
+        }catch (e:Exception){
+
+            return Result.Error(e)
+
+        }
+
+    }
 
     // Registration fragment
-    suspend fun sendRegistationToServer(phone:String,smsResend:Boolean,verificationMethod:String): Result<NetResponse_Registration> {
+    suspend fun sendRegistationToServer(phone:String,verificationMethod:String): Result<NetResponse_Registration> {
 
         try{
             val result=myAPI.sendRegistrationToServer(
@@ -31,44 +45,17 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
             return Result.Success(result)
 
         }catch (e:Exception){
-            GlobalScope.launch {
-                withContext(IO){
-                    SendErrorrToServer(myAPI,phone,"sendRegistationToServer,$phone,smsResend_$smsResend",e.message.toString()).sendError()
-                } }
-
             return Result.Error(e)
 
         }
 
-
-        /*val defResponse=myAPI.sendRegistrationToServer(
-                phoneNumber = phone,
-                signature = produceJWtToken(Pair(Claim.NUMBER.myClaim,phone)),
-                mobileAppVersion = mobileAppVer,
-                request = NetRequest_Registration(phoneNumber = phone,verificationMethod = verificationMethod )
-                )
-        try{
-
-            val result:NetResponse_Registration=defResponse.await()
-
-            return Result.Success(result)
-
-        } catch (e:Exception){
-            GlobalScope.launch {
-                withContext(IO){
-                    SendErrorrToServer(myAPI,phone,"sendRegistationToServer,$phone,smsResend_$smsResend",e.message.toString()).sendError()
-                } }
-
-            return Result.Error(e)
-
-        }*/
 
     }
 
 
 
     // ASSIGN NUMBER TO ACCOUNT
-    suspend fun assignPhoneNumberToAccount(phone:String, email:String,password:String,smsResend: Boolean=false,verificationMethod: String):Result<NetResponse_AddNumberToAccount>{
+    suspend fun assignPhoneNumberToAccount(phone:String, email:String,password:String,verificationMethod: String):Result<NetResponse_AddNumberToAccount>{
 
         val defResponse=myAPI.sendAddNumberToAccount(
                 phoneNumber = phone,
@@ -85,17 +72,10 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
                         verificationMethod = verificationMethod ))
         try{
             val result=defResponse.await()
-
             return Result.Success(result)
 
         }
         catch (e:Exception){
-
-            GlobalScope.launch {
-                withContext(IO){
-                    SendErrorrToServer(myAPI,phone,"assignPhoneNumberToAccount $phone, $email,$password smsResend $smsResend",e.message.toString()).sendError()
-                } }
-
             return Result.Error(e)
 
         }
@@ -105,7 +85,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
 
 
     //NUMBER EXISTS IN DB  fragment
-    suspend fun numberExistsInDBVerifyAccount(enteredPhoneNumber:String, email:String, password:String,smsResend: Boolean=false,verificationMethod: String):Result<NetResponse_NmbExistsInDB>{
+    suspend fun numberExistsInDBVerifyAccount(enteredPhoneNumber:String, email:String, password:String,verificationMethod: String):Result<NetResponse_NmbExistsInDB>{
 
         val defResult=myAPI.numberExistsInDBVerifyAccount(
                 phoneNumber = enteredPhoneNumber,
@@ -123,22 +103,15 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
                 )
         try{
             val result=defResult.await()
-
             return Result.Success(result)
         }
         catch (e:Exception){
-            GlobalScope.launch {
-                withContext(IO){
-                    SendErrorrToServer(myAPI,enteredPhoneNumber,"numberExistsInDBVerifyAccount $enteredPhoneNumber $email,$password smsResend $smsResend",e.message.toString()).sendError()
-                } }
-
-                return Result.Error(e)
-
+            return Result.Error(e)
         }
     }
 
 
-    suspend fun numberExistsInDB_NOAccount(enteredPhoneNumber:String,smsResend: Boolean=false,verificationMethod: String):Result<NetResponse_NmbExistsInDB>{
+    suspend fun numberExistsInDB_NOAccount(enteredPhoneNumber:String,verificationMethod: String):Result<NetResponse_NmbExistsInDB>{
 
         val defResult=myAPI.numberExistsInDB_NOAccount(
                 phoneNumber = enteredPhoneNumber,
@@ -153,12 +126,6 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
             return Result.Success(result)
         }
         catch (e:Exception){
-
-            GlobalScope.launch {
-                withContext(IO){
-                    SendErrorrToServer(myAPI,enteredPhoneNumber,"numberExistsInDB_NOAccount $enteredPhoneNumber, smsResend $smsResend",e.message.toString()).sendError()
-                } }
-
             return Result.Error(e)
         }
     }
@@ -184,12 +151,6 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
 
         }
         catch (e:Exception){
-
-            GlobalScope.launch {
-                withContext(IO){
-                    SendErrorrToServer(myAPI,phone,"authorizeThisUser,$phone,$smsToken,$email,$password",e.message.toString()).sendError()
-                } }
-
             return Result.Error(e)
 
         }
@@ -216,18 +177,11 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
         try {
             val result = defResult.await()
                 Log.i(MY_TAG,"NetRequest_SetAccountEmailAndPass $result")
-
                 return Result.Success(result)
 
         }
         catch (e:Exception){
             Log.i(MY_TAG,"NetRequest_SetAccountEmailAndPass error ${e.message}")
-
-            GlobalScope.launch {
-                withContext(IO){
-                    SendErrorrToServer(myAPI,phoneNumber,"setAccountEmailAndPasswordForUser $phoneNumber, $token, $email, $password",e.message.toString()).sendError()
-                } }
-
             return Result.Error(e)
 
         }
@@ -252,7 +206,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
                 )
 
             }catch (e:Throwable){
-                        SendErrorrToServer(myAPI,phone,"resetSIPAccess_from_uncancelable_job,$phone,$authToken",e.message.toString()).sendError()
+
             }
 
     }
@@ -277,12 +231,6 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
             return Result.Success(result)
 
         }catch (e:Exception){
-
-            GlobalScope.launch {
-                withContext(IO){
-                    SendErrorrToServer(myAPI,phone,"setNewE1_from_uncancelable_job,$phone,$token",e.message.toString()).sendError()
-                }
-            }
             return Result.Error(e)
         }
 
@@ -313,22 +261,12 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
         myDatabaseDao.updateWebApiVersion(webApiVer =webApiVer )
     }
 
-    //Log state to our server
-    fun logStateToServer(process:String="No_Process_Defined",state:String="No_State_Defined"){
-        GlobalScope.launch {
-                try {
-                    val phoneNumber= withContext(IO) {
-                        myDatabaseDao.getPhone()
-                    }
-                    SendErrorrToServer(myAPIService = myAPI,phoneNumber = phoneNumber,
-                            process = process,errorMsg = state).sendError()
+    suspend fun logStateOrErrorToOurServer(phoneNumber:String="",myoptions:Map<String,String>){
+        logStateOrErrorToOurServer(phoneNumber = phoneNumber,myDatabaseDao=myDatabaseDao,myAPIService = myAPI,myoptions = myoptions)
 
-                }catch (t:Throwable){
-                    Log.i(MY_TAG, "error in logStateToServer ${t.message}")
 
-                }
-        }
     }
+
 
 
 }

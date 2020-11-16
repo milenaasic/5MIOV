@@ -35,17 +35,17 @@ class RecentCallsFragment : Fragment() {
 
         binding= DataBindingUtil.inflate(inflater, R.layout.fragment_recent_calls,container,false)
 
-        val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
+        /*val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
         val apiService= MyAPI.retrofitService
 
         val repo= RepoContacts(requireActivity().contentResolver,
                                 database,
                                 apiService,
                                 resources.getString(R.string.mobile_app_version_header,(requireActivity().application as MyApplication).mobileAppVersion)
-                                )
+                                )*/
 
 
-        viewModel = ViewModelProvider(this, RecentCallsViewModelFactory(repo,requireActivity().application))
+        viewModel = ViewModelProvider(this, RecentCallsViewModelFactory((requireActivity().application as MyApplication).myContainer.repoContacts,requireActivity().application))
             .get(RecentCallsViewModel::class.java)
 
         binding.recentCallsRecView.addItemDecoration(

@@ -74,7 +74,14 @@ class DialpadFragmViewModel(val myRepository: RepoContacts, application: Applica
                             }
                     }
 
-                    is Result.Error->_credit.value=Event(" ")
+                    is Result.Error->{
+                            _credit.value=Event(" ")
+                           logStateOrErrorToMyServer(mapOf(
+                                                    Pair("process:","DialPad fragment getCredit"),
+                                                    Pair("error"," ${result.exception.message}")
+                                                    )
+                           )
+                    }
 
                 }
 
@@ -88,18 +95,22 @@ class DialpadFragmViewModel(val myRepository: RepoContacts, application: Applica
 
 
     fun insertCallIntoDB(call: RecentCall){
-        GlobalScope.launch {
+        getApplication<MyApplication>().applicationScope.launch {
             withContext(Dispatchers.IO){
                 myRepository.insertRecentCall(call)
             }
         }
 
-
     }
 
 
-    fun logStateToMyServer(process:String,state:String){
-        myRepository.logStateToServer(process = process,state = state)
+    fun logStateOrErrorToMyServer(options:Map<String,String>){
+        getApplication<MyApplication>().applicationScope.launch {
+            withContext(Dispatchers.IO){
+                myRepository.logStateOrErrorToOurServer(myoptions = options)
+            }
+        }
+
     }
 
 }

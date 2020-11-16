@@ -74,7 +74,18 @@ class SetEmailPassFragmentViewModel(val myrepository: Repo, application: Applica
 
                                     _setAccountEmailAndPassSuccess.value=Event(result.data)
                                 }
-                                is Result.Error->_setAccountEmailAndPassError.value=Event(result.exception.message)
+                                is Result.Error->{
+                                            _setAccountEmailAndPassError.value=Event(result.exception.message)
+                                            withContext(Dispatchers.IO){
+                                                myrepository.logStateOrErrorToOurServer(myoptions =
+                                                    mapOf(
+                                                        Pair("process","setAccountEmailAndPasswordForUser"),
+                                                        Pair("error",result.exception.message?:"")
+                                                    )
+                                                )
+
+                                            }
+                                }
                             }
 
                         }catch (e:Exception){

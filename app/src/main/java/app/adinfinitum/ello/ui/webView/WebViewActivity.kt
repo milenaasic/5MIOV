@@ -45,7 +45,7 @@ class WebViewActivity : AppCompatActivity() {
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_web_view)
 
-        val myDatabaseDao = MyDatabase.getInstance(this).myDatabaseDao
+        /*val myDatabaseDao = MyDatabase.getInstance(this).myDatabaseDao
         val myApi = MyAPI.retrofitService
         val mobileAppVersion = (application as MyApplication).mobileAppVersion
         val myRepository = RepoContacts(
@@ -53,11 +53,10 @@ class WebViewActivity : AppCompatActivity() {
             myDatabaseDao,
             myApi,
             resources.getString(R.string.mobile_app_version_header, mobileAppVersion)
-        )
+        )*/
 
 
-
-        viewModel = ViewModelProvider(this, WebViewViewModelFactory(myRepository, application))
+        viewModel = ViewModelProvider(this, WebViewViewModelFactory( (application as MyApplication).myContainer.repoContacts, application))
             .get(WebViewViewModel::class.java)
 
 
@@ -90,56 +89,14 @@ class WebViewActivity : AppCompatActivity() {
         })
 
 
-
-        /*viewModel.phoneBook.observe(this, Observer {
-            if (it != null) {
-                    val mylist = it.filter { item: PhoneBookItem? -> item != null }
-                    viewModel.exportPhoneBook(mylist)
-
-            }
-        })*/
-
-
-       /* viewModel.phoneBookExported.observe(this, Observer {
-            if (it) {
-
-                viewModel.phoneBookExportFinished()
-
-                val sharedPreferences = application.getSharedPreferences(
-                    DEFAULT_SHARED_PREFERENCES,
-                    Context.MODE_PRIVATE
-                )
-                if (sharedPreferences.contains(PHONEBOOK_IS_EXPORTED)) {
-
-                    sharedPreferences.edit().putBoolean(PHONEBOOK_IS_EXPORTED, true)
-                        .apply()
-
-                }
-            }
-        })*/
-
-        /*viewModel.loggingOut.observe(this, Observer {
-            if (it != null) {
-                if (it) {
-                    initializeSharedPrefToFalse(application)
-                    viewModel.resetLoggingOutToFalse()
-                }
-
-            }
-        })*/
-
-
     }
 
-    /*private fun checkForPermissions():Boolean{
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true
-        else return checkSelfPermission(Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED
-    }*/
+
 
 
     fun getCustomHeaders(token:String, phone:String): Map<String, String> {
         val map = mutableMapOf<String, String>()
-        val mobileAppVer=resources.getString(R.string.mobile_app_version_header,(application as MyApplication).mobileAppVersion)
+        val mobileAppVer=resources.getString(R.string.mobile_app_version_header,(application as MyApplication).myContainer.myMobileAppVersion)
         map.put(HEADER_AUTH_TOKEN_KEY, token)
         map.put(HEADER_PHONE_KEY,phone)
         map.put(HEADER_MOBILE_APP_VERSION,mobileAppVer)
@@ -155,13 +112,6 @@ class WebViewActivity : AppCompatActivity() {
 
 
     inner class MyWebWievClient() : WebViewClient() {
-
-
-        override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
-            super.onPageStarted(view, url, favicon)
-
-
-        }
 
         override fun onPageFinished(view: WebView?, url: String?) {
             super.onPageFinished(view, url)

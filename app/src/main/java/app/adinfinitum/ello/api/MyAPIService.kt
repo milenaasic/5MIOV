@@ -63,6 +63,10 @@ object MyAPI {
 
  interface MyAPIService {
 
+    //Config
+    @POST("api/user/signup")
+    fun getConfigurationInfo(): Deferred<NetResponse_Config>
+
     //Registration and Authorization Process
     @POST("api/user/signup")
     fun sendRegistrationToServer(
@@ -180,9 +184,9 @@ object MyAPI {
 
      // log error to server
      @PUT("api/mobileLog")
-     fun sendErrorToServer(
+     fun logStateOrErrorToServer(
          @Header(HEADER_PHONE_KEY) phoneNumber:String,
-         @Query("process") process:String, @Query("message") errorMsg:String):Deferred<Response<Unit>>
+         @QueryMap options:Map<String,String>):Response<Unit>
 
 }
 

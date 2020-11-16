@@ -129,10 +129,14 @@ class MainFragmentViewModel(val repoContacts: RepoContacts,application: Applicat
         }
     }
 
+    fun logStateOrErrorToMyServer(options:Map<String,String>){
 
+        getApplication<MyApplication>().applicationScope.launch {
+            withContext(Dispatchers.IO){
+                repoContacts.logStateOrErrorToOurServer(myoptions = options)
+            }
+        }
 
-     fun logStateToServer(process:String, state:String){
-        repoContacts.logStateToServer(process = process,state = state)
     }
 
 

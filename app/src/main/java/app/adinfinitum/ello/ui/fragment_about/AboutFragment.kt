@@ -36,20 +36,20 @@ class AboutFragment : Fragment() {
         binding= DataBindingUtil.inflate(inflater, R.layout.fragment_about,container,false)
 
 
-        val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
+        /*val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
         val apiService= MyAPI.retrofitService
 
         val repo= RepoContacts(requireActivity().contentResolver,
             database,
             apiService,
             resources.getString(R.string.mobile_app_version_header,(requireActivity().application as MyApplication).mobileAppVersion)
-        )
+        )*/
 
-        viewModel = ViewModelProvider(this, AboutFragmentViewModelFactory(repo,requireActivity().application))
+        viewModel = ViewModelProvider(this, AboutFragmentViewModelFactory((requireActivity().application as MyApplication).myContainer.repoContacts,requireActivity().application))
             .get(AboutFragmentViewModel::class.java)
 
-        binding.mobileAppVerTextView.text=String.format(resources.getString(R.string.mobile_app_version,getMobAppVersionFromApplication()))
-
+       // binding.mobileAppVerTextView.text=String.format(resources.getString(R.string.mobile_app_version,(requireActivity().application as MyApplication).myContainer.myMobileAppVersion))
+        binding.mobileAppVerTextView.text=String.format(resources.getString(R.string.mobile_app_version,"23456"))
         return binding.root
     }
 
@@ -70,14 +70,6 @@ class AboutFragment : Fragment() {
        menu.findItem(R.id.menu_item_share).isVisible=false
         menu.findItem(R.id.menu_item_myaccount).isVisible=false
         menu.findItem(R.id.aboutFragment).isVisible=false
-
-    }
-
-
-    private fun getMobAppVersionFromApplication():String {
-
-        val myApp=requireActivity().application as MyApplication
-        return myApp.mobileAppVersion
 
     }
 

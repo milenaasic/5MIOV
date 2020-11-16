@@ -95,14 +95,15 @@ class SipFragment : Fragment() {
 
                 LogLevel.Message -> {Log.i(domain, message)
                     Log.i(MYTAG,"$domain, $message")
-                    if(message.contains("Via: SIP/2.0/UDP",true)) viewModel.logStateToMyServer("Linphone REQEST-RESPONSE  ","$message")
+                    if(message.contains("Via: SIP/2.0/UDP",true)) viewModel.logStateOrErrorToServer(mapOf(Pair("Linphone REQEST-RESPONSE  ","$message")))
 
                      }
                 LogLevel.Warning -> {Log.w(domain, message)
                      }
                 LogLevel.Error -> {Log.e(domain, message)
                     Log.e(MYTAG,"$domain, $message")
-                    viewModel.logStateToMyServer("Linphone LoggingService","error:$domain, $message")  }
+                    viewModel.logStateOrErrorToServer(mapOf(Pair("process-Linphone LoggingService","error:$domain, $message")))
+                    }
                 LogLevel.Fatal -> Log.wtf(domain, message)
                 else -> Log.wtf(domain, message)
 
@@ -132,16 +133,16 @@ class SipFragment : Fragment() {
         if(args.contactName==args.contactNumber) binding.sipnumbertextView.text=" "
         else binding.sipnumbertextView.text=args.contactNumber
 
-        val database= MyDatabase.getInstance(requireActivity().application).myDatabaseDao
+        /*val database= MyDatabase.getInstance(requireActivity().application).myDatabaseDao
         val mApi= MyAPI.retrofitService
 
         val mySipRepo=RepoSIPE1(database,
                                 mApi,
                                 resources.getString(R.string.mobile_app_version_header,(requireActivity().application as MyApplication).mobileAppVersion)
-            )
+            )*/
 
 
-        viewModel = ViewModelProvider(this, SipViewModelFactory(mySipRepo,requireActivity().application))
+        viewModel = ViewModelProvider(this, SipViewModelFactory((requireActivity().application as MyApplication).myContainer.repoSIPE1,requireActivity().application))
             .get(SipViewModel::class.java)
 
         val pwm = requireActivity().getSystemService(Context.POWER_SERVICE) as PowerManager
@@ -152,7 +153,7 @@ class SipFragment : Fragment() {
 
                 val currentcall=mCore?.currentCall
                 Log.i("SIP_FLOW"," Sip Fragment currentCall : $currentcall")
-                viewModel.logStateToMyServer("SIP:END BUTTON CLICKED","current call: ${mCore?.currentCall}")
+                viewModel.logStateOrErrorToServer(mapOf(Pair("SIP:END BUTTON CLICKED","current call: ${mCore?.currentCall}")))
                 if (currentcall != null) {
                         currentcall.terminate()
                 } else {
@@ -183,13 +184,13 @@ class SipFragment : Fragment() {
     }
 
     private fun startNavigation() {
-        viewModel.logStateToMyServer(SERVER_LOG_TAG,"function: startNavigation(),navigationUpInProcess:$navigationUpInProcess")
+        viewModel.logStateOrErrorToServer(mapOf(Pair(SERVER_LOG_TAG,"function: startNavigation(),navigationUpInProcess:$navigationUpInProcess")))
         if(!navigationUpInProcess) {
             navigationUpInProcess=true
             viewModel.navigateBack()
             Log.i(MYTAG," start navigate back function")
             Log.i("SIP_FLOW"," start navigate back function")
-            viewModel.logStateToMyServer(SERVER_LOG_TAG,"navigate back started")
+            viewModel.logStateOrErrorToServer(mapOf(Pair(SERVER_LOG_TAG,"navigate back started")))
         }
     }
 
@@ -198,7 +199,7 @@ class SipFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         Log.i(MYTAG, "ONLIFE onViewCreated")
         Log.i("SIP_FLOW"," Sip Fragment ONLIFE onViewCreated")
-        viewModel.logStateToMyServer(SERVER_LOG_TAG,"onViewCreated")
+        viewModel.logStateOrErrorToServer(mapOf(Pair(SERVER_LOG_TAG,"onViewCreated")))
 
         viewModel.timeout.observe(viewLifecycleOwner, Observer {
             if(it){
@@ -264,7 +265,9 @@ class SipFragment : Fragment() {
 
     private fun initializeCore(sipUserName:String, sipPassword:String, sipServer:String,sipCallerId:String,stunServer:String) {
         Log.i(MYTAG, "INITIALIZE CORE funkcija")
-        viewModel.logCredentialsForSipCall(sipUsername =sipUserName,sipPassword = sipPassword,sipDisplayname =sipCallerId,sipServer = sipServer, stunServer=stunServer)
+        viewModel.logStateOrErrorToServer(
+            mapOf("process" to "logCredentialsForSipCall","sipUsername" to sipUserName,"sipPassword" to sipPassword,"sipCallerId" to sipCallerId,"sipServer" to sipServer, "stunServer" to stunServer)
+        )
         mSipServer=sipServer
         try {
             mCore =
@@ -290,7 +293,7 @@ class SipFragment : Fragment() {
 
         }catch (t:Throwable){
             Log.e(MYTAG,"initializing mCore error ${t.message}")
-            viewModel.logStateToMyServer("SIP:initializing mCore error","error message:${t.message}")
+            viewModel.logStateOrErrorToServer(mapOf(Pair("SIP:initializing mCore error","error message:${t.message}")))
             startNavigation()
 
         }
@@ -312,11 +315,11 @@ class SipFragment : Fragment() {
             var callParams = mCore?.createCallParams(null)
             callParams?.enableEarlyMediaSending(true)
 
-            viewModel.logStateToMyServer("SIP - makeSipAudioCall","calling number: sip:$numberToCall@$mSipServer")
+            viewModel.logStateOrErrorToServer(mapOf(Pair("SIP - makeSipAudioCall","calling number: sip:$numberToCall@$mSipServer")))
             try {
                 if(mSipServer!=null) mCall = mCore?.inviteWithParams("sip:$numberToCall@$mSipServer",callParams)
             }catch (t:Throwable){
-                viewModel.logStateToMyServer("make SIP Call","mCore.invite error: ${t.message}")
+                viewModel.logStateOrErrorToServer(mapOf(Pair("make SIP Call","mCore.invite error: ${t.message}")))
                 Log.i(MYTAG,"mCore.invite error: ${t.message}")
             }
 
@@ -343,7 +346,7 @@ class SipFragment : Fragment() {
         Log.i(MYTAG, "ONLIFE START")
         Log.i("SIP_FLOW"," Sip Fragment ONLIFE onStart,mCore= $mCore")
         mCore?.enterForeground()
-        viewModel.logStateToMyServer(SERVER_LOG_TAG,"onStart,mCore= $mCore")
+        viewModel.logStateOrErrorToServer(mapOf(Pair(SERVER_LOG_TAG,"onStart,mCore= $mCore")))
     }
 
 
@@ -351,7 +354,7 @@ class SipFragment : Fragment() {
         super.onResume()
         Log.i(MYTAG, "ONLIFE RESUME, mCore= $mCore")
         Log.i("SIP_FLOW"," Sip Fragment ONLIFE onResume,mCore= $mCore")
-        viewModel.logStateToMyServer(SERVER_LOG_TAG,"onResume,mCore= $mCore")
+        viewModel.logStateOrErrorToServer(mapOf(Pair(SERVER_LOG_TAG,"onResume,mCore= $mCore")))
 
 
     }
@@ -360,7 +363,7 @@ class SipFragment : Fragment() {
         super.onPause()
         Log.i(MYTAG, "ONLIFE PAUSE,  mCore= $mCore")
         Log.i("SIP_FLOW"," Sip Fragment ONLIFE onPause,mCore= $mCore")
-        viewModel.logStateToMyServer(SERVER_LOG_TAG,"onPause,mCore= $mCore")
+        viewModel.logStateOrErrorToServer(mapOf(Pair(SERVER_LOG_TAG,"onPause,mCore= $mCore")))
 
     }
 
@@ -368,7 +371,7 @@ class SipFragment : Fragment() {
         super.onStop()
         Log.i(MYTAG, "ONLIFE STOP,")
         Log.i("SIP_FLOW"," Sip Fragment ONLIFE onStop,mCore= $mCore")
-        viewModel.logStateToMyServer(SERVER_LOG_TAG,"onStop,mCore= $mCore")
+        viewModel.logStateOrErrorToServer(mapOf(Pair(SERVER_LOG_TAG,"onStop,mCore= $mCore")))
         requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         if(wl.isHeld) wl.release()
         mCore?.enterBackground()
@@ -394,7 +397,7 @@ class SipFragment : Fragment() {
 
         }
 
-        viewModel.logStateToMyServer("Configure Core","stun server:${mCore?.stunServer}")
+        viewModel.logStateOrErrorToServer(mapOf(Pair("Configure Core","stun server:${mCore?.stunServer}")))
 
         // set only GSM codec
         for(item in mCore?.audioPayloadTypes?.toList()!!){
@@ -441,19 +444,19 @@ class SipFragment : Fragment() {
                     RegistrationState.None->{
                         if(!isAlreadyRegisteredOnce) updateCallStatus("$message")
                         Log.i(MYTAG," registration state NONE, $message,$cstate")
-                        viewModel.logStateToMyServer("SIP onRegistrationStateChanged"," $cstate,$message")
+                        viewModel.logStateOrErrorToServer(mapOf(Pair("SIP onRegistrationStateChanged"," $cstate,$message")))
                         Log.i("SIP_FLOW"," registration  $message,$cstate")
                     }
 
                     RegistrationState.Cleared->{
                         updateCallStatus("$message")
                         Log.i(MYTAG," registration state Cleared, $message,$cstate")
-                        viewModel.logStateToMyServer("SIP onRegistrationStateChanged"," $cstate,$message")
+                        viewModel.logStateOrErrorToServer(mapOf(Pair("SIP onRegistrationStateChanged"," $cstate,$message")))
                         Log.i("SIP_FLOW"," registration  $message,$cstate")
                     }
 
                     RegistrationState.Failed->{
-                        viewModel.logStateToMyServer("SIP:onRegistrationStateChanged"," $cstate,$message, isAlreadyRegisteredOnce=$isAlreadyRegisteredOnce")
+                        viewModel.logStateOrErrorToServer(mapOf(Pair("SIP:onRegistrationStateChanged"," $cstate,$message, isAlreadyRegisteredOnce=$isAlreadyRegisteredOnce")))
                         if(!isAlreadyRegisteredOnce) {
                             updateCallStatus("$message")
                             showToast("$message")
@@ -475,14 +478,14 @@ class SipFragment : Fragment() {
                             updateCallStatus("$message")
                             isAlreadyRegisteredOnce=true
                         }
-                        viewModel.logStateToMyServer("SIP:onRegistrationStateChanged"," $cstate,$message")
+                        viewModel.logStateOrErrorToServer(mapOf(Pair("SIP:onRegistrationStateChanged"," $cstate,$message")))
                         Log.i(MYTAG," registration state OK,$message, $cstate")
                         Log.i("SIP_FLOW"," registration $message,$cstate")
                     }
 
                     RegistrationState.Progress->{
                         if(!isAlreadyRegisteredOnce) updateCallStatus("$message")
-                        viewModel.logStateToMyServer("SIP:onRegistrationStateChanged"," $cstate,$message")
+                        viewModel.logStateOrErrorToServer(mapOf(Pair("SIP:onRegistrationStateChanged"," $cstate,$message")))
                         Log.i(MYTAG," registration state PROGRESS,$message, $cstate")
                         Log.i("SIP_FLOW"," registration, $message,$cstate")
                     }
@@ -502,14 +505,14 @@ class SipFragment : Fragment() {
                     Call.State.Idle->{
                         Log.i(MYTAG,"idle, $message")
                         Log.i("SIP_FLOW"," onCallStateChanged $cstate,$message")
-                        viewModel.logStateToMyServer("SIP:onCallStateChanged"," $cstate,$message")
+                        viewModel.logStateOrErrorToServer(mapOf(Pair("SIP:onCallStateChanged"," $cstate,$message")))
                         updateCallStatus("Idle")
                     }
 
                     Call.State.OutgoingInit->{
                         Log.i(MYTAG, "$message")
                         Log.i("SIP_FLOW"," onCallStateChanged $cstate,$message")
-                        viewModel.logStateToMyServer("SIP:onCallStateChanged"," $cstate,$message")
+                        viewModel.logStateOrErrorToServer(mapOf(Pair("SIP:onCallStateChanged"," $cstate,$message")))
                         // ringback is heard normally in earpiece or bluetooth receiver.
                         //setAudioManagerInCallMode()
                         //requestAudioFocus()
@@ -517,14 +520,14 @@ class SipFragment : Fragment() {
                     }
 
                     Call.State.OutgoingProgress->{
-                        viewModel.logStateToMyServer("SIP:onCallStateChanged"," $cstate,$message")
+                        viewModel.logStateOrErrorToServer(mapOf(Pair("SIP:onCallStateChanged"," $cstate,$message")))
                         Log.i("SIP_FLOW"," onCallStateChanged $cstate,$message")
                         Log.i(MYTAG, "$message")
                         updateCallStatus(message)
                     }
 
                     Call.State.OutgoingRinging->{
-                        viewModel.logStateToMyServer("SIP:onCallStateChanged"," $cstate,$message")
+                        viewModel.logStateOrErrorToServer(mapOf(Pair("SIP:onCallStateChanged"," $cstate,$message")))
                         Log.i("SIP_FLOW"," onCallStateChanged $cstate,$message")
                         Log.i(MYTAG, "$message")
                         updateCallStatus(message)
@@ -532,14 +535,14 @@ class SipFragment : Fragment() {
                     }
 
                     Call.State.OutgoingEarlyMedia->{
-                        viewModel.logStateToMyServer("SIP:onCallStateChanged"," $cstate,$message")
+                        viewModel.logStateOrErrorToServer(mapOf(Pair("SIP:onCallStateChanged"," $cstate,$message")))
                         Log.i("SIP_FLOW"," onCallStateChanged $cstate,$message")
                         Log.i(MYTAG, "$message")
                         //updateCallStatus(message)
                     }
 
                     Call.State.Connected->{
-                        viewModel.logStateToMyServer("SIP:onCallStateChanged"," $cstate,$message")
+                        viewModel.logStateOrErrorToServer(mapOf(Pair("SIP:onCallStateChanged"," $cstate,$message")))
                         Log.i("SIP_FLOW"," onCallStateChanged $cstate,$message")
                         Log.i(MYTAG, "$message")
                         updateCallStatus(message)
@@ -550,7 +553,7 @@ class SipFragment : Fragment() {
                     }
 
                     Call.State.StreamsRunning->{
-                        viewModel.logStateToMyServer("SIP:onCallStateChanged"," $cstate,$message")
+                        viewModel.logStateOrErrorToServer(mapOf(Pair("SIP:onCallStateChanged"," $cstate,$message")))
                         Log.i("SIP_FLOW"," onCallStateChanged $cstate,$message")
                         //setAudioManagerInCallMode()
                         Log.i(MYTAG, "$message")
@@ -560,7 +563,7 @@ class SipFragment : Fragment() {
                     Call.State.Error -> {
                         Log.i(MYTAG,"call state error message:$message")
                         Log.i("SIP_FLOW"," onCallStateChanged, cim udje u error $cstate,$message")
-                        viewModel.logStateToMyServer("SIP:onCallStateChanged"," $cstate,$message,${call?.getErrorInfo()?.getReason()}")
+                        viewModel.logStateOrErrorToServer(mapOf(Pair("SIP:onCallStateChanged"," $cstate,$message,${call?.getErrorInfo()?.getReason()}")))
 
                         if (call?.getErrorInfo()?.getReason() == Reason.Declined) {
                             updateCallStatus("Call declined")
@@ -593,7 +596,7 @@ class SipFragment : Fragment() {
                         // Convert Core message for internalization
                         Log.i(MYTAG,"call state End message:$message")
                         Log.i("SIP_FLOW"," onCallStateChanged cim udje u end $cstate,$message")
-                        viewModel.logStateToMyServer("SIP:onCallStateChanged"," $cstate,$message,${call?.getErrorInfo()?.getReason()}")
+                        viewModel.logStateOrErrorToServer(mapOf(Pair("SIP:onCallStateChanged"," $cstate,$message,${call?.getErrorInfo()?.getReason()}")))
                         if (call?.getErrorInfo()?.getReason() == Reason.Declined) {
                             updateCallStatus(message)
                             Log.i(MYTAG,"error_call_declined $message")
@@ -606,7 +609,7 @@ class SipFragment : Fragment() {
 
                     Call.State.Released->{
                         Log.i(MYTAG, "$message")
-                        viewModel.logStateToMyServer("SIP:onCallStateChanged"," $cstate,$message")
+                        viewModel.logStateOrErrorToServer(mapOf(Pair("SIP:onCallStateChanged"," $cstate,$message")))
                         updateCallStatus(message)
                         Log.i("SIP_FLOW"," onCallStateChanged  $cstate,$message")
 
@@ -614,7 +617,7 @@ class SipFragment : Fragment() {
 
                     Call.State.Paused->{
                         Log.i(MYTAG, "$message")
-                        viewModel.logStateToMyServer("SIP:onCallStateChanged"," $cstate,$message")
+                        viewModel.logStateOrErrorToServer(mapOf(Pair("SIP:onCallStateChanged"," $cstate,$message")))
                         updateCallStatus(message)
                         showToast("Paused")
                         Log.i("SIP_FLOW"," onCallStateChanged  $cstate,$message")
@@ -623,14 +626,14 @@ class SipFragment : Fragment() {
 
                     Call.State.Resuming->{
                         Log.i(MYTAG, "$message")
-                        viewModel.logStateToMyServer("SIP:onCallStateChanged"," $cstate,$message")
+                        viewModel.logStateOrErrorToServer(mapOf(Pair("SIP:onCallStateChanged"," $cstate,$message")))
                         updateCallStatus(message)
                         showToast("Resuming")
                         Log.i("SIP_FLOW"," onCallStateChanged  $cstate,$message")
                     }
 
                     else->{  Log.i(MYTAG, "Call State Else branch:$message")
-                            viewModel.logStateToMyServer("SIP:onCallStateChanged"," ELSE BRANCH:$cstate,$message")
+                        viewModel.logStateOrErrorToServer(mapOf(Pair("SIP:onCallStateChanged"," ELSE BRANCH:$cstate,$message")))
                         Log.i("SIP_FLOW"," onCallStateChanged else branch  $cstate,$message")
                     }
 
@@ -638,7 +641,7 @@ class SipFragment : Fragment() {
 
 
                 if (cstate == Call.State.End || cstate == Call.State.Released) {
-                    viewModel.logStateToMyServer("SIP:state == Call.State.End || state == Call.State.Released","navigateUpFromFragment")
+                    viewModel.logStateOrErrorToServer(mapOf(Pair("SIP:state == Call.State.End || state == Call.State.Released","navigateUpFromFragment")))
                     callDurationTimer.cancel()
                     startNavigation()
                     Log.i("SIP_FLOW"," onCallStateChanged cstate == Call.State.End || cstate == Call.State.Released  $cstate,$message")
@@ -699,14 +702,14 @@ class SipFragment : Fragment() {
         viewModel.resetSipCredentials()
         Log.i(MYTAG,"ONLIFE DESTROY VIEW")
         Log.i("SIP_FLOW"," Sip Fragment ONLIFE onDestroyView,mCore= $mCore")
-        viewModel.logStateToMyServer(SERVER_LOG_TAG,"onDestroyView,mCore= $mCore")
+        viewModel.logStateOrErrorToServer(mapOf(Pair(SERVER_LOG_TAG,"onDestroyView,mCore= $mCore")))
     }
 
     override fun onDestroy() {
         super.onDestroy()
         Log.i(MYTAG,"ONLIFE DESTROY")
         Log.i("SIP_FLOW"," Sip Fragment ONLIFE onDestroy,mCore= $mCore")
-        viewModel.logStateToMyServer(SERVER_LOG_TAG,"onDestroy,mCore= $mCore")
+        viewModel.logStateOrErrorToServer(mapOf(Pair(SERVER_LOG_TAG,"onDestroy,mCore= $mCore")))
         if(mTimer!=null) mTimer.cancel()
         if(mCore!=null){
             mCore?.enableMic(true)
@@ -717,7 +720,7 @@ class SipFragment : Fragment() {
         try{
             Factory.instance().loggingService.removeListener(myLoggingServiceListener)
         }catch (t:Throwable){
-            viewModel.logStateToMyServer(SERVER_LOG_TAG,"onDestroy , try-catch in Factory.instance().loggingService.removeListener(myLoggingServiceListener)")
+            viewModel.logStateOrErrorToServer(mapOf(Pair(SERVER_LOG_TAG,"onDestroy , try-catch in Factory.instance().loggingService.removeListener(myLoggingServiceListener)")))
         }
         if(mCall!=null) mCall=null
         if(mListener!=null) mListener=null

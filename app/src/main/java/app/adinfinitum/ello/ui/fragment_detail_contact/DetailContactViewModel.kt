@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import app.adinfinitum.ello.data.RepoContacts
 import app.adinfinitum.ello.model.PhoneItem
 import app.adinfinitum.ello.model.RecentCall
+import app.adinfinitum.ello.ui.myapplication.MyApplication
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import java.lang.Exception
@@ -40,22 +41,26 @@ class DetailContactViewModel(val contactLookUp:String,val myRepository: RepoCont
                 }catch (e: Exception) {
                     Log.i(MYTAG, e.message ?: "no message")
                 }
-
         }
     }
 
     fun insertCallIntoDB(call: RecentCall){
-        GlobalScope.launch {
+        getApplication<MyApplication>().applicationScope.launch {
             withContext(Dispatchers.IO){
                 myRepository.insertRecentCall(call)
             }
         }
 
-
     }
 
-    fun logStateToMyServer(process:String,state:String){
-        myRepository.logStateToServer(process = process,state = state)
+    fun logStateOrErrorToMyServer(options:Map<String,String>){
+
+        getApplication<MyApplication>().applicationScope.launch {
+            withContext(Dispatchers.IO){
+                myRepository.logStateOrErrorToOurServer(myoptions = options)
+            }
+        }
+
     }
 
 

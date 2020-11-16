@@ -68,16 +68,20 @@ class DetailContact : Fragment() {
 
         binding=DataBindingUtil.inflate(inflater,R.layout.fragment_detail_contact,container,false)
 
-        val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
+        /*val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
         val apiService= MyAPI.retrofitService
 
         val repo= RepoContacts(requireActivity().contentResolver,
                                 database,
                                 apiService,
                             resources.getString(R.string.mobile_app_version_header,(requireActivity().application as MyApplication).mobileAppVersion)
-                                )
+                                )*/
 
-        viewModel=ViewModelProvider(this,DetailContactViewModelFactory(args.contactLookUpKey,repo,requireActivity().application)).get(DetailContactViewModel::class.java)
+        viewModel=ViewModelProvider(this,DetailContactViewModelFactory(
+                                                        args.contactLookUpKey,
+                                                        (requireActivity().application as MyApplication).myContainer.repoContacts,
+                                                        requireActivity().application))
+                                    .get(DetailContactViewModel::class.java)
 
 
         phoneAdapter= DetailContactAdapter(
@@ -122,9 +126,11 @@ class DetailContact : Fragment() {
 
        val normphone = PhoneNumberUtils.normalizeNumber(myphone)?.removePlus()
         if(normphone==null){
-            viewModel.logStateToMyServer(
-                "SIM Card Call from Contacs",
-                "normalized number to call is NULL: $normphone"
+            viewModel.logStateOrErrorToMyServer(
+                mapOf(
+                        Pair("process","SIM Card Call from Contacs"),
+                        Pair("error state","normalized number to call is NULL: $normphone")
+                    )
             )
         }
         normphone?.let {phone->
@@ -143,9 +149,11 @@ class DetailContact : Fragment() {
 
                     Log.i(MYTAG, "sim phone call uri :$callingNumber")
 
-                    viewModel.logStateToMyServer(
-                        "SIM Card Call from Contacs",
-                        "calling number:$callingNumber"
+                    viewModel.logStateOrErrorToMyServer(
+                        mapOf(
+                            Pair("process","SIM Card Call from Contacs"),
+                            Pair("state","calling number:$callingNumber")
+                        )
                     )
 
                 }

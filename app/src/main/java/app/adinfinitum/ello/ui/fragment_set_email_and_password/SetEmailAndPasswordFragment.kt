@@ -40,16 +40,16 @@ class SetEmailAndPasswordFragment : Fragment() {
 
         binding= DataBindingUtil.inflate(inflater,R.layout.fragment_set_email_and_password,container,false)
 
-        val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
+       /* val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
         val apiService= MyAPI.retrofitService
         val repo= Repo( database,
                         apiService,
                         resources.getString(R.string.mobile_app_version_header,(requireActivity().application as MyApplication).mobileAppVersion)
-                        )
+                        )*/
 
 
 
-        viewModel = ViewModelProvider(this, SetEmailPassViewModelFactory(repo,requireActivity().application))
+        viewModel = ViewModelProvider(this, SetEmailPassViewModelFactory((requireActivity().application as MyApplication).myContainer.repo,requireActivity().application))
             .get(SetEmailPassFragmentViewModel::class.java)
 
 

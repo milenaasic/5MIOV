@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import app.adinfinitum.ello.model.PhoneBookItem
 import app.adinfinitum.ello.data.RepoContacts
 import app.adinfinitum.ello.model.ContactItemWithInternationalNumbers
+import app.adinfinitum.ello.ui.myapplication.MyApplication
 import app.adinfinitum.ello.utils.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
@@ -76,8 +77,12 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
     }
 
 
-    fun logStateToServer(process:String,state:String){
-        myRepository.logStateToServer(process = process, state = state)
+    fun logStateOrErrorToMyServer(options:Map<String,String>){
+        getApplication<MyApplication>().applicationScope.launch {
+            withContext(Dispatchers.IO){
+                myRepository.logStateOrErrorToOurServer(myoptions = options)
+            }
+        }
 
     }
 

@@ -97,7 +97,12 @@ class WebViewViewModel(val myRepository: RepoContacts, application: Application)
                             }
                         }
                     }
-                    is Result.Error->{}
+                    is Result.Error->{
+                        myRepository.logStateOrErrorToOurServer(myoptions =
+                                mapOf(Pair("process ","WebView -export phonebool"),
+                                        Pair("error message"," ${result.exception.message}")))
+
+                    }
                 }
 
             } catch (e: Exception) {

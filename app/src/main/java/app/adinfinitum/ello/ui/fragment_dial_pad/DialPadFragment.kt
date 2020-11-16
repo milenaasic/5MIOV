@@ -68,16 +68,16 @@ class DialPadFragment : Fragment() {
 
         binding= DataBindingUtil.inflate(inflater, R.layout.fragment_dial_pad,container,false)
 
-        val database=MyDatabase.getInstance(requireContext()).myDatabaseDao
+        /*val database=MyDatabase.getInstance(requireContext()).myDatabaseDao
         val apiService=MyAPI.retrofitService
         val repo=RepoContacts(  requireActivity().contentResolver,
                                 database,
                                 apiService,
                                 resources.getString(R.string.mobile_app_version_header,(requireActivity().application as MyApplication).mobileAppVersion)
-        )
+        )*/
 
 
-        viewModel = ViewModelProvider(this, DialpadFragmentViewModelFactory(repo,requireActivity().application))
+        viewModel = ViewModelProvider(this, DialpadFragmentViewModelFactory((requireActivity().application as MyApplication).myContainer.repoContacts,requireActivity().application))
             .get(DialpadFragmViewModel::class.java)
 
         binding.apply {
@@ -119,8 +119,13 @@ class DialPadFragment : Fragment() {
                             }
                             else {
 
-                                viewModel.logStateToMyServer("buttonSipCallDialpadFrag.setOnClickListener",
-                                    "phone number not valid for call,entered phone $phoneNumber, normalized $normPhoneNumber")
+                                viewModel.logStateOrErrorToMyServer(
+                                    mapOf(
+                                        Pair("process","SIP Call from DialPad fragment"),
+                                        Pair("state","phone number not valid for call,entered phone $phoneNumber, normalized $normPhoneNumber")
+                                    )
+                                )
+
                                 enableCallButtons(true)
                             }
                         }
@@ -192,7 +197,14 @@ class DialPadFragment : Fragment() {
         viewModel.userData.observe(viewLifecycleOwner, Observer {user->
            if(user!=null) {
                Log.i(MYTAG, " user from DB: $user")
-               viewModel.logStateToMyServer("DialPad_Fragment","observe user data from DB: $user")
+
+               viewModel.logStateOrErrorToMyServer(
+                   mapOf(
+                       Pair("process","DialPad_Fragment"),
+                       Pair("state","observe user data from DB: $user")
+                   )
+               )
+
                if (user.userEmail == EMPTY_EMAIL) binding.setEmailAndPassButton.visibility =
                    View.VISIBLE
                else binding.setEmailAndPassButton.visibility = View.GONE
@@ -381,19 +393,23 @@ class DialPadFragment : Fragment() {
     private fun makePhoneCall() {
         val enteredPhone=binding.editTextEnterNumber.text.toString()
         val normphone = PhoneNumberUtils.normalizeNumber(enteredPhone)?.removePlus()
+
         if(normphone==null){
-            viewModel.logStateToMyServer(
-                "SIM Card Call from Contacs",
-                "normalized number to call is NULL: $normphone"
+
+            viewModel.logStateOrErrorToMyServer(
+                mapOf(
+                    Pair("process","DialPad_Fragment-SIM Card Call"),
+                    Pair("state error","normalized number to call is NULL: $normphone")
+                )
             )
+
         }
-        Log.i(MYTAG,"phone $normphone")
+
         normphone?.let { phone ->
 
             if (isNumberEligibleForDial(phone)) {
 
                 val phoneWithHash = phone.plus("#")
-                Log.i(MYTAG, "phoneWithHash $phoneWithHash")
 
                 val intentToCall = Intent(Intent.ACTION_CALL).apply {
                     val callingNumber = resources.getString(
@@ -402,11 +418,14 @@ class DialPadFragment : Fragment() {
                         Uri.encode(phoneWithHash)
                     )
                     setData(Uri.parse(callingNumber))
-                    viewModel.logStateToMyServer(
-                        "SIM Card Call from Dialpad",
-                        "calling number: $callingNumber"
+
+                    viewModel.logStateOrErrorToMyServer(
+                        mapOf(
+                            Pair("process","DialPad_Fragment-SIM Card Call"),
+                            Pair("state","calling number: $callingNumber")
+                        )
                     )
-                    Log.i(MYTAG, "to dial $callingNumber")
+
                 }
 
 
@@ -422,10 +441,14 @@ class DialPadFragment : Fragment() {
                 } else showSnackBar(resources.getString(R.string.unable_to_make_call))
 
             } else {
-                viewModel.logStateToMyServer(
-                    "DialPad Fragment",
-                    "user typed number $phone , which is not valid phone number"
+
+                viewModel.logStateOrErrorToMyServer(
+                    mapOf(
+                        Pair("process","DialPad_Fragment"),
+                        Pair("state","user typed number $phone , which is not valid phone number")
+                    )
                 )
+
             }
         }
 

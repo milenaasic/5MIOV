@@ -35,7 +35,7 @@
     <string name="or">OR</string>
     <string name="resend_allowed_2_times_in_24_hours">* Resend allowed 2 times in 24 hours</string>
     <string name="token_expires_in_5_minutes">Verification code expires in 5 minutes</string>
-    <string name="_234123123123">+234123123123</string>
+    <string name="_234123123123">+123123123</string>
     <string name="enter_phone_hint">enter phone number</string>
     <string name="asign_number_to_existing_account">Assign number to existing account?</string>
     <string name="assign_phone_number">ASSIGN NUMBER</string>
