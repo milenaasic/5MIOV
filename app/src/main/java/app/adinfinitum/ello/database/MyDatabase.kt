@@ -15,7 +15,8 @@ import app.adinfinitum.ello.utils.*
 
 private const val NAME="MY_DATABASE"
 
-@Database(entities = [User::class, E1Prenumber::class,SipAccount::class,WebApiVersion::class,UsersSipCallerIDs::class,RecentCall::class],version = 1,exportSchema = true)
+@Database(entities = [User::class, E1Prenumber::class,SipAccount::class,WebApiVersion::class,UsersSipCallerIDs::class,RecentCall::class,E1andCallVerificationEnabledCountries::class],
+                        version = 1,exportSchema = true)
 abstract class MyDatabase:RoomDatabase(){
 
     abstract val myDatabaseDao:MyDatabaseDao
@@ -69,11 +70,17 @@ abstract class MyDatabase:RoomDatabase(){
 
                                  }
 
+                                 val myValues5:ContentValues=ContentValues().apply {
+                                     put("e1_enabled_countries", "")
+                                     put("call_verification_enabled_countries", "")
+                                  }
+
                                 try{
                                     db.insert("user_table",CONFLICT_IGNORE,myvalues)
                                     db.insert("e1_prenumber_table",CONFLICT_IGNORE,myValues2)
                                     db.insert("sip_account_table", CONFLICT_IGNORE,myValues3)
                                     db.insert("webapi_version_table", CONFLICT_IGNORE,myValues4)
+                                    db.insert("e1_and_call_verif_enabled_countries_table", CONFLICT_IGNORE,myValues5)
                                 }catch (e:Exception){
                                     Log.w("MY_database error",e)}
 

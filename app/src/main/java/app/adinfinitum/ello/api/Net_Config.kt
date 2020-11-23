@@ -17,8 +17,9 @@ data class NetResponse_Config(
     @Json(name="success")
     val success:Boolean,
 
-    @Json(name="countryList")
-    val countryList:Array<String>
+    @Json(name="e1EnabledCountryList")
+    val e1EnabledCountryList:String,
 
-
+    @Json(name="callVerificationEnabledCountryList")
+    val callVerificationEnabledCountryList:String
 )

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <resources>
-    <dimen name="default_left_right_screen_margin_sign_up">32dp</dimen>
+    <dimen name="default_left_right_screen_margin_sign_up">64dp</dimen>
     <dimen name="list_item_spacing">16dp</dimen>
     <dimen name="list_item_spacing_half">8dp</dimen>
 </resources>

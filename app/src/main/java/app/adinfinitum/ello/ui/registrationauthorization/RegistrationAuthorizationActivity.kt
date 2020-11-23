@@ -15,10 +15,6 @@ import com.google.android.gms.auth.api.phone.SmsRetriever
 import com.google.android.gms.tasks.Task
 import com.google.android.material.snackbar.Snackbar
 import app.adinfinitum.ello.R
-import app.adinfinitum.ello.api.MyAPI
-import app.adinfinitum.ello.data.Repo
-import app.adinfinitum.ello.data.RepoSIPE1
-import app.adinfinitum.ello.database.MyDatabase
 import app.adinfinitum.ello.databinding.ActivityRegistrationAuthorizationBinding
 import app.adinfinitum.ello.ui.AppSignatureHelper
 import app.adinfinitum.ello.ui.emty_logo_fragment.EmptyLogoFragmentDirections
@@ -37,7 +33,7 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
     private val SPLASH_SCREEN_DURATION_IN_MILLIS=1000L
 
     //is user verification by call enabled or not
-    var verificationByCallEnabled=false
+    var verificationByCallEnabled:Boolean?=null
     var verificationCallerId=""
 
     companion object{
@@ -56,11 +52,6 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this, RegAuthViewModelFactory((application as MyApplication).myContainer.repo,application))
             .get(RegAuthActivityViewModel::class.java)
 
-       /* val myDatabaseDao= MyDatabase.getInstance(this).myDatabaseDao
-        val myApi= MyAPI.retrofitService
-        val mobileAppVersion=(application as MyApplication).mobileAppVersion
-        val myRepository= Repo(myDatabaseDao,myApi, mobileAppVer = resources.getString(R.string.mobile_app_version_header,mobileAppVersion))*/
-
         if(!isOnline(application)) showSnackbar(resources.getString(R.string.no_internet))
 
         if (savedInstanceState != null) {
@@ -69,16 +60,16 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
             val rememberedEmail=savedInstanceState.getString(ENTERED_EMAIL)
             val rememberedPassword=savedInstanceState.getString(ENTERED_PASSWORD)
             val rememberedSignInParam=savedInstanceState.getString(SIGN_IN_PARAMETER)
-           if(viewModel!=null) {
-               viewModel.apply {
+
+            viewModel.apply {
                    enteredPhoneNumber = rememberedPhone
                    enteredEmail = rememberedEmail
                    enteredPassword = rememberedPassword
                    if (rememberedSignInParam == UNDEFINED_STATE) viewModel.signInParameter = null
                    else viewModel.signInParameter = rememberedSignInParam?.toBoolean()
 
-               }
-           }
+            }
+
             Log.i(MYTAG, " savedInstanceState!=null,its values are $rememberedPhone,$rememberedEmail,$rememberedPassword,$rememberedSignInParam")
 
 
@@ -88,16 +79,16 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
         initializeSMSBroadcastReceiver()
 
 
-        viewModel.userData.observe(this, Observer {user->
+        viewModel.userData.observe(this, { user->
 
             Log.i(MYTAG,("User in DB: $user"))
             ACRA.getErrorReporter().putCustomData("REGISTRATION_AUTHORIZATION_ACTIVITY_observe_user_data_phone",user.userPhone)
             ACRA.getErrorReporter().putCustomData("REGISTRATION_AUTHORIZATION_ACTIVITY_observe_user_data_token",user.userToken)
 
             if(user!=null) {
-                if (user.userPhone != EMPTY_PHONE_NUMBER && !user.userPhone.isNullOrEmpty() && user.userToken!= EMPTY_TOKEN && !user.userToken.isNullOrEmpty()) {
+                if (user.userPhone != EMPTY_PHONE_NUMBER && !user.userPhone.isEmpty() && user.userToken!= EMPTY_TOKEN && !user.userToken.isEmpty()) {
                     //halt for splash screen to be seen
-                     Handler(Looper.getMainLooper()).postDelayed(Runnable {
+                     Handler(Looper.getMainLooper()).postDelayed({
                         gotoMainActivity()
                     }, SPLASH_SCREEN_DURATION_IN_MILLIS)
 
@@ -105,7 +96,7 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
                 } else {
 
                     if(savedInstanceState==null) {
-                        Handler(Looper.getMainLooper()).postDelayed(Runnable {
+                        Handler(Looper.getMainLooper()).postDelayed({
                             findNavController(R.id.registration_navhost_fragment).navigate(
                                 EmptyLogoFragmentDirections.actionEmptyLogoFragmentToRegistrationFragment()
                             )
@@ -129,6 +120,9 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
              }
 
          })
+
+
+
          smsBroadcastReceiver.receivedSMSMessage.observe(this, Observer {
 
                 if(it!=null){
@@ -141,6 +135,7 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
                 }
           })
 
+        //todo when first uploaded to Play store add SignatureHelper to read it
     }
 
 

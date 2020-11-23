@@ -51,11 +51,11 @@ class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : Androi
 
         viewModelScope.launch{
             try {
-                val myUser= withContext(Dispatchers.IO){
+                val myUser= withContext(IO){
                     mySipRepo.getUserNoLiveData()
                 }
                 if(myUser.userToken.isNotEmpty() && myUser.userPhone.isNotEmpty()) {
-                    val result = withContext(Dispatchers.IO) {
+                    val result = withContext(IO) {
                         mySipRepo.getSipAccessCredentials(
                             token = myUser.userToken,
                             phone = myUser.userPhone
@@ -66,7 +66,7 @@ class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : Androi
 
                         is Result.Success->{
                             if (result.data.authTokenMismatch == true) {
-                                    withContext(Dispatchers.IO) {
+                                    withContext(IO) {
                                         logoutAll(getApplication())
                                     }
                             } else {
@@ -74,8 +74,10 @@ class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : Androi
                             }
                         }
                         is Result.Error->{
+                            withContext(IO){
+                                mySipRepo.logStateOrErrorToOurServer(myoptions = mapOf(Pair("getSipAccountCredentials() Error"," ${result.exception.message}")))
+                            }
                             _getSipAccessCredentialsNetError.value=Event(result.exception.message?:"")
-                            //todo log error to server
                         }
                     }
                 }
@@ -93,7 +95,7 @@ class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : Androi
         getApplication<MyApplication>().applicationScope.launch {
             Log.i(MYTAG, "resetSipCredentials(),applicationScope.launch $this")
             try {
-                withContext(Dispatchers.IO) {
+                withContext(IO) {
                     val myUser = mySipRepo.getUserNoLiveData()
                     mySipRepo.resetSipAccess(
                         authToken = myUser.userToken,
@@ -153,7 +155,7 @@ class SipViewModel(val mySipRepo: RepoSIPE1,  application: Application) : Androi
 
      fun logStateOrErrorToServer(options:Map<String,String>){
         getApplication<MyApplication>().applicationScope.launch {
-            withContext(Dispatchers.IO) {
+            withContext(IO) {
                 mySipRepo.logStateOrErrorToOurServer(myoptions = options)
             }
         }

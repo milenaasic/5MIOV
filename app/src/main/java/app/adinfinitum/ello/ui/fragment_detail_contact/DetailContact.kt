@@ -22,17 +22,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.google.android.material.snackbar.Snackbar
-
 import app.adinfinitum.ello.R
-import app.adinfinitum.ello.api.MyAPI
-import app.adinfinitum.ello.data.RepoContacts
-import app.adinfinitum.ello.database.MyDatabase
 import app.adinfinitum.ello.databinding.FragmentDetailContactBinding
 import app.adinfinitum.ello.model.PhoneItem
 import app.adinfinitum.ello.model.RecentCall
 import app.adinfinitum.ello.ui.myapplication.MyApplication
 import app.adinfinitum.ello.utils.isPhoneNumberValid
-import app.adinfinitum.ello.utils.isVOIPsupported
 import app.adinfinitum.ello.utils.removePlus
 import java.util.Locale.US
 
@@ -87,12 +82,11 @@ class DetailContact : Fragment() {
         phoneAdapter= DetailContactAdapter(
                 SipItemClickListener{
 
-                    if(isVOIPsupported(requireContext())){
                         if(checkForPermissions()){
                             viewModel.insertCallIntoDB(RecentCall(recentCallName = args.displayName,recentCallPhone = it,recentCallTime = System.currentTimeMillis()))
                             findNavController().navigate(DetailContactDirections.actionDetailContactToSipFragment(args.displayName,it))}
-                    }
-                    else  showSnackBar(resources.getString(R.string.VOIP_not_supported))
+
+
                 },
                 PrenumberItemClickListener(requireActivity()) {activity, phone ->
                         if(checkForPermissions()) makePrenumberPhoneCall(phone)

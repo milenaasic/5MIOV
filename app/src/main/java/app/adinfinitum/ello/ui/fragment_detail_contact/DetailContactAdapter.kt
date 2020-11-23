@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.RecyclerView
 import app.adinfinitum.ello.databinding.DetailContactRecViewPhoneBinding
 import app.adinfinitum.ello.model.PhoneItem
 import app.adinfinitum.ello.utils.isOnline
-import app.adinfinitum.ello.utils.isVOIPsupported
 
 
 private val MYTAG="MY_DetailContactAdapter"
@@ -20,7 +19,6 @@ class DetailContactAdapter(
                             )
     : RecyclerView.Adapter<DetailContactAdapter.MyViewHolder>() {
 
-    val isVOIPSupported= isVOIPsupported(app)
 
     var dataList= listOf<PhoneItem>()
         set(value) {

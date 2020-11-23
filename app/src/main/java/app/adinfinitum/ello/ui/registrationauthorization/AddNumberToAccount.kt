@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.graphics.text.LineBreaker
 import android.os.Build
 import android.os.Bundle
+import android.telephony.PhoneNumberUtils
 import android.text.Layout
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -52,23 +53,23 @@ class AddNumberToAccount : Fragment() {
 
         if(!activityViewModel?.enteredPhoneNumber.isNullOrBlank() && !activityViewModel?.enteredPhoneNumber.isNullOrEmpty()) {
             binding.addNmbPhoneEditText.setText(activityViewModel?.enteredPhoneNumber)
-        }else binding.addNmbPhoneEditText.setText(PLUS_NIGERIAN_PREFIX)
+        }else binding.addNmbPhoneEditText.setText(PLUS_PREFIX)
 
-        /*binding.addphoneTextView.apply {
+        binding.addphoneTextView.apply {
             when (isVerificationByCallEnabled()){
                 true-> text=resources.getString(R.string._5miov_will_call_to_verify_your_number)
                 false->text=resources.getString(R.string._5miov_will_send_sms_with_token_to_verify_your_number)
             }
 
-        }*/
+        }
 
         binding.addphoneButton.setOnClickListener {
-
+            // todo add normalization fro entered phone number, and send it to viewMOdel normalized
             binding.rootAddNumberConstrLayout.requestFocus()
             hidekeyboard()
             if(allEnteredFieldsAreValid()){
                 showTermsOfUseDailog(
-                                    (binding.addNmbPhoneEditText.text.toString()).removePlus(),
+                                    PhoneNumberUtils.normalizeNumber(binding.addNmbPhoneEditText.text.toString()),
                                     binding.addNmbEmailEditText.text.toString(),
                                     binding.addNmbPassEditText.text.toString()
                 )
@@ -131,7 +132,6 @@ class AddNumberToAccount : Fragment() {
             Log.i(MY_TAG,"addNumberToAccuntNetworkError.observe $it,  ${it.hasBeenHandled}")
             if(!it.hasBeenHandled) {
                 showSnackBar(resources.getString(R.string.something_went_wrong))
-                //activityViewModel?.resetAddNumberToAccountNetError()
                 binding.addphoneButton.isEnabled = true
                 showProgressBar(false)
             }
@@ -250,6 +250,7 @@ class AddNumberToAccount : Fragment() {
         Toast.makeText(requireActivity(),message, Toast.LENGTH_LONG).show()
     }
 
+    //phone number parameter is normalized
     private fun startAddNumberToAccount(phone: String,email: String,password: String) {
             binding.addphoneButton.isEnabled=false
             showProgressBar(true)
@@ -282,7 +283,7 @@ class AddNumberToAccount : Fragment() {
 
     }
 
-    private fun showTermsOfUseDailog(phone: String,email:String,password:String) {
+    private fun showTermsOfUseDailog(normPhone: String,email:String,password:String) {
         Log.i(MY_TAG, "showTermsOfUseDailog")
         val alertDialog: AlertDialog? = activity?.let {
 
@@ -295,7 +296,7 @@ class AddNumberToAccount : Fragment() {
                 .setPositiveButton(resources.getString(R.string.terms_of_use_accept),
                     DialogInterface.OnClickListener { _, id ->
                         // sign in the user ...
-                        startAddNumberToAccount(phone,email,password)
+                        startAddNumberToAccount(normPhone,email,password)
                         activityViewModel?.startSMSRetreiverFunction(System.currentTimeMillis())
                     })
                 .setNegativeButton(resources.getString(R.string.terms_of_use_cancel),
@@ -323,7 +324,7 @@ class AddNumberToAccount : Fragment() {
 
 
     private fun isVerificationByCallEnabled():Boolean{
-        return (requireActivity() as RegistrationAuthorizationActivity).verificationByCallEnabled
+        return activityViewModel?.isVerificationByCallEnabled?:false
     }
 
     private fun checkForPermissions():Boolean{
@@ -358,7 +359,6 @@ class AddNumberToAccount : Fragment() {
                     if(grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED){
                         checkResponseSuccessAndActAccordinglyAddNMB(netAddNumberToAccountResponse)
                     }else {
-                        //activityViewModel?.resetAddNumberToAccountNetSuccess()
                         binding.addphoneButton.isEnabled = true
                         showProgressBar(false)
                         showSnackBar(getString(R.string.call_log_permission_not_granted))

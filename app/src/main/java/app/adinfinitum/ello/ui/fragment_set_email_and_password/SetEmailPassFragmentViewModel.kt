@@ -47,7 +47,7 @@ class SetEmailPassFragmentViewModel(val myrepository: Repo, application: Applica
 
                         try {
 
-                            val result = withContext(Dispatchers.IO) {
+                            val result = withContext(IO) {
                                 myrepository.setAccountEmailAndPasswordForUser(
                                     phoneNumber = myUser.userPhone,
                                     token = myUser.userToken,
@@ -60,7 +60,8 @@ class SetEmailPassFragmentViewModel(val myrepository: Repo, application: Applica
                             when(result){
                                 is Result.Success->{
                                    try {
-                                       withContext(Dispatchers.IO) {
+                                       withContext(IO) {
+
                                            if (result.data.email.isNotEmpty() && result.data.email.isNotBlank()) myrepository.updateUserEmail(
                                                result.data.email
                                            )
@@ -68,15 +69,17 @@ class SetEmailPassFragmentViewModel(val myrepository: Repo, application: Applica
                                                result.data.appVersion
                                            )
                                        }
+                                       _setAccountEmailAndPassSuccess.value=Event(result.data)
+
                                    }catch (e:Exception){
                                         Log.e(MYTAG,"insertion into DB failed")
                                    }
 
-                                    _setAccountEmailAndPassSuccess.value=Event(result.data)
+
                                 }
                                 is Result.Error->{
                                             _setAccountEmailAndPassError.value=Event(result.exception.message)
-                                            withContext(Dispatchers.IO){
+                                            withContext(IO){
                                                 myrepository.logStateOrErrorToOurServer(myoptions =
                                                     mapOf(
                                                         Pair("process","setAccountEmailAndPasswordForUser"),

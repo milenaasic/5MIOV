@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import app.adinfinitum.ello.R
 import app.adinfinitum.ello.api.*
 import app.adinfinitum.ello.database.MyDatabaseDao
+import app.adinfinitum.ello.model.E1andCallVerificationEnabledCountries
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 
@@ -18,10 +19,11 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
     fun getUserData()=myDatabaseDao.getUser()
 
     //configuration route
-    suspend fun getConfigurationInfo():Result<NetResponse_Config>{
+    fun getConfigurationInfo():Result<NetResponse_Config>{
         try{
-            val result=myAPI.getConfigurationInfo().await()
-            return Result.Success(result)
+            //todo when route becomes active change this
+            //val result=myAPI.getConfigurationInfo().await()
+            return Result.Success(data = NetResponse_Config(success = true,e1EnabledCountryList = "381,382,384",callVerificationEnabledCountryList = "388"))
 
         }catch (e:Exception){
 
@@ -189,7 +191,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
 
 
     // Reset Sip Access data on server
-    suspend fun resetSipAccess(
+    fun resetSipAccess(
         phone:String,
         authToken: String
     ) {
@@ -237,7 +239,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
     }
 
 
-    suspend fun getUser()=withContext(Dispatchers.IO){
+    suspend fun getUser()=withContext(IO){
         myDatabaseDao.getUserNoLiveData()
     }
 
@@ -259,6 +261,18 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
 
     fun updateWebApiVersion(webApiVer:String){
         myDatabaseDao.updateWebApiVersion(webApiVer =webApiVer )
+    }
+
+    fun updateE1EnabledCountries(e1EnabledCountries:String){
+        myDatabaseDao.updateE1EnabledCoutries(e1EnabledCountries = e1EnabledCountries)
+    }
+
+    fun updateCallVerificationEnabledCountries(callVerificationEnabledCountries:String){
+        myDatabaseDao.updateCallVerificationEnabledCoutries(callVerificationEnabledCountries = callVerificationEnabledCountries)
+    }
+
+    fun getCountriesWhereVerificationByCallIsEnabled():String{
+        return myDatabaseDao.getCountriesWithVerificationCallEnabled()
     }
 
     suspend fun logStateOrErrorToOurServer(phoneNumber:String="",myoptions:Map<String,String>){

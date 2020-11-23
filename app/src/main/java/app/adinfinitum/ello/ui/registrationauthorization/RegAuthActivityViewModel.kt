@@ -1,6 +1,7 @@
 package app.adinfinitum.ello.ui.registrationauthorization
 
 import android.app.Application
+import android.text.TextUtils.split
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -16,6 +17,7 @@ import app.adinfinitum.ello.data.Result
 import app.adinfinitum.ello.ui.myapplication.MyApplication
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -28,10 +30,15 @@ class RegAuthActivityViewModel(val myRepository: Repo, application: Application)
     var enteredPassword:String?=null
     var signInParameter:Boolean?=null
 
+    //by default it is false, because SMS always works
+    var isVerificationByCallEnabled:Boolean=false
+
     private var timeLatestSMSRetreiverStarted:Long=0L
     private val TIME_BETWEEN_TWO_SMS_RETREIVERS_IN_SEC=120
 
     val userData=myRepository.getUserData()
+
+
 
     // Registration fragment
     private val _registrationNetworkResponseSuccess= MutableLiveData<Event<NetResponse_Registration>>()
@@ -104,24 +111,35 @@ class RegAuthActivityViewModel(val myRepository: Repo, application: Application)
 
     init {
         Log.i(MY_TAG,("init"))
-        getConfigurationInfo()
+        getConfigurationInfo(myRepository)
     }
 
-    private fun getConfigurationInfo() {
+    private fun getConfigurationInfo(mRepository: Repo) {
         getApplication<MyApplication>().applicationScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    val result = myRepository.getConfigurationInfo()
+                    val result = mRepository.getConfigurationInfo()
                     when (result) {
                         is Result.Success -> {
+                            if(result.data.callVerificationEnabledCountryList.isNotEmpty() && result.data.callVerificationEnabledCountryList.isNotBlank())
+                                mRepository.updateCallVerificationEnabledCountries(result.data.callVerificationEnabledCountryList)
 
+                            if(result.data.e1EnabledCountryList.isNotEmpty() && result.data.e1EnabledCountryList.isNotBlank())
+                                mRepository.updateE1EnabledCountries(result.data.e1EnabledCountryList)
                         }
-                        is Result.Error -> {
 
+                        is Result.Error -> {
+                                mRepository.logStateOrErrorToOurServer(enteredPhoneNumber?:"",
+                                    myoptions =
+                                    mapOf(
+                                        Pair("process", "getConfigurationInfo()"),
+                                        Pair("error", result.exception.message ?: "")
+                                    )
+                                )
+                            }
                         }
                     }
 
-                }
             } catch (e: Exception) {
 
             }
@@ -136,6 +154,35 @@ class RegAuthActivityViewModel(val myRepository: Repo, application: Application)
         signInParameter=null
         Log.i(MY_TAG,"reset user params AFTER RESET $enteredPhoneNumber,$enteredEmail, $enteredPassword, $signInParameter")
     }
+
+    fun setIfVerificationByCallIsEnabled(normalizedEnteredPhoneNumber:String){
+        viewModelScope.launch {
+            try {
+                val listOFCountries = withContext(IO) {
+                    myRepository.getCountriesWhereVerificationByCallIsEnabled()
+                }.let {
+                    it.split(",",).map { it.trim() }
+                }
+
+                var result=false
+                mloop@for(item in listOFCountries){
+                    if(normalizedEnteredPhoneNumber.startsWith(item,ignoreCase = true)) {
+                        result=true
+                        break@mloop
+                    }
+                }
+                isVerificationByCallEnabled=result
+
+            }catch(e:Exception){
+
+
+            }
+
+         }
+
+    }
+
+
 
 
     //registration fragment
@@ -435,75 +482,83 @@ class RegAuthActivityViewModel(val myRepository: Repo, application: Application)
 
 
     //process Authorization data sent from server when user is finally created
-    fun processAuthorizationData(authData:NetResponse_Authorization){
+    fun processAuthorizationData(authData:NetResponse_Authorization, mRepository: Repo=myRepository){
 
         val myphoneNumber = enteredPhoneNumber
         if( myphoneNumber == null || authData.authToken.isEmpty() || authData.authToken.isBlank()) return
 
         getApplication<MyApplication>().applicationScope.launch {
 
-            // if Sip Access is not set -invoke it again
-            if (authData.sipReady == false) {
-                launch(Dispatchers.IO) {
-                    myRepository.resetSipAccess(
-                        phone = myphoneNumber,
-                        authToken = authData.authToken
-                    )
-                }
-            }
+            try {
+                withContext(Dispatchers.IO) {
 
-            //if E1 is not sent, go fetch it
-            if (authData.e1phone.isNullOrEmpty() || authData.e1phone.isBlank()) {
-                try {
-                    val result = withContext(Dispatchers.IO) {
-                        myRepository.callSetNewE1(
+
+                    // if Sip Access is not set -invoke it again
+                    if (authData.sipReady == false) {
+                        mRepository.resetSipAccess(
                             phone = myphoneNumber,
-                            token = authData.authToken
+                            authToken = authData.authToken
                         )
                     }
 
-                    when (result) {
-                        is Result.Success -> {
-                            if (!result.data.e1prenumber.isNullOrEmpty() && !result.data.e1prenumber.isNullOrBlank()) {
-                                myRepository.updatePrenumber(result.data.e1prenumber, System.currentTimeMillis())
+
+                    //if E1 is not sent, go fetch it
+                    if (authData.e1phone.isNullOrEmpty() || authData.e1phone.isBlank()) {
+                        try {
+                            val result =
+                                mRepository.callSetNewE1(
+                                    phone = myphoneNumber,
+                                    token = authData.authToken
+                                )
+
+                            when (result) {
+                                is Result.Success -> {
+                                    Log.i(MY_TAG, "inside application scope processing auth data fetch e1 $result")
+                                    if (!result.data.e1prenumber.isNullOrEmpty() && !result.data.e1prenumber.isNullOrBlank()) {
+                                        mRepository.updatePrenumber(
+                                            result.data.e1prenumber,
+                                            System.currentTimeMillis()
+                                        )
+                                    }
+                                }
+                                is Result.Error -> {
+
+                                }
+
                             }
+                        } catch (e: Exception) {
+                            Log.i(MY_TAG, "e1 ${e.message}")
                         }
-                        is Result.Error -> {
-
-                        }
-
-
+                    } else {
+                        mRepository.updatePrenumber(
+                            authData.e1phone,
+                            System.currentTimeMillis()
+                        )
                     }
-                }catch (e:Exception){
 
+                    //insert webapi version into DB
+                    if (!authData.appVersion.isNullOrEmpty() && !authData.appVersion.isNullOrBlank()) {
+                        mRepository.updateWebApiVersion(authData.appVersion)
+                        Log.i(MY_TAG, "myRepository.updateWebApiVersion")
+                    }
                 }
-            }else {
-                myRepository.updatePrenumber(
-                    authData.e1phone,
-                    System.currentTimeMillis()
-                )
+            }catch (e:Exception){
+                Log.i(MY_TAG, "application scope launch ${e.message}")
             }
-
-            //insert webapi version into DB
-            if (!authData.appVersion.isNullOrEmpty() && !authData.appVersion.isNullOrBlank()) {
-                launch(Dispatchers.IO) {
-                    myRepository.updateWebApiVersion(authData.appVersion)
-                }
-            }
-
         }
+
 
         //after processing E1 prenumber, sipAcces and WebApiVersion - insert email, pass and token or just token in DB
         viewModelScope.launch {
 
                 withContext(Dispatchers.IO) {
-
-                    if (authData.email.isNotEmpty() && authData.email.isNotBlank()) myRepository.updateUsersPhoneTokenEmail(
-                        myphoneNumber,
-                        authData.authToken,
-                        authData.email
-                    )
-                    else myRepository.updateUsersPhoneAndToken(myphoneNumber, authData.authToken)
+                    Log.i(MY_TAG, "viewModelScope.launch updateUsersPhoneAndToken ")
+                        if (authData.email.isNotEmpty() && authData.email.isNotBlank()) mRepository.updateUsersPhoneTokenEmail(
+                            myphoneNumber,
+                            authData.authToken,
+                            authData.email
+                        )
+                        else mRepository.updateUsersPhoneAndToken(myphoneNumber, authData.authToken)
 
                 }
         }

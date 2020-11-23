@@ -33,6 +33,8 @@ import app.adinfinitum.ello.databinding.FragmentDialPadBinding
 import app.adinfinitum.ello.model.RecentCall
 import app.adinfinitum.ello.ui.myapplication.MyApplication
 import app.adinfinitum.ello.utils.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 
 
@@ -108,7 +110,7 @@ class DialPadFragment : Fragment() {
 
                 binding.editTextEnterNumber.isCursorVisible=false
 
-                if(isVOIPsupported(requireContext())){
+
                         enableCallButtons(false)
                         val phoneNumber=binding.editTextEnterNumber.text.toString()
                         val normPhoneNumber=PhoneNumberUtils.normalizeNumber(phoneNumber)
@@ -130,7 +132,6 @@ class DialPadFragment : Fragment() {
                             }
                         }
 
-                } else  showSnackBar(resources.getString(R.string.VOIP_not_supported))
 
              }
 
@@ -200,8 +201,8 @@ class DialPadFragment : Fragment() {
 
                viewModel.logStateOrErrorToMyServer(
                    mapOf(
-                       Pair("process","DialPad_Fragment"),
-                       Pair("state","observe user data from DB: $user")
+                       Pair("process", "DialPad_Fragment"),
+                       Pair("state", "observe user data from DB: $user")
                    )
                )
 

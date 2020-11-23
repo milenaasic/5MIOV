@@ -72,6 +72,7 @@ class DialpadFragmViewModel(val myRepository: RepoContacts, application: Applica
                                     }
                                 }
                             }
+
                     }
 
                     is Result.Error->{
@@ -104,12 +105,17 @@ class DialpadFragmViewModel(val myRepository: RepoContacts, application: Applica
     }
 
 
-    fun logStateOrErrorToMyServer(options:Map<String,String>){
+     fun logStateOrErrorToMyServer(options:Map<String,String>){
         getApplication<MyApplication>().applicationScope.launch {
-            withContext(Dispatchers.IO){
-                myRepository.logStateOrErrorToOurServer(myoptions = options)
-            }
+                try {
+                    withContext(Dispatchers.IO) {
+                        myRepository.logStateOrErrorToOurServer(myoptions = options)
+                    }
+                } catch (e: Exception) {
+                    Log.i(MYTAG, "in logStateOrErrorToMyServer applicationScope error ${e.message}")
+                }
         }
+
 
     }
 

@@ -29,6 +29,11 @@ import java.util.*
 @AcraCore(buildConfigClass = BuildConfig::class,
         reportFormat = StringFormat.JSON
         )
+@AcraHttpSender(uri = "https://5miov.vertial.net/api/mobileLog",
+    httpMethod = HttpSender.Method.POST,
+    basicAuthLogin = "5miov",
+    basicAuthPassword = ("tester")
+)
 class MyApplication : Application() {
     private val MYTAG="MY_ApplicationContext"
 
@@ -38,7 +43,7 @@ class MyApplication : Application() {
         //CoroutineScope(SupervisorJob() + Dispatchers.Main)
     }
 
-
+    //todo delete timer
     /*private var mTimer: Timer=Timer("Application object")
     val lTask: TimerTask = object : TimerTask() {
         override fun run() {

@@ -61,26 +61,9 @@ class RepoSIPE1 (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIService,val m
 
 
 
-
     //log errors and states
     suspend fun logStateOrErrorToOurServer(phoneNumber: String="",myoptions:Map<String,String>){
         logStateOrErrorToOurServer(phoneNumber=phoneNumber,myDatabaseDao=myDatabaseDao,myAPIService = myAPI,myoptions = myoptions)
-
-    }
-
-    fun logCredentialsForSipCall(sipUsername:String?,sipPassword:String?,sipDisplayname:String?,sipServer:String?,stunServer:String?){
-        GlobalScope.launch {
-            withContext(Dispatchers.IO){
-                try {
-                //todo fix ovaj send error
-                    //myAPI.sendErrorToServer(phoneNumber = "$sipUsername",process="initializeCore function",
-                        //errorMsg= "credentials: $sipUsername,$sipPassword,$sipDisplayname,$sipServer,$stunServer")
-
-                }catch (t:Throwable){
-                    Log.i("MY_Send Error To Server","${t.message}")
-
-                }
-            } }
 
     }
 

@@ -36,22 +36,23 @@ fun isOnline(application: Application):Boolean{
     return online
 }
 
+fun String.normalizeMyPhoneNumber():String?{
+   return PhoneNumberUtils.normalizeNumber(this)
 
+}
 
-private val MY_TAG="functions"
 
 fun String.isPhoneNumberValid():Boolean{
     val normalizedNumber=PhoneNumberUtils.normalizeNumber(this)
-    Log.i(MY_TAG," number:$this, normalized :$normalizedNumber")
     if(normalizedNumber!=null) return (PhoneNumberUtils.isGlobalPhoneNumber(normalizedNumber ) && this.length> PHONE_NUMBER_MIN_LENGHT)
     else return false
 
 }
 
-fun String.isInternationalPhoneNumber():Boolean{
+/*fun String.isInternationalPhoneNumber():Boolean{
 
     return true
-}
+}*/
 
 fun String.isPasswordValid():Boolean{
 
@@ -63,7 +64,7 @@ fun String.isPasswordValid():Boolean{
 
 fun CharSequence?.isEmailValid() = !isNullOrEmpty() && Patterns.EMAIL_ADDRESS.matcher(this).matches()
 
-fun String.removeDoubleZeroAtBegining():String{
+/*fun String.removeDoubleZeroAtBegining():String{
     if(!this.trim().startsWith(DOUBLE_ZERO)) return this
     return this.trim().removePrefix(DOUBLE_ZERO)
 }
@@ -72,7 +73,7 @@ fun String.removeFirstZeroAddPrefix():String{
 
     if(!this.trim().startsWith(ONE_ZERO)) return this
     else return "$NIGERIAN_PREFIX${this.trim().removePrefix(ONE_ZERO)}"
-}
+}*/
 
 
 fun String.removePlus():String{
@@ -82,16 +83,10 @@ fun String.removePlus():String{
 }
 
 
-fun isVOIPsupported(context:Context):Boolean{
+/*fun isVOIPsupported(context:Context):Boolean{
     //return (SipManager.isVoipSupported(context)&& SipManager.isApiSupported(context))
     return true
-}
-
-fun did24HoursPass(currentTime:Long, databaseE1Timestamp:Long):Boolean{
-    if(currentTime.minus(databaseE1Timestamp)> HOURS_24_IN_MILLIS)  return true
-    else return false
-
-}
+}*/
 
 
 fun EditText.afterTextChanged(afterTextChanged: (String) -> Unit) {

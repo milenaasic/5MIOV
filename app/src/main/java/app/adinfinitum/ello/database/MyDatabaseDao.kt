@@ -94,4 +94,13 @@ interface MyDatabaseDao {
     @Query("DELETE FROM recent_calls_table")
     fun logoutRecentCalls()
 
+    //e1_and_call_verif_enabled_countries_table
+    @Query("UPDATE e1_and_call_verif_enabled_countries_table SET e1_enabled_countries=:e1EnabledCountries")
+    fun updateE1EnabledCoutries(e1EnabledCountries:String)
+
+    @Query("UPDATE e1_and_call_verif_enabled_countries_table SET call_verification_enabled_countries=:callVerificationEnabledCountries")
+    fun updateCallVerificationEnabledCoutries(callVerificationEnabledCountries:String)
+
+    @Query("SELECT * FROM e1_and_call_verif_enabled_countries_table")
+    fun getCountriesWithVerificationCallEnabled():String
 }

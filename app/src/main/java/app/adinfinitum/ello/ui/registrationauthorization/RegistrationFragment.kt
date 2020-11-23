@@ -51,14 +51,14 @@ class RegistrationFragment : Fragment() {
             ViewModelProvider(this)[RegAuthActivityViewModel::class.java]
         }
 
-        binding.phoneNumberEditText.setText(PLUS_NIGERIAN_PREFIX)
+        binding.phoneNumberEditText.setText(PLUS_PREFIX)
 
-        /*binding.register2TextView.apply {
+        binding.register2TextView.apply {
                 when (isVerificationByCallEnabled()){
                     true-> text=resources.getString(R.string._5miov_will_call_to_verify_your_number)
                     false->text=resources.getString(R.string._5miov_will_send_sms_with_token_to_verify_your_number)
                 }
-         }*/
+         }
 
         binding.registerButton.setOnClickListener {
 
@@ -71,10 +71,10 @@ class RegistrationFragment : Fragment() {
                 return@setOnClickListener
             }
 
-
             val enteredPhoneNumber = binding.phoneNumberEditText.text.toString()
+
             if (enteredPhoneNumber.isPhoneNumberValid()) {
-                showTermsOfUseDailog(enteredPhoneNumber)
+                enteredPhoneNumber.normalizeMyPhoneNumber()?.let { it1 -> showTermsOfUseDailog(it1) }
 
             } else {
 
@@ -123,17 +123,11 @@ class RegistrationFragment : Fragment() {
             if(!it.hasBeenHandled){
 
                 showSnackBar(resources.getString(R.string.something_went_wrong))
-                //activityViewModel.resetRegistrationNetErrorr()
                 binding.registerButton.isEnabled = true
                 showProgressBar(false)
 
             }
-            /*if (it != null) {
-                showSnackBar(resources.getString(R.string.something_went_wrong))
-                activityViewModel.resetRegistrationNetErrorr()
-                binding.registerButton.isEnabled = true
-                showProgressBar(false)
-            }*/
+
         })
 
         activityViewModel.registrationNetworkResponseSuccess.observe(viewLifecycleOwner, Observer {
@@ -159,46 +153,17 @@ class RegistrationFragment : Fragment() {
                             if (checkForPermissions()) checkResponseSuccessAndActAccordingly(
                                 response = response
                             )
-
                         }
                         false -> {
                             checkResponseSuccessAndActAccordingly(response = response)
-
                         }
-
 
                     }
                 }
             }
-            /*if (response != null) {
-
-               //set variable to define if registration process should use call or sms verification
-                //(requireActivity() as RegistrationAuthorizationActivity).verificationByCallEnabled = response.callVerificationEnabled
-
-                netResponseRegistration=response
-
-                when (isVerificationByCallEnabled()) {
-
-                    true->{
-                        // in verifyByCall mode extract number to receive call from (verificationCallerId)
-                        if (response.verificationCallerId.isNotEmpty()) {
-                            (requireActivity() as RegistrationAuthorizationActivity).verificationCallerId =
-                                response.verificationCallerId
-                        }
-
-                        if(checkForPermissions()) checkResponseSuccessAndActAccordingly(response = response)
-
-                    }
-                    false->{
-                        checkResponseSuccessAndActAccordingly(response = response)
-
-                    }
-
-                }
-
-            }*/
-
         })
+
+
     }
 
     private fun checkResponseSuccessAndActAccordingly(response:NetResponse_Registration){
@@ -225,22 +190,22 @@ class RegistrationFragment : Fragment() {
 
     }
 
-    private fun startRegistraion(enteredPhoneNumber:String){
+    private fun startRegistraion(normenteredPhoneNumber:String){
 
         binding.registerButton.isEnabled = false
         showProgressBar(true)
-
+        activityViewModel.setIfVerificationByCallIsEnabled(normenteredPhoneNumber)
         when(isVerificationByCallEnabled()){
             true->{
                 activityViewModel.registerButtonClicked(
-                    enteredPhoneNumber.removePlus(),
+                    normenteredPhoneNumber.removePlus(),
                     smsResend = false,
                     verificationMethod = VERIFICATION_METHOD_CALL
                 )
             }
             false->{
                 activityViewModel.registerButtonClicked(
-                    enteredPhoneNumber.removePlus(),
+                    normenteredPhoneNumber.removePlus(),
                     smsResend = false,
                     verificationMethod = VERIFICATION_METHOD_SMS
                 )
@@ -286,7 +251,7 @@ class RegistrationFragment : Fragment() {
     }
 
 
-    private fun showTermsOfUseDailog(enteredPhoneNumber: String) {
+    private fun showTermsOfUseDailog(normenteredPhoneNumber: String) {
 
         val alertDialog: AlertDialog? = activity?.let {
 
@@ -299,7 +264,7 @@ class RegistrationFragment : Fragment() {
                 .setPositiveButton(resources.getString(R.string.terms_of_use_accept),
                     DialogInterface.OnClickListener { _, id ->
                         // sign in the user ...
-                       startRegistraion(enteredPhoneNumber)
+                       startRegistraion(normenteredPhoneNumber)
 
                     })
                 .setNegativeButton(resources.getString(R.string.terms_of_use_cancel),
@@ -381,7 +346,7 @@ class RegistrationFragment : Fragment() {
     }
 
     private fun isVerificationByCallEnabled():Boolean{
-        return (requireActivity() as RegistrationAuthorizationActivity).verificationByCallEnabled
+        return activityViewModel.isVerificationByCallEnabled
     }
 
 

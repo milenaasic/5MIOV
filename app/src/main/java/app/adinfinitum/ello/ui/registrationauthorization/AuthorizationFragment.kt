@@ -156,7 +156,7 @@ class AuthorizationFragment : Fragment() {
 
                 it.getContentIfNotHandled()?.let {response->
                     when(response.success) {
-                        true -> activityViewModel.processAuthorizationData(response)
+                        true -> activityViewModel.processAuthorizationData(authData = response)
                         false -> {
                             showProgressBar(false)
                             enableDisableButtons(true)
@@ -432,7 +432,7 @@ class AuthorizationFragment : Fragment() {
 
 
     private fun isVerificationByCallEnabled():Boolean{
-        return (requireActivity() as RegistrationAuthorizationActivity).verificationByCallEnabled
+        return activityViewModel.isVerificationByCallEnabled
     }
 
     private fun showDialogToConfirmUserNunber(){

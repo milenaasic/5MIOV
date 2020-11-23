@@ -106,7 +106,7 @@ class WebViewViewModel(val myRepository: RepoContacts, application: Application)
                 }
 
             } catch (e: Exception) {
-                Log.i(MY_TAG, "export phonebook Failed")
+                Log.i(MY_TAG, "export phonebook Failed ${e.message}")
             }
 
         }
