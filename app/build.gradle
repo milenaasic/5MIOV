@@ -135,8 +135,9 @@ dependencies {
     debugImplementation "org.linphone.no-video:linphone-sdk-android-debug:4.3.5-pre.2+c55e271"
     releaseImplementation "org.linphone.no-video:linphone-sdk-android:4.3.5-pre.2+c55e271"
 
-
+    //for local unit testing
     testImplementation 'junit:junit:4.13.1'
+    //for instrumented testing
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 

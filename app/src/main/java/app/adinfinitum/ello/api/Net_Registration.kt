@@ -38,5 +38,4 @@ data class NetResponse_Registration(
     @Json(name="callVerificationEnabled")
     val callVerificationEnabled:Boolean
 
-
 )
