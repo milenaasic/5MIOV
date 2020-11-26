@@ -39,21 +39,25 @@ class MyApplication : Application() {
 
     val applicationScope by lazy {
         ProcessLifecycleOwner.get().lifecycleScope
-
         //CoroutineScope(SupervisorJob() + Dispatchers.Main)
     }
 
-    //todo delete timer
-    /*private var mTimer: Timer=Timer("Application object")
-    val lTask: TimerTask = object : TimerTask() {
-        override fun run() {
-            Log.i(MYTAG,"App is alive, ${System.currentTimeMillis()}")
-        }
+    /*val myContainer:MyContainer by lazy {
+        MyContainer(this)
     }*/
 
-    val myContainer:MyContainer by lazy {
-        MyContainer(this)
-    }
+
+    val repo:Repo
+        get() = ServiceLocator.getRepo(this)
+
+    val repoContacts:RepoContacts
+        get() = ServiceLocator.getRepoContacts(this)
+
+    val repoSIPE1:RepoSIPE1
+        get()=ServiceLocator.getRepoSIPE1(this)
+
+    val mobileAppVersion:String
+    get() = ServiceLocator.getMobAppVersion(this)
 
 
     override fun attachBaseContext(base: Context?) {
@@ -63,14 +67,73 @@ class MyApplication : Application() {
     }
 
 
-    override fun onCreate() {
-        super.onCreate()
-        ProcessLifecycleOwner.get().lifecycleScope
-       // mTimer.schedule(lTask, 0, 5000)
-    }
 }
 
-class MyContainer(val application: MyApplication){
+object ServiceLocator{
+
+    val myRetrofitService= MyAPI.retrofitService
+
+    @Volatile
+    var repo:Repo?=null
+
+    @Volatile
+    var repoContacts:RepoContacts?=null
+
+    @Volatile
+    var repoSIPE1:RepoSIPE1?=null
+
+    fun getRepo(context:Context):Repo{
+        synchronized(this){
+            return repo?: creteRepo(context)
+        }
+    }
+
+    fun getRepoContacts(context: Context):RepoContacts{
+        synchronized(this){
+            return repoContacts?: creteRepoContacts(context)
+        }
+
+    }
+
+    fun getRepoSIPE1(context: Context):RepoSIPE1{
+        synchronized(this){
+            return repoSIPE1?: creteRepoSIPE1(context)
+        }
+
+    }
+
+    private fun creteRepoSIPE1(context: Context): RepoSIPE1 {
+        return RepoSIPE1(provideDatabase(context),myRetrofitService, getMobAppVersion(context = context))
+    }
+
+    private fun creteRepoContacts(context: Context): RepoContacts {
+        return RepoContacts(contentResolver = context.contentResolver, provideDatabase(context),myRetrofitService, getMobAppVersion(context = context))
+    }
+
+    private fun creteRepo(context: Context): Repo {
+        return Repo(provideDatabase(context),myRetrofitService, getMobAppVersion(context = context))
+    }
+
+    private fun provideDatabase(context: Context)=MyDatabase.getInstance(context).myDatabaseDao
+
+
+    fun getMobAppVersion(context: Context):String{
+        var myversionName=""
+        try {
+            val packageInfo: PackageInfo = context.packageManager.getPackageInfo(context.packageName, 0);
+            myversionName = packageInfo.versionName
+
+        } catch ( e:Throwable) {
+            e.printStackTrace();
+        }
+
+        return myversionName
+    }
+
+}
+
+
+/*class MyContainer(val application: MyApplication){
 
     private val myRetrofitService= MyAPI.retrofitService
     private val myDatabase=MyDatabase.getInstance(application).myDatabaseDao
@@ -94,4 +157,4 @@ class MyContainer(val application: MyApplication){
         return myversionName
     }
 
-}
+}*/

@@ -87,7 +87,7 @@ class MainActivity : AppCompatActivity() {
 
         viewModel = ViewModelProvider(this,
             MainActivityViewModelFactory(
-                (application as MyApplication).myContainer.repoContacts,
+                (application as MyApplication).repoContacts,
                 application
             )
         )

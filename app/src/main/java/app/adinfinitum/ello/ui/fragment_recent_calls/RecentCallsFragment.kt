@@ -45,7 +45,7 @@ class RecentCallsFragment : Fragment() {
                                 )*/
 
 
-        viewModel = ViewModelProvider(this, RecentCallsViewModelFactory((requireActivity().application as MyApplication).myContainer.repoContacts,requireActivity().application))
+        viewModel = ViewModelProvider(this, RecentCallsViewModelFactory((requireActivity().application as MyApplication).repoContacts,requireActivity().application))
             .get(RecentCallsViewModel::class.java)
 
         binding.recentCallsRecView.addItemDecoration(

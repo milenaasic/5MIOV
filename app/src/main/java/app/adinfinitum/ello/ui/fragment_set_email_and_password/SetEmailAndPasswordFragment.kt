@@ -49,7 +49,7 @@ class SetEmailAndPasswordFragment : Fragment() {
 
 
 
-        viewModel = ViewModelProvider(this, SetEmailPassViewModelFactory((requireActivity().application as MyApplication).myContainer.repo,requireActivity().application))
+        viewModel = ViewModelProvider(this, SetEmailPassViewModelFactory((requireActivity().application as MyApplication).repo,requireActivity().application))
             .get(SetEmailPassFragmentViewModel::class.java)
 
 

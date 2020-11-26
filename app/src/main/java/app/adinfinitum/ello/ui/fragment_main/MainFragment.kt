@@ -72,7 +72,7 @@ class MainFragment : Fragment(){
                                 )*/
 
 
-        viewModel = ViewModelProvider(this, MainFragmentViewModelFactory((requireActivity().application as MyApplication).myContainer.repoContacts,requireActivity().application))
+        viewModel = ViewModelProvider(this, MainFragmentViewModelFactory((requireActivity().application as MyApplication).repoContacts,requireActivity().application))
             .get(MainFragmentViewModel::class.java)
 
         activityViewModel = requireActivity().run {

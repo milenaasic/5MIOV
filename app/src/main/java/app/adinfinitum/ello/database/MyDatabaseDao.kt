@@ -102,5 +102,5 @@ interface MyDatabaseDao {
     fun updateCallVerificationEnabledCoutries(callVerificationEnabledCountries:String)
 
     @Query("SELECT * FROM e1_and_call_verif_enabled_countries_table")
-    fun getCountriesWithVerificationCallEnabled():String
+    fun getCountriesWithVerificationCallEnabled():E1andCallVerificationEnabledCountries
 }

@@ -272,7 +272,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
     }
 
     fun getCountriesWhereVerificationByCallIsEnabled():String{
-        return myDatabaseDao.getCountriesWithVerificationCallEnabled()
+        return myDatabaseDao.getCountriesWithVerificationCallEnabled().callVerificationEnabledCountries
     }
 
     suspend fun logStateOrErrorToOurServer(phoneNumber:String="",myoptions:Map<String,String>){

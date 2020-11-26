@@ -56,7 +56,7 @@ class WebViewActivity : AppCompatActivity() {
         )*/
 
 
-        viewModel = ViewModelProvider(this, WebViewViewModelFactory( (application as MyApplication).myContainer.repoContacts, application))
+        viewModel = ViewModelProvider(this, WebViewViewModelFactory( (application as MyApplication).repoContacts, application))
             .get(WebViewViewModel::class.java)
 
 
@@ -96,7 +96,7 @@ class WebViewActivity : AppCompatActivity() {
 
     fun getCustomHeaders(token:String, phone:String): Map<String, String> {
         val map = mutableMapOf<String, String>()
-        val mobileAppVer=resources.getString(R.string.mobile_app_version_header,(application as MyApplication).myContainer.myMobileAppVersion)
+        val mobileAppVer=resources.getString(R.string.mobile_app_version_header,(application as MyApplication).mobileAppVersion)
         map.put(HEADER_AUTH_TOKEN_KEY, token)
         map.put(HEADER_PHONE_KEY,phone)
         map.put(HEADER_MOBILE_APP_VERSION,mobileAppVer)

@@ -74,7 +74,7 @@ class DetailContact : Fragment() {
 
         viewModel=ViewModelProvider(this,DetailContactViewModelFactory(
                                                         args.contactLookUpKey,
-                                                        (requireActivity().application as MyApplication).myContainer.repoContacts,
+                                                        (requireActivity().application as MyApplication).repoContacts,
                                                         requireActivity().application))
                                     .get(DetailContactViewModel::class.java)
 

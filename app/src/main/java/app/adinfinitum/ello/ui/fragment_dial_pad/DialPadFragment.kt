@@ -79,7 +79,7 @@ class DialPadFragment : Fragment() {
         )*/
 
 
-        viewModel = ViewModelProvider(this, DialpadFragmentViewModelFactory((requireActivity().application as MyApplication).myContainer.repoContacts,requireActivity().application))
+        viewModel = ViewModelProvider(this, DialpadFragmentViewModelFactory((requireActivity().application as MyApplication).repoContacts,requireActivity().application))
             .get(DialpadFragmViewModel::class.java)
 
         binding.apply {

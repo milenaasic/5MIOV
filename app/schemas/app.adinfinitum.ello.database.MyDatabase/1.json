@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "8ff17d3b26f97640a6d0059e7c3af5c8",
+    "identityHash": "aab2fda724a1e98c01db138da4c6f904",
     "entities": [
       {
         "tableName": "user_table",
@@ -213,12 +213,44 @@
         },
         "indices": [],
         "foreignKeys": []
+      },
+      {
+        "tableName": "e1_and_call_verif_enabled_countries_table",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `e1_enabled_countries` TEXT NOT NULL, `call_verification_enabled_countries` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "e1EnabledCountries",
+            "columnName": "e1_enabled_countries",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "callVerificationEnabledCountries",
+            "columnName": "call_verification_enabled_countries",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [],
+        "foreignKeys": []
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8ff17d3b26f97640a6d0059e7c3af5c8')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'aab2fda724a1e98c01db138da4c6f904')"
     ]
   }
 }

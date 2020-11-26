@@ -142,7 +142,7 @@ class SipFragment : Fragment() {
             )*/
 
 
-        viewModel = ViewModelProvider(this, SipViewModelFactory((requireActivity().application as MyApplication).myContainer.repoSIPE1,requireActivity().application))
+        viewModel = ViewModelProvider(this, SipViewModelFactory((requireActivity().application as MyApplication).repoSIPE1,requireActivity().application))
             .get(SipViewModel::class.java)
 
         val pwm = requireActivity().getSystemService(Context.POWER_SERVICE) as PowerManager

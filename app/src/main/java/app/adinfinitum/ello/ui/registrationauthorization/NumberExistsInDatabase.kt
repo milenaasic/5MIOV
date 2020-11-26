@@ -283,7 +283,7 @@ class NumberExistsInDatabase : Fragment() {
     }
 
     private fun isVerificationByCallEnabled():Boolean{
-        return (requireActivity() as RegistrationAuthorizationActivity).verificationByCallEnabled
+        return activityViewModel?.isVerificationByCallEnabled?:false
     }
 
 }

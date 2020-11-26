@@ -49,7 +49,7 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
         binding=DataBindingUtil.setContentView(this,R.layout.activity_registration_authorization)
 
-        viewModel = ViewModelProvider(this, RegAuthViewModelFactory((application as MyApplication).myContainer.repo,application))
+        viewModel = ViewModelProvider(this, RegAuthViewModelFactory((application as MyApplication).repo,application))
             .get(RegAuthActivityViewModel::class.java)
 
         if(!isOnline(application)) showSnackbar(resources.getString(R.string.no_internet))
