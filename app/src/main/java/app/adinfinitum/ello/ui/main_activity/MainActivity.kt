@@ -74,17 +74,6 @@ class MainActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         setSupportActionBar(binding.toolbarMain)
 
-        /*val myDatabaseDao = MyDatabase.getInstance(this).myDatabaseDao
-        val myApi = MyAPI.retrofitService
-
-        val myRepository = RepoContacts(contentResolver,
-                                        myDatabaseDao,
-                                        myApi,
-                                        resources.getString(R.string.mobile_app_version_header,(application as MyApplication).mobileAppVersion)
-        )*/
-
-
-
         viewModel = ViewModelProvider(this,
             MainActivityViewModelFactory(
                 (application as MyApplication).repoContacts,
@@ -93,11 +82,8 @@ class MainActivity : AppCompatActivity() {
         )
             .get(MainActivityViewModel::class.java)
 
-
         navController = findNavController(R.id.navfragment_main)
         NavigationUI.setupWithNavController(binding.toolbarMain, navController)
-
-
 
         navController.addOnDestinationChangedListener { controller, destination, arguments ->
 

@@ -2,6 +2,7 @@ package app.adinfinitum.ello.ui.registrationauthorization
 
 
 import android.app.Activity
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -11,6 +12,7 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -25,9 +27,26 @@ private val MY_TAG="MY_NumberExistsInDB"
 class NumberExistsInDatabase : Fragment() {
 
     private lateinit var binding: FragmentNumberExistsInDatabaseBinding
-    private var activityViewModel:RegAuthActivityViewModel?=null
+    private lateinit var activityViewModel:RegAuthActivityViewModel
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
 
+        requireActivity().onBackPressedDispatcher.addCallback(this,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    Log.i(MY_TAG, "handleOnBackPressed() ${activityViewModel.signInForm.email}")
+                    activityViewModel.resetSignInFormEmailAndPassword()
+                    activityViewModel.resetSignInProcessAuxData()
+                    Log.i(MY_TAG, " after handleOnBackPressed() ${activityViewModel.signInForm.email}")
+                    isEnabled=false
+                    requireActivity().onBackPressed()
+                }
+
+            }
+        )
+
+    }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -39,103 +58,64 @@ class NumberExistsInDatabase : Fragment() {
             ViewModelProvider(this)[RegAuthActivityViewModel::class.java]
         }
 
-        binding.numExistsPhoneTextView.text=String.format(resources.getString(R.string.add_plus_before_phone,activityViewModel?.enteredPhoneNumber?:" "))
-
-        binding.nmbExistsSubmitButton.setOnClickListener {
-            binding.nmbExistsRoot.requestFocus()
-            it.isEnabled=false
-            binding.dontHaveAccountButton.isEnabled=false
-            hidekeyboard()
-            if(allEnteredFieldsAreValid()){
-                showProgressBar(true)
-                activityViewModel?.signInParameter=true
-
-                when(isVerificationByCallEnabled()){
-                    true->{
-                        activityViewModel?.numberExistsInDBVerifyAccount(
-                            email = binding.nmbExistsEmailEditText.text.toString(),
-                            password = binding.nmbExistsPassEditText.text.toString(),
-                            verificationMethod = VERIFICATION_METHOD_CALL
-                        )
-
-                    }
-                    false->{
-                        activityViewModel?.numberExistsInDBVerifyAccount(
-                            email = binding.nmbExistsEmailEditText.text.toString(),
-                            password = binding.nmbExistsPassEditText.text.toString(),
-                            verificationMethod = VERIFICATION_METHOD_SMS
-                        )
-
-                        activityViewModel?.startSMSRetreiverFunction(System.currentTimeMillis())
-
-                    }
-
-                }
-
-
-            }else{
-                it.isEnabled=true
-                binding.dontHaveAccountButton.isEnabled=true
-            }
-
+        binding.numExistsPhoneTextView.apply {
+            text=activityViewModel.signInForm.phoneNmb
         }
 
-        binding.nmbExistsPassEditText.setOnEditorActionListener { view, action, _ ->
-            when (action){
-                EditorInfo.IME_ACTION_DONE,EditorInfo.IME_ACTION_UNSPECIFIED-> {
-                    hidekeyboard()
-                    view.clearFocus()
-                    true
-                }
-                else->false
+        //email edit text
+        binding.nmbExistsEmailEditText.apply {
+
+            afterTextChanged {
+                activityViewModel.afterEmailEditTextChanged(it)
+                binding.nmbExistsEmailTextInputLayout.error=null
             }
-        }
-
-        binding.dontHaveAccountButton.setOnClickListener {
-            binding.nmbExistsRoot.requestFocus()
-            it.isEnabled=false
-            binding.nmbExistsSubmitButton.isEnabled=false
-            showProgressBar(true)
-            activityViewModel?.apply {
-                signInParameter=false
-                enteredEmail=null
-                enteredPassword=null
-
+            setOnFocusChangeListener { _, hasFocus ->
+                if(hasFocus) binding.nmbExistsEmailTextInputLayout.error=null
             }
+         }
 
-            when(isVerificationByCallEnabled()){
-                true->{
-                    activityViewModel?.numberExistsInDb_NoAccount(verificationMethod = VERIFICATION_METHOD_CALL)
-                }
+         //password edit text
+         binding.nmbExistsPassEditText.apply {
+             afterTextChanged {
+                activityViewModel.afterPasswordEditTextChanged(it)
+                binding.nmbExistsEnterPassTextInputLayout.error=null
+             }
+             setOnFocusChangeListener { _, hasFocus ->
+                 if(hasFocus) binding.nmbExistsEnterPassTextInputLayout.error=null
+             }
 
-                false->{
-                    activityViewModel?.numberExistsInDb_NoAccount(verificationMethod = VERIFICATION_METHOD_SMS)
-                    // in verifyBySMS mode start SMS retreival
-                    if (!isVerificationByCallEnabled()) activityViewModel?.startSMSRetreiverFunction(System.currentTimeMillis())
-
-                }
-
-            }
-
-
+             setOnEditorActionListener { view, action, _ ->
+                 when (action){
+                     EditorInfo.IME_ACTION_DONE,EditorInfo.IME_ACTION_UNSPECIFIED-> {
+                         hidekeyboard()
+                         view.clearFocus()
+                         true
+                     }
+                     else->false
+                 }
+             }
 
          }
 
-      //when in focus turn off error
-        binding.apply {
 
-            nmbExistsEmailEditText.setOnFocusChangeListener { _, hasFocus ->
-                if(hasFocus) binding.nmbExistsEmailTextInputLayout.error=null
-            }
-            nmbExistsEmailEditText.afterTextChanged {binding.nmbExistsEmailTextInputLayout.error=null  }
+        binding.nmbExistsSubmitButton.setOnClickListener {
+            submitButtonClickedUIChanges()
 
-            nmbExistsPassEditText.setOnFocusChangeListener { _, hasFocus ->
-                if(hasFocus) binding.nmbExistsEnterPassTextInputLayout.error=null
-            }
-            nmbExistsPassEditText.afterTextChanged { binding.nmbExistsEnterPassTextInputLayout.error=null }
-
+            activityViewModel.numberExistsInDBVerifyAccountButtonClicked(
+                binding.nmbExistsEmailEditText.text.toString(),
+                binding.nmbExistsPassEditText.text.toString()
+            )
 
         }
+
+
+
+        binding.dontHaveAccountButton.setOnClickListener {
+            submitButtonClickedUIChanges()
+            activityViewModel.numberExistsInDBNOAccountButtonClicked()
+
+        }
+
 
         return binding.root
     }
@@ -144,92 +124,54 @@ class NumberExistsInDatabase : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        activityViewModel?.nmbExistsInDBUserHasAccountSuccess?.observe(viewLifecycleOwner, Observer {
+        activityViewModel.nmbExistsInDBResult.observe(viewLifecycleOwner, Observer {
 
             if(!it.hasBeenHandled) {
+                    val result=it.getContentIfNotHandled()
 
-                it.getContentIfNotHandled()?.let {response->
+                    result?.let{
+                        if ( it.enteredEmailError!= null || it.enteredPasswordError!= null) {
 
-                    // in verifyByCall mode extract number to receive call from (verificationCallerId)
-                    if (isVerificationByCallEnabled()) {
-                        if (response.verificationCallerId.isNotEmpty()) {
-                            (requireActivity() as RegistrationAuthorizationActivity).verificationCallerId =
-                                response.verificationCallerId
+                            it.enteredEmailError?.let{errorId->
+                                binding.nmbExistsEmailTextInputLayout.error=resources.getString(errorId)
+                            }
+                            it.enteredPasswordError?.let{errorId->
+                                binding.nmbExistsEnterPassTextInputLayout.error=resources.getString(errorId)
+                            }
+                            binding.nmbExistsSubmitButton.isEnabled = true
+                            binding.dontHaveAccountButton.isEnabled = true
+                            showProgressBar(false)
+                            return@Observer
                         }
-                    }
 
-                    when {
-                        response.success == true -> {
-                            showToast(response.userMessage)
+
+                        if(it.navigateToFragment==activityViewModel.NAVIGATE_TO_AUTHORIZATION_FRAGMENT){
                             findNavController().navigate(NumberExistsInDatabaseDirections.actionNumberExistsInDatabaseToAuthorizationFragment())
+                            it.showToastMessage?.let {message->
+                                showToast(message)
+                            }
+                            return@Observer
                         }
-                        response.success == false -> {
-                            showSnackBar(response.userMessage)
-                        }
+
+                        it.showSnackBarMessage?.let {
+                            showSnackBar(it)
+                         }
+
+                        if(it.showSnackBarErrorMessage==true) showSnackBar(resources.getString(R.string.something_went_wrong))
+
+                        binding.nmbExistsSubmitButton.isEnabled = true
+                        binding.dontHaveAccountButton.isEnabled = true
+                        showProgressBar(false)
+
                     }
-                }
-                binding.nmbExistsSubmitButton.isEnabled = true
-                binding.dontHaveAccountButton.isEnabled = true
-                showProgressBar(false)
 
             }
          })
 
-        activityViewModel?.nmbExistsInDBUserHasAccountError?.observe(viewLifecycleOwner, Observer {
-            if(!it.hasBeenHandled) {
-                showSnackBar(resources.getString(R.string.something_went_wrong))
-                binding.nmbExistsSubmitButton.isEnabled = true
-                binding.dontHaveAccountButton.isEnabled = true
-                showProgressBar(false)
-            }
-        })
-
-        activityViewModel?.nmbExistsInDB_NoAccountSuccess?.observe(viewLifecycleOwner, Observer {
-
-            if(!it.hasBeenHandled) {
-
-                it.getContentIfNotHandled()?.let {response->
-
-                    // in verifyByCall mode extract number to receive call from (verificationCallerId)
-                    if (isVerificationByCallEnabled()) {
-                        if (response.verificationCallerId.isNotEmpty()) {
-                            (requireActivity() as RegistrationAuthorizationActivity).verificationCallerId =
-                                response.verificationCallerId
-                        }
-                    }
-
-                    when {
-                        response.success == true -> {
-                            showToast(response.userMessage)
-                            findNavController().navigate(NumberExistsInDatabaseDirections.actionNumberExistsInDatabaseToAuthorizationFragment())
-                        }
-                        response.success == false -> {
-                            showSnackBar(response.userMessage)
-                        }
-                    }
-                }
-
-                binding.nmbExistsSubmitButton.isEnabled = true
-                binding.dontHaveAccountButton.isEnabled = true
-                showProgressBar(false)
-
-            }
-        })
-
-        activityViewModel?.nmbExistsInDB_NoAccountError?.observe(viewLifecycleOwner, Observer {
-            if(!it.hasBeenHandled) {
-
-                showSnackBar(resources.getString(R.string.something_went_wrong))
-                binding.nmbExistsSubmitButton.isEnabled = true
-                binding.dontHaveAccountButton.isEnabled = true
-                showProgressBar(false)
-            }
-        })
     }
 
     override fun onDestroy() {
-        Log.i(MY_TAG,"onDestroy(), activityViewModel:${activityViewModel.toString()}")
-        if(activityViewModel!=null) activityViewModel?.resetSignUpParameters()
+        Log.i(MY_TAG,"onDestroy")
         super.onDestroy()
 
     }
@@ -240,24 +182,7 @@ class NumberExistsInDatabase : Fragment() {
     }
 
 
-    private fun allEnteredFieldsAreValid(): Boolean {
-
-        var b:Boolean=true
-
-        if(!(binding.nmbExistsEmailEditText.text.toString()).isEmailValid()) {
-            b=false
-            binding.nmbExistsEmailTextInputLayout.setError(resources.getString(R.string.not_valid_email))
-        }
-        if(!(binding.nmbExistsPassEditText.text.toString()).isPasswordValid()) {
-            b=false
-            binding.nmbExistsEnterPassTextInputLayout.setError(resources.getString(R.string.not_valid_password))
-        }
-        return b
-    }
-
-
     private fun hidekeyboard(){
-
         val inputMethodManager = requireActivity().getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         inputMethodManager.hideSoftInputFromWindow(binding.nmbExistsRoot.windowToken, 0)
     }
@@ -282,8 +207,15 @@ class NumberExistsInDatabase : Fragment() {
         Toast.makeText(requireActivity(),message, Toast.LENGTH_LONG).show()
     }
 
-    private fun isVerificationByCallEnabled():Boolean{
-        return activityViewModel?.isVerificationByCallEnabled?:false
+    private fun submitButtonClickedUIChanges(){
+        binding.apply {
+            nmbExistsRoot.requestFocus()
+            dontHaveAccountButton.isEnabled=false
+            binding.nmbExistsSubmitButton.isEnabled=false
+         }
+
+        hidekeyboard()
+        showProgressBar(true)
     }
 
 }

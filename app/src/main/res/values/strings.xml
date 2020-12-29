@@ -25,8 +25,8 @@
     <string name="to_register_enter_your_phone_number">To Register Enter Your Phone Number</string>
     <string name="phone_number">phone number</string>
     <string name="register">REGISTER</string>
-    <string name="_5miov_will_send_sms_with_token_to_verify_your_number">Ello will send SMS with OTP to verify your number</string>
-    <string name="_5miov_will_call_to_verify_your_number">You will receive a phone call from Ello to verify your number</string>
+    <string name="_ello_will_send_sms_with_token_to_verify_your_number">Ello will send SMS with OTP to verify your number</string>
+    <string name="_ello_will_call_to_verify_your_number">You will receive a phone call from Ello to verify your number</string>
     <string name="enter_token_sent_to_your_phone_number">No Call? Try SMS.</string>
     <string name="token">verification code</string>
     <string name="submit">SUBMIT</string>

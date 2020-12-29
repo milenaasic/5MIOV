@@ -28,17 +28,17 @@ import com.google.android.material.snackbar.Snackbar
 
 import app.adinfinitum.ello.R
 import app.adinfinitum.ello.api.NetResponse_Registration
-import app.adinfinitum.ello.data.Result
 import app.adinfinitum.ello.databinding.FragmentRegistrationBinding
 import app.adinfinitum.ello.utils.*
 
 private const val MY_TAG="MY_RegistrationFragment"
+
 class RegistrationFragment : Fragment() {
 
     private lateinit var binding: FragmentRegistrationBinding
     private lateinit var activityViewModel: RegAuthActivityViewModel
     val MY_PERMISSIONS_REGISTRATION_READ_PHONE_STATE_and_READ_CALL_LOG=30
-    private lateinit var netResponseRegistration: NetResponse_Registration
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -51,65 +51,59 @@ class RegistrationFragment : Fragment() {
             ViewModelProvider(this)[RegAuthActivityViewModel::class.java]
         }
 
-        binding.phoneNumberEditText.setText(PLUS_PREFIX)
-
         binding.register2TextView.apply {
                 when (isVerificationByCallEnabled()){
-                    true-> text=resources.getString(R.string._5miov_will_call_to_verify_your_number)
-                    false->text=resources.getString(R.string._5miov_will_send_sms_with_token_to_verify_your_number)
+                    true-> text=resources.getString(R.string._ello_will_call_to_verify_your_number)
+                    false->text=resources.getString(R.string._ello_will_send_sms_with_token_to_verify_your_number)
                 }
          }
+
+        binding.phoneNumberEditText.apply {
+            setText(PLUS_PREFIX)
+            afterTextChanged {
+                activityViewModel.afterPhoneNumberEditTextChanged(it)
+                binding.enterPhoneTextInputLayout.error = null
+
+            }
+
+            setOnFocusChangeListener { view, hasFocus ->
+                if (hasFocus) binding.enterPhoneTextInputLayout.error = null
+
+            }
+
+            setOnEditorActionListener { view, action, keyEvent ->
+
+                when (action) {
+                    EditorInfo.IME_ACTION_DONE, EditorInfo.IME_ACTION_UNSPECIFIED -> {
+                        hidekeyboard()
+                        view.clearFocus()
+                        true
+                    }
+                    else -> false
+                }
+            }
+
+         }
+
+
 
         binding.registerButton.setOnClickListener {
 
             hidekeyboard()
             binding.rootRegContLayout.requestFocus()
 
-
-            if (!isOnline(requireActivity().application)) {
+            if (!activityViewModel.isOnline()) {
                 showSnackBar(resources.getString(R.string.no_internet))
                 return@setOnClickListener
             }
+            activityViewModel.registerButtonClicked()
 
-            val enteredPhoneNumber = binding.phoneNumberEditText.text.toString()
-
-            if (enteredPhoneNumber.isPhoneNumberValid()) {
-                enteredPhoneNumber.normalizeMyPhoneNumber()?.let { it1 -> showTermsOfUseDailog(it1) }
-
-            } else {
-
-                binding.enterPhoneTextInputLayout.setError(resources.getString(R.string.not_valid_phone_number))
-            }
         }
 
         binding.addNumToAccountButton.setOnClickListener {
-
-
-            if(!binding.phoneNumberEditText.text.isNullOrBlank() && !binding.phoneNumberEditText.text.isNullOrEmpty() ) {
-                    activityViewModel.enteredPhoneNumber=binding.phoneNumberEditText.text.toString()
-            }
             findNavController().navigate(RegistrationFragmentDirections.actionRegistrationFragmentToAddNumberToAccount())
         }
 
-        binding.phoneNumberEditText.setOnEditorActionListener { view, action, keyEvent ->
-
-            when (action) {
-                EditorInfo.IME_ACTION_DONE, EditorInfo.IME_ACTION_UNSPECIFIED -> {
-                    hidekeyboard()
-                    view.clearFocus()
-                    true
-                }
-                else -> false
-            }
-        }
-
-        binding.phoneNumberEditText.apply {
-            afterTextChanged { binding.enterPhoneTextInputLayout.error = null }
-            setOnFocusChangeListener { view, hasFocus ->
-                if (hasFocus) binding.enterPhoneTextInputLayout.error = null
-
-            }
-        }
 
         return binding.root
     }
@@ -117,12 +111,51 @@ class RegistrationFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        activityViewModel.registrationResult.observe(viewLifecycleOwner, Observer {
 
-        activityViewModel.registrationNetworkResponseError.observe(viewLifecycleOwner, Observer {
-            Log.i(MY_TAG,"registrationNetworkResponseError.observe $it")
             if(!it.hasBeenHandled){
+                val result=it.getContentIfNotHandled()
 
-                showSnackBar(resources.getString(R.string.something_went_wrong))
+                result?.enteredPhoneError?.let {
+                    binding.enterPhoneTextInputLayout.error=resources.getString(it)
+                    return@Observer
+                }
+
+                result?.let {
+                    if(result.showTermsOfUseDialog) {
+                        showTermsOfUseDailog()
+                        return@Observer
+                    }
+
+                }
+
+                if(result?.mustAskForPermission==true){
+                    binding.registerButton.isEnabled = true
+                    showProgressBar(false)
+                    checkForPermissions()
+                    return@Observer
+                }
+
+                when(result?.navigateToFragment){
+                    activityViewModel.NAVIGATE_TO_AUTHORIZATION_FRAGMENT-> {
+                            findNavController().navigate(RegistrationFragmentDirections.actionRegistrationFragmentToAuthorizationFragment())
+                            return@Observer
+                            }
+                    activityViewModel.NAVIGATE_TO_NMB_EXISTS_IN_DB_FRAGMENT->{
+                            findNavController().navigate(RegistrationFragmentDirections.actionRegistrationFragmentToNumberExistsInDatabase())
+                            return@Observer
+                            }
+                    else->{}
+                }
+
+                result?.showSnackBarMessage?.let {
+                    showSnackBar(it)
+                }
+
+                result?.let {
+                    if(it.showSnackBarErrorMessage) showSnackBar(resources.getString(R.string.something_went_wrong))
+                }
+
                 binding.registerButton.isEnabled = true
                 showProgressBar(false)
 
@@ -130,93 +163,20 @@ class RegistrationFragment : Fragment() {
 
         })
 
-        activityViewModel.registrationNetworkResponseSuccess.observe(viewLifecycleOwner, Observer {
-            Log.i(MY_TAG,"registrationNetworkResponseSuccess.observe $it,  ${it.hasBeenHandled}")
-            if(!it.hasBeenHandled) {
-
-                it.getContentIfNotHandled()?.let { response ->
-
-                    netResponseRegistration = response
-
-                    //set variable to define if registration process should use call or sms verification
-                    //(requireActivity() as RegistrationAuthorizationActivity).verificationByCallEnabled = response.callVerificationEnabled
-
-                    when (isVerificationByCallEnabled()) {
-
-                        true -> {
-                            // in verifyByCall mode extract number to receive call from (verificationCallerId)
-                            if (response.verificationCallerId.isNotEmpty()) {
-                                (requireActivity() as RegistrationAuthorizationActivity).verificationCallerId =
-                                    response.verificationCallerId
-                            }
-
-                            if (checkForPermissions()) checkResponseSuccessAndActAccordingly(
-                                response = response
-                            )
-                        }
-                        false -> {
-                            checkResponseSuccessAndActAccordingly(response = response)
-                        }
-
-                    }
-                }
-            }
-        })
 
 
     }
 
-    private fun checkResponseSuccessAndActAccordingly(response:NetResponse_Registration){
 
-        when {
-            response.success == true && response.phoneNumberAlreadyAssigned == false -> {
-                showToast(response.userMessage)
-                findNavController().navigate(RegistrationFragmentDirections.actionRegistrationFragmentToAuthorizationFragment())
-            }
 
-            response.success == true && response.phoneNumberAlreadyAssigned == true -> {
-                //showToast(response.userMessage)
-                findNavController().navigate(RegistrationFragmentDirections.actionRegistrationFragmentToNumberExistsInDatabase())
-            }
-
-            response.success == false -> {
-                showSnackBar(response.userMessage)
-            }
-
-        }
-
-        binding.registerButton.isEnabled = true
-        showProgressBar(false)
-
-    }
-
-    private fun startRegistraion(normenteredPhoneNumber:String){
+    private fun startRegistraion(){
 
         binding.registerButton.isEnabled = false
         showProgressBar(true)
-        activityViewModel.setIfVerificationByCallIsEnabled(normenteredPhoneNumber)
-        when(isVerificationByCallEnabled()){
-            true->{
-                activityViewModel.registerButtonClicked(
-                    normenteredPhoneNumber.removePlus(),
-                    smsResend = false,
-                    verificationMethod = VERIFICATION_METHOD_CALL
-                )
-            }
-            false->{
-                activityViewModel.registerButtonClicked(
-                    normenteredPhoneNumber.removePlus(),
-                    smsResend = false,
-                    verificationMethod = VERIFICATION_METHOD_SMS
-                )
-                activityViewModel.startSMSRetreiverFunction(System.currentTimeMillis())
-            }
 
-        }
-
+        activityViewModel.sendRegistrationToServer()
 
     }
-
 
 
     private fun hidekeyboard() {
@@ -251,7 +211,7 @@ class RegistrationFragment : Fragment() {
     }
 
 
-    private fun showTermsOfUseDailog(normenteredPhoneNumber: String) {
+    private fun showTermsOfUseDailog() {
 
         val alertDialog: AlertDialog? = activity?.let {
 
@@ -263,8 +223,8 @@ class RegistrationFragment : Fragment() {
             builder
                 .setPositiveButton(resources.getString(R.string.terms_of_use_accept),
                     DialogInterface.OnClickListener { _, id ->
-                        // sign in the user ...
-                       startRegistraion(normenteredPhoneNumber)
+                        // sign in the user
+                       startRegistraion()
 
                     })
                 .setNegativeButton(resources.getString(R.string.terms_of_use_cancel),
@@ -322,12 +282,12 @@ class RegistrationFragment : Fragment() {
                 if (grantResults.isNotEmpty()) {
 
                     if(grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED){
-                            checkResponseSuccessAndActAccordingly(netResponseRegistration)
+                            startRegistraion()
                     }else {
-                        //activityViewModel.resetRegistrationNetSuccess()
-                        binding.registerButton.isEnabled = true
+
+                        /*binding.registerButton.isEnabled = true
                         showProgressBar(false)
-                        showSnackBar(getString(R.string.call_log_permission_not_granted))
+                        showSnackBar(getString(R.string.call_log_permission_not_granted))*/
 
                     }
 
@@ -346,7 +306,7 @@ class RegistrationFragment : Fragment() {
     }
 
     private fun isVerificationByCallEnabled():Boolean{
-        return activityViewModel.isVerificationByCallEnabled
+        return activityViewModel.signInProcessAuxData.verificationByCallEnabled
     }
 
 

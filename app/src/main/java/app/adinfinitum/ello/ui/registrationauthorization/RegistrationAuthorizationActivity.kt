@@ -20,6 +20,8 @@ import app.adinfinitum.ello.ui.AppSignatureHelper
 import app.adinfinitum.ello.ui.emty_logo_fragment.EmptyLogoFragmentDirections
 import app.adinfinitum.ello.ui.main_activity.MainActivity
 import app.adinfinitum.ello.ui.myapplication.MyApplication
+import app.adinfinitum.ello.ui.registrationauthorization.models.SignInForm
+import app.adinfinitum.ello.ui.registrationauthorization.models.SignInProcessAuxData
 import app.adinfinitum.ello.utils.*
 import org.acra.ACRA
 
@@ -32,16 +34,10 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
     private lateinit var smsBroadcastReceiver: SMSAuthorizationBroadcastReceiver
     private val SPLASH_SCREEN_DURATION_IN_MILLIS=1000L
 
-    //is user verification by call enabled or not
-    var verificationByCallEnabled:Boolean?=null
-    var verificationCallerId=""
-
     companion object{
-        const val ENTERED_PHONE_NUMBER = "entered_phone_number"
-        const val ENTERED_EMAIL="entered_email"
-        const val ENTERED_PASSWORD="entered_password"
-        const val SIGN_IN_PARAMETER="sign_in_parameter"
-        const val UNDEFINED_STATE="undefined_state"
+        const val SIGN_IN_FORM_STATE="sign_in_form_state"
+        const val SIGN_IN_PROCESS_AUX_DATA_STATE="sign_in_process_aux_data_state"
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,24 +51,17 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
         if(!isOnline(application)) showSnackbar(resources.getString(R.string.no_internet))
 
         if (savedInstanceState != null) {
+            val rememberedSignInForm:SignInForm?=savedInstanceState.getParcelable(SIGN_IN_FORM_STATE)
+            val rememberedSignInAuxData:SignInProcessAuxData?=savedInstanceState.getParcelable(
+                SIGN_IN_PROCESS_AUX_DATA_STATE)
 
-            val rememberedPhone=savedInstanceState.getString(ENTERED_PHONE_NUMBER)
-            val rememberedEmail=savedInstanceState.getString(ENTERED_EMAIL)
-            val rememberedPassword=savedInstanceState.getString(ENTERED_PASSWORD)
-            val rememberedSignInParam=savedInstanceState.getString(SIGN_IN_PARAMETER)
-
-            viewModel.apply {
-                   enteredPhoneNumber = rememberedPhone
-                   enteredEmail = rememberedEmail
-                   enteredPassword = rememberedPassword
-                   if (rememberedSignInParam == UNDEFINED_STATE) viewModel.signInParameter = null
-                   else viewModel.signInParameter = rememberedSignInParam?.toBoolean()
-
+            rememberedSignInForm?.let {
+                viewModel.reinitializeSignInForm(it)
             }
 
-            Log.i(MYTAG, " savedInstanceState!=null,its values are $rememberedPhone,$rememberedEmail,$rememberedPassword,$rememberedSignInParam")
-
-
+            rememberedSignInAuxData?.let {
+                viewModel.reinitializeSignInProcessAuxData(it)
+             }
         }
 
 
@@ -148,10 +137,8 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.apply {
-                putString(ENTERED_PHONE_NUMBER,viewModel.enteredPhoneNumber)
-                putString(ENTERED_EMAIL,viewModel.enteredEmail)
-                putString(ENTERED_PASSWORD,viewModel.enteredPassword)
-                putString(SIGN_IN_PARAMETER,viewModel.signInParameter.toString()?: UNDEFINED_STATE)
+                putParcelable(SIGN_IN_FORM_STATE,viewModel.signInForm)
+                putParcelable(SIGN_IN_PROCESS_AUX_DATA_STATE,viewModel.signInProcessAuxData)
         }
         super.onSaveInstanceState(outState)
     }
@@ -196,5 +183,16 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
     private fun showSnackbar(message: String) {
         Snackbar.make(binding.regAuthActivityCoordLayout,message, Snackbar.LENGTH_LONG).show()
+    }
+
+    override fun onBackPressed() {
+        Log.i(MYTAG,"BACK PRESSED before")
+        super.onBackPressed()
+        Log.i(MYTAG,"BACK PRESSED after")
+    }
+
+    override fun onNavigateUp(): Boolean {
+        Log.i(MYTAG,"onNavigateUp()")
+        return super.onNavigateUp()
     }
 }

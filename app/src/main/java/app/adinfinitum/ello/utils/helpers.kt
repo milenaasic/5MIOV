@@ -103,6 +103,7 @@ fun EditText.afterTextChanged(afterTextChanged: (String) -> Unit) {
     })
 }
 
+
 //Contact List
 
 fun formatDateFromMillis(timeInMillis:Long):String{

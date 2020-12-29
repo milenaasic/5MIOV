@@ -54,12 +54,12 @@
                 app:layout_constraintStart_toStartOf="@+id/add_nmb_enter_pass_textInputLayout"
                 app:layout_constraintTop_toBottomOf="@+id/add_nmb_enter_pass_textInputLayout" />
 
-            <TextView
+           <TextView
                 android:id="@+id/addphone_textView"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="@string/_5miov_will_send_sms_with_token_to_verify_your_number"
+                android:text="@string/_ello_will_send_sms_with_token_to_verify_your_number"
                 android:textAlignment="center"
                 android:textAppearance="@style/TextAppearance.AppCompat.Body2"
                 android:visibility="invisible"

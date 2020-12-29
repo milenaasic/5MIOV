@@ -7,34 +7,43 @@ import app.adinfinitum.ello.R
 import app.adinfinitum.ello.api.*
 import app.adinfinitum.ello.database.MyDatabaseDao
 import app.adinfinitum.ello.model.E1andCallVerificationEnabledCountries
+import app.adinfinitum.ello.model.User
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 
 
 private const val MY_TAG="MY_Repository"
-class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobileAppVer:String="0.0"):LogStateOrErrorToServer{
+
+class Repo (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIService, val mobileAppVer:String="0.0"): IRepo {
 
 
     //User Live Data
-    fun getUserData()=myDatabaseDao.getUser()
+    override fun getUserData()=myDatabaseDao.getUser()
 
-    //configuration route
-    fun getConfigurationInfo():Result<NetResponse_Config>{
+    //SignIn Route
+     override suspend fun signUpToServer(signIn: NetRequest_SignUp): Result<NetResponse_SignUp> {
+
         try{
-            //todo when route becomes active change this
-            //val result=myAPI.getConfigurationInfo().await()
-            return Result.Success(data = NetResponse_Config(success = true,e1EnabledCountryList = "381,382,384",callVerificationEnabledCountryList = "388"))
+            val result=myAPI.signUpToServer(
+                phoneNumber = signIn.phoneNumber,
+                signature = produceJWtToken(Pair(Claim.NUMBER.myClaim,signIn.phoneNumber)),
+                mobileAppVersion = mobileAppVer,
+                request = signIn
+            ).await()
+
+            return Result.Success(result)
 
         }catch (e:Exception){
-
             return Result.Error(e)
 
         }
 
+
     }
 
+
     // Registration fragment
-    suspend fun sendRegistationToServer(phone:String,verificationMethod:String): Result<NetResponse_Registration> {
+    override suspend fun sendRegistationToServer(phone:String, verificationMethod:String): Result<NetResponse_Registration> {
 
         try{
             val result=myAPI.sendRegistrationToServer(
@@ -57,7 +66,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
 
 
     // ASSIGN NUMBER TO ACCOUNT
-    suspend fun assignPhoneNumberToAccount(phone:String, email:String,password:String,verificationMethod: String):Result<NetResponse_AddNumberToAccount>{
+    override suspend fun assignPhoneNumberToAccount(phone:String, email:String, password:String, verificationMethod: String):Result<NetResponse_AddNumberToAccount>{
 
         val defResponse=myAPI.sendAddNumberToAccount(
                 phoneNumber = phone,
@@ -87,7 +96,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
 
 
     //NUMBER EXISTS IN DB  fragment
-    suspend fun numberExistsInDBVerifyAccount(enteredPhoneNumber:String, email:String, password:String,verificationMethod: String):Result<NetResponse_NmbExistsInDB>{
+    override suspend fun numberExistsInDBVerifyAccount(enteredPhoneNumber:String, email:String, password:String, verificationMethod: String):Result<NetResponse_NmbExistsInDB>{
 
         val defResult=myAPI.numberExistsInDBVerifyAccount(
                 phoneNumber = enteredPhoneNumber,
@@ -113,7 +122,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
     }
 
 
-    suspend fun numberExistsInDB_NOAccount(enteredPhoneNumber:String,verificationMethod: String):Result<NetResponse_NmbExistsInDB>{
+    override suspend fun numberExistsInDB_NOAccount(enteredPhoneNumber:String, verificationMethod: String):Result<NetResponse_NmbExistsInDB>{
 
         val defResult=myAPI.numberExistsInDB_NOAccount(
                 phoneNumber = enteredPhoneNumber,
@@ -134,7 +143,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
 
 
     //Authorization fragment
-    suspend fun authorizeThisUser(phone:String,smsToken:String,email: String,password: String):Result<NetResponse_Authorization>{
+    override suspend fun authorizeThisUser(phone:String, smsToken:String, email: String, password: String):Result<NetResponse_Authorization>{
 
         val defResponse=myAPI.authorizeUser(
                 phoneNumber = phone,
@@ -162,7 +171,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
 
 
     //SetAccountAndEmail Fragment - Main part of the app
-    suspend fun  setAccountEmailAndPasswordForUser(phoneNumber:String,token: String,email: String,password: String):Result<NetResponse_SetAccountEmailAndPass>{
+    override suspend fun  setAccountEmailAndPasswordForUser(phoneNumber:String, token: String, email: String, password: String):Result<NetResponse_SetAccountEmailAndPass>{
 
         val defResult=myAPI.setAccountEmailAndPasswordForUser(
             phoneNumber = phoneNumber,
@@ -191,7 +200,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
 
 
     // Reset Sip Access data on server
-    fun resetSipAccess(
+    override fun resetSipAccess(
         phone:String,
         authToken: String
     ) {
@@ -214,7 +223,7 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
     }
 
     //get E1 prenumber
-    suspend fun callSetNewE1(phone: String,token: String):Result<NetResponse_SetE1Prenumber> {
+    override suspend fun callSetNewE1(phone: String, token: String):Result<NetResponse_SetE1Prenumber> {
 
         val defResult = myAPI.setNewE1(
             phoneNumber = phone,
@@ -239,51 +248,91 @@ class Repo (val myDatabaseDao: MyDatabaseDao,val myAPI: MyAPIService, val mobile
     }
 
 
-    suspend fun getUser()=withContext(IO){
+    override suspend fun getUser()=withContext(IO){
         myDatabaseDao.getUserNoLiveData()
     }
 
-    fun updateUsersPhoneTokenEmail(phone: String,token: String,email: String){
+    override fun updateUsersPhoneTokenEmail(phone: String, token: String, email: String){
         myDatabaseDao.updateUsersPhoneTokenEmail(phoneNb = phone,token = token,email = email)
     }
 
-    fun updateUsersPhoneAndToken (phone:String,token:String) {
+    override fun updateUsersPhoneAndToken (phone:String, token:String) {
         myDatabaseDao.updateUsersPhoneAndToken(phoneNb = phone,token =  token)
     }
 
-    fun updateUserEmail (email: String){
+    override fun updateUserEmail (email: String){
         myDatabaseDao.updateUserEmail(email = email)
     }
 
-    fun updatePrenumber(e1Phone:String, timestamp:Long){
+    override fun updatePrenumber(e1Phone:String, timestamp:Long){
         myDatabaseDao.updatePrenumber(prenumber = e1Phone,timestamp = timestamp)
     }
 
-    fun updateWebApiVersion(webApiVer:String){
+    override fun updateWebApiVersion(webApiVer:String){
         myDatabaseDao.updateWebApiVersion(webApiVer =webApiVer )
     }
 
-    fun updateE1EnabledCountries(e1EnabledCountries:String){
+    override fun updateE1EnabledCountries(e1EnabledCountries:String){
         myDatabaseDao.updateE1EnabledCoutries(e1EnabledCountries = e1EnabledCountries)
     }
 
-    fun updateCallVerificationEnabledCountries(callVerificationEnabledCountries:String){
+    override fun updateCallVerificationEnabledCountries(callVerificationEnabledCountries:String){
         myDatabaseDao.updateCallVerificationEnabledCoutries(callVerificationEnabledCountries = callVerificationEnabledCountries)
     }
 
-    fun getCountriesWhereVerificationByCallIsEnabled():String{
+    override fun getCountriesWhereVerificationByCallIsEnabled():String{
         return myDatabaseDao.getCountriesWithVerificationCallEnabled().callVerificationEnabledCountries
     }
 
-    suspend fun logStateOrErrorToOurServer(phoneNumber:String="",myoptions:Map<String,String>){
+    override suspend fun logStateOrErrorToOurServer(phoneNumber:String, myoptions:Map<String,String>){
         logStateOrErrorToOurServer(phoneNumber = phoneNumber,myDatabaseDao=myDatabaseDao,myAPIService = myAPI,myoptions = myoptions)
 
 
     }
 
 
-
 }
 
+interface IRepo : LogStateOrErrorToServer {
+    //User Live Data
+    fun getUserData(): LiveData<User>
 
+    suspend fun signUpToServer(signIn: NetRequest_SignUp): Result<NetResponse_SignUp>
+
+    // Registration fragment
+    suspend fun sendRegistationToServer(phone: String, verificationMethod: String): Result<NetResponse_Registration>
+
+    // ASSIGN NUMBER TO ACCOUNT
+    suspend fun assignPhoneNumberToAccount(phone: String, email: String, password: String, verificationMethod: String): Result<NetResponse_AddNumberToAccount>
+
+    //NUMBER EXISTS IN DB  fragment
+    suspend fun numberExistsInDBVerifyAccount(enteredPhoneNumber: String, email: String, password: String, verificationMethod: String): Result<NetResponse_NmbExistsInDB>
+    suspend fun numberExistsInDB_NOAccount(enteredPhoneNumber: String, verificationMethod: String): Result<NetResponse_NmbExistsInDB>
+
+    //Authorization fragment
+    suspend fun authorizeThisUser(phone: String, smsToken: String, email: String, password: String): Result<NetResponse_Authorization>
+
+    //SetAccountAndEmail Fragment - Main part of the app
+    suspend fun  setAccountEmailAndPasswordForUser(phoneNumber: String, token: String, email: String, password: String): Result<NetResponse_SetAccountEmailAndPass>
+
+    // Reset Sip Access data on server
+    fun resetSipAccess(
+        phone: String,
+        authToken: String
+    )
+
+    //get E1 prenumber
+    suspend fun callSetNewE1(phone: String, token: String): Result<NetResponse_SetE1Prenumber>
+
+    suspend fun getUser(): User
+    fun updateUsersPhoneTokenEmail(phone: String, token: String, email: String)
+    fun updateUsersPhoneAndToken (phone: String, token: String)
+    fun updateUserEmail (email: String)
+    fun updatePrenumber(e1Phone: String, timestamp: Long)
+    fun updateWebApiVersion(webApiVer: String)
+    fun updateE1EnabledCountries(e1EnabledCountries: String)
+    fun updateCallVerificationEnabledCountries(callVerificationEnabledCountries: String)
+    fun getCountriesWhereVerificationByCallIsEnabled(): String
+    suspend fun logStateOrErrorToOurServer(phoneNumber: String ="", myoptions: Map<String, String>)
+}
 

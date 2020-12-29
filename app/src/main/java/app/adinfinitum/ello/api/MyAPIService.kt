@@ -67,7 +67,17 @@ object MyAPI {
     @POST("api/user/signup")
     fun getConfigurationInfo(): Deferred<NetResponse_Config>
 
-    //Registration and Authorization Process
+     //Registration Reorganized
+     @POST("api/user/signup")
+     fun signUpToServer(
+         @Header(HEADER_PHONE_KEY) phoneNumber:String,
+         @Header(HEADER_SIGNATURE) signature:String,
+         @Header(HEADER_MOBILE_APP_VERSION) mobileAppVersion:String,
+         @Body request: NetRequest_SignUp): Deferred<NetResponse_SignUp>
+
+
+
+     //Registration and Authorization Process
     @POST("api/user/signup")
     fun sendRegistrationToServer(
         @Header(HEADER_PHONE_KEY) phoneNumber:String,
