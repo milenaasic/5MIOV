@@ -6,6 +6,6 @@ class AuthorizationResult(
     var showSnackBarMessage:String?=null,
     var showSnackBarErrorMessage: Boolean=false,
     var userMessageServerCode:Int?=null,
-
+    var hideProgressBar:Boolean=false
 
 )

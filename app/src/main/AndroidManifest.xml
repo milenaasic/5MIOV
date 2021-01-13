@@ -42,23 +42,23 @@
             android:theme="@style/RegistrationTheme"
             tools:ignore="LockedOrientationActivity">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+           <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
+           <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
 
-        <activity android:name="app.adinfinitum.ello.ui.webView.WebViewActivity" />
+   <activity android:name="app.adinfinitum.ello.ui.webView.WebViewActivity" />
 
-        <activity
-            android:name="app.adinfinitum.ello.ui.main_activity.MainActivity"
-            android:launchMode="singleTop"
-            android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity">
-        </activity>
+   <activity
+       android:name="app.adinfinitum.ello.ui.main_activity.MainActivity"
+       android:launchMode="singleTop"
+       android:screenOrientation="portrait"
+       tools:ignore="LockedOrientationActivity">
+   </activity>
 
 
-    </application>
+</application>
 
 </manifest>

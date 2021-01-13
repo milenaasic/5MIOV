@@ -196,7 +196,7 @@ object MyAPI {
      @PUT("api/mobileLog")
      fun logStateOrErrorToServer(
          @Header(HEADER_PHONE_KEY) phoneNumber:String,
-         @QueryMap options:Map<String,String>):Deferred<Response<Unit>>
+         @QueryMap options:Map<String,String>):Response<Nothing>
 
 }
 

@@ -31,7 +31,6 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityRegistrationAuthorizationBinding
     private lateinit var viewModel: RegAuthActivityViewModel
-    private lateinit var smsBroadcastReceiver: SMSAuthorizationBroadcastReceiver
     private val SPLASH_SCREEN_DURATION_IN_MILLIS=1000L
 
     companion object{
@@ -63,9 +62,6 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
                 viewModel.reinitializeSignInProcessAuxData(it)
              }
         }
-
-
-        initializeSMSBroadcastReceiver()
 
 
         viewModel.userData.observe(this, { user->
@@ -100,30 +96,6 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
 
          })
 
-
-         viewModel.startSMSRetreiver.observe(this, Observer {
-
-             if(!it.hasBeenHandled) {
-                 if(it.getContentIfNotHandled()==true) startMySMSRetreiver()
-
-             }
-
-         })
-
-
-
-         smsBroadcastReceiver.receivedSMSMessage.observe(this, Observer {
-
-                if(it!=null){
-                    smsBroadcastReceiver.resetReceivedSMSMessage()
-                    val navController= findNavController(R.id.registration_navhost_fragment)
-                    if(navController.currentDestination?.id==R.id.authorizationFragment) {
-                       viewModel.setSMSVerificationTokenForAuthFragment(it)
-
-                    }
-                }
-          })
-
         //todo when first uploaded to Play store add SignatureHelper to read it
     }
 
@@ -144,48 +116,18 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
     }
 
 
-    fun initializeSMSBroadcastReceiver(){
-        smsBroadcastReceiver = SMSAuthorizationBroadcastReceiver()
-       val filter = IntentFilter().apply {
-            addAction(SmsRetriever.SMS_RETRIEVED_ACTION)
-        }
-        registerReceiver(smsBroadcastReceiver, filter)
-
-    }
-
-    private fun startMySMSRetreiver(){
-
-        Log.i("MY_SMSAuthBroadcastAct","  entered function start MySMSReceiver")
-        val client = SmsRetriever.getClient(this)
-        val task: Task<Void> = client.startSmsRetriever()
-        Log.i("MY_SMSAuthBroadcastAct","  client $client, $task, ${client.apiOptions},${client.instanceId}")
-
-        task.addOnSuccessListener {
-            Log.i("MY_SMSAuthBroadcastAct","  Successfully started retriever, expect broadcast intent")
-            // Successfully started retriever, expect broadcast intent
-        }
-
-        task.addOnFailureListener {
-            Log.i("MY_SMSAuthBroadcastAct","  SMS  retriever failure, ${it.message}")
-            // Failed to start retriever, inspect Exception for more details
-        }
-
-    }
-
 
     override fun onDestroy() {
-        unregisterReceiver(smsBroadcastReceiver)
         super.onDestroy()
         Log.i(MYTAG,"On Destroy")
 
     }
 
-
     private fun showSnackbar(message: String) {
         Snackbar.make(binding.regAuthActivityCoordLayout,message, Snackbar.LENGTH_LONG).show()
     }
 
-    override fun onBackPressed() {
+   /* override fun onBackPressed() {
         Log.i(MYTAG,"BACK PRESSED before")
         super.onBackPressed()
         Log.i(MYTAG,"BACK PRESSED after")
@@ -194,5 +136,5 @@ class RegistrationAuthorizationActivity : AppCompatActivity() {
     override fun onNavigateUp(): Boolean {
         Log.i(MYTAG,"onNavigateUp()")
         return super.onNavigateUp()
-    }
+    }*/
 }

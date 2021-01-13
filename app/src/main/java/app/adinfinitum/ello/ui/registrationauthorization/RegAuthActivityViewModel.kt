@@ -2,8 +2,14 @@ package app.adinfinitum.ello.ui.registrationauthorization
 
 import android.Manifest
 import android.app.Application
+import android.content.Context
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
+import android.os.CountDownTimer
+import android.provider.CalendarContract
+import android.telephony.PhoneStateListener
+import android.telephony.TelephonyManager
 import android.text.TextUtils.split
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
@@ -18,9 +24,16 @@ import app.adinfinitum.ello.data.LogStateOrErrorToServer
 import app.adinfinitum.ello.data.Repo
 import app.adinfinitum.ello.data.Result
 import app.adinfinitum.ello.ui.myapplication.MyApplication
+import app.adinfinitum.ello.ui.registrationauthorization.listeners.MyPhoneCallListener
+import app.adinfinitum.ello.ui.registrationauthorization.listeners.MyPhoneCallListenerResult
+import app.adinfinitum.ello.ui.registrationauthorization.listeners.MySMSListener
+import app.adinfinitum.ello.ui.registrationauthorization.listeners.MySMSListenerResult
 import app.adinfinitum.ello.ui.registrationauthorization.models.*
 import app.adinfinitum.ello.utils.VERIFICATION_METHOD_CALL
+import app.adinfinitum.ello.utils.VERIFICATION_METHOD_EXPENSIVE_CALL
 import app.adinfinitum.ello.utils.VERIFICATION_METHOD_SMS
+import com.google.android.gms.auth.api.phone.SmsRetriever
+import com.google.android.gms.tasks.Task
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.delay
@@ -30,15 +43,19 @@ import kotlinx.coroutines.withContext
 private const val MY_TAG="MY_RegAuthActivVieModel"
 
 
-class RegAuthActivityViewModel(val myRepository: IRepo, application: Application) : AndroidViewModel(application) {
+class RegAuthActivityViewModel(val myRepository: IRepo, application: Application) : AndroidViewModel(application),
+        MyPhoneCallListenerResult,MySMSListenerResult {
 
     val signInForm = SignInForm()
     val signInProcessAuxData = SignInProcessAuxData()
     val NAVIGATE_TO_AUTHORIZATION_FRAGMENT = 1
     val NAVIGATE_TO_NMB_EXISTS_IN_DB_FRAGMENT = 2
 
-    private var timeLatestSMSRetreiverStarted: Long = 0L
-    private val TIME_BETWEEN_TWO_SMS_RETREIVERS_IN_SEC = 120
+    private var phoneCallListener: MyPhoneCallListener? = null
+    private var smsListener: MySMSListener? = null
+    private val VERIFIED_BY_CALL = "verifiedByCall"
+    private val TIME_TO_WAIT_FOR_CALL = 6000L
+    //private val timer=MyTimer()
 
     val userData = myRepository.getUserData()
 
@@ -63,11 +80,14 @@ class RegAuthActivityViewModel(val myRepository: IRepo, application: Application
     val authorizationResult: LiveData<Event<AuthorizationResult>>
         get() = _authorizationResult
 
+    private val _showConfirmPhoneNumberDialog = MutableLiveData<Event<Boolean>>()
+    val showConfirmPhoneNumberDialog: LiveData<Event<Boolean>>
+        get() = _showConfirmPhoneNumberDialog
 
-    //SMS Retreiver for Activity to observe
-    private val _startSMSRetreiver = MutableLiveData<Event<Boolean>>()
-    val startSMSRetreiver: LiveData<Event<Boolean>>
-        get() = _startSMSRetreiver
+    private val  _expensivePhoneCallAuthorizationFailed = MutableLiveData<Event<Boolean>>()
+    val  expensivePhoneCallAuthorizationFailed: LiveData<Event<Boolean>>
+        get() =  _expensivePhoneCallAuthorizationFailed
+
 
     //SMS Retreiver for Authorization fragment to observe
     private val _verificationTokenForAuthFragment = MutableLiveData<Event<String>>()
@@ -81,36 +101,37 @@ class RegAuthActivityViewModel(val myRepository: IRepo, application: Application
     }
 
 
-    fun reinitializeSignInForm(inForm:SignInForm){
+    fun reinitializeSignInForm(inForm: SignInForm) {
         signInForm.apply {
-            phoneNmb=inForm.phoneNmb
-            email=inForm.email
-            password=inForm.password
-         }
+            phoneNmb = inForm.phoneNmb
+            email = inForm.email
+            password = inForm.password
+        }
     }
 
-    fun resetSignInFormEmailAndPassword(){
+    fun resetSignInFormEmailAndPassword() {
         signInForm.apply {
-            email=null
-            password=null
+            email = null
+            password = null
         }
 
     }
 
-    fun reinitializeSignInProcessAuxData(inForm:SignInProcessAuxData){
+    fun reinitializeSignInProcessAuxData(inForm: SignInProcessAuxData) {
         signInProcessAuxData.apply {
-            signInValue_whenPhoneNumberAlreadyExists=inForm.signInValue_whenPhoneNumberAlreadyExists
-            verificationByCallEnabled=inForm.verificationByCallEnabled
-            callerId=inForm.callerId
+            signInValue_whenPhoneNumberAlreadyExists = inForm.signInValue_whenPhoneNumberAlreadyExists
+            verificationMethod = inForm.verificationMethod
+            callerId = inForm.callerId
 
-         }
+        }
     }
 
-    fun resetSignInProcessAuxData(){
+    fun resetSignInProcessAuxData() {
+    //todo check if initial state is verificationMethod= VERIFICATION_METHOD_SMS
         signInProcessAuxData.apply {
-            signInValue_whenPhoneNumberAlreadyExists=false
-            verificationByCallEnabled=false
-            callerId=null
+            signInValue_whenPhoneNumberAlreadyExists = false
+            verificationMethod= VERIFICATION_METHOD_SMS
+            callerId = null
 
         }
     }
@@ -119,12 +140,12 @@ class RegAuthActivityViewModel(val myRepository: IRepo, application: Application
         signInForm.phoneNmb = currentPhoneNumber
     }
 
-    fun afterEmailEditTextChanged(currentEmail:String){
-        signInForm.email=currentEmail
+    fun afterEmailEditTextChanged(currentEmail: String) {
+        signInForm.email = currentEmail
     }
 
-    fun afterPasswordEditTextChanged(currentPassword:String){
-        signInForm.password=currentPassword
+    fun afterPasswordEditTextChanged(currentPassword: String) {
+        signInForm.password = currentPassword
     }
 
     fun getFormAuxDataCallerID(): String? {
@@ -145,108 +166,118 @@ class RegAuthActivityViewModel(val myRepository: IRepo, application: Application
         }
     }
 
-    fun sendRegistrationToServer(){
-                //todo startuj SMS retreiver
-                viewModelScope.launch {
-                    try {
-                        val result = withContext(Dispatchers.IO) {
-                            myRepository.signUpToServer(
-                                NetRequest_SignUp(
-                                    phoneNumber = signInForm.normalizedPhoneNmb ?: throw Exception("normalized phone number is null"),
-                                    verificationMethod = signInProcessAuxData.verificationMethod
+    fun sendRegistrationToServer() {
+
+        startListeningForSMSOrPhoneCall()
+        viewModelScope.launch {
+            try {
+                val result = withContext(Dispatchers.IO) {
+                    myRepository.signUpToServer(
+                        NetRequest_SignUp(
+                            phoneNumber = signInForm.normalizedPhoneNmb
+                                ?: throw Exception("normalized phone number is null"),
+                            verificationMethod = signInProcessAuxData.verificationMethod
+                        )
+                    )
+                }
+
+                when (result) {
+                    is Result.Success -> {
+                        val response = result.data
+                        //set variable to define if registration process should use call or sms verification
+                        if (response.callVerificationEnabled) {
+                            signInProcessAuxData.apply {
+                                verificationMethod= VERIFICATION_METHOD_CALL
+                                callerId = response.verificationCallerId
+
+                             }
+                        }
+
+                        //for testing
+                        //todo remove this later
+                        //signInProcessAuxData.verificationByCallEnabled = false //for testing
+                        //signInProcessAuxData.callerId = null //for testing
+
+                        if ((signInProcessAuxData.verificationByCallEnabled && checkForPermission()) || !signInProcessAuxData.verificationByCallEnabled) {
+                            when {
+                                response.success == true && response.phoneNumberAlreadyAssigned == false -> {
+                                    _registrationResult.value = Event(
+                                        RegistrationResult(
+                                            navigateToFragment = NAVIGATE_TO_AUTHORIZATION_FRAGMENT,
+                                            showToastMessage = response.userMessage,
+                                            userMessageServerCode = response.code
+                                        )
+                                    )
+
+                                }
+
+                                response.success == true && response.phoneNumberAlreadyAssigned == true -> {
+                                    _registrationResult.value = Event(
+                                        RegistrationResult(
+                                            navigateToFragment = NAVIGATE_TO_NMB_EXISTS_IN_DB_FRAGMENT,
+                                            showToastMessage = response.userMessage,
+                                            userMessageServerCode = response.code
+                                        )
+                                    )
+                                    //stop listening for SMS or Phone Call, it will be started again after user clicks buttons
+                                    //in fragment NumberExistsInDatabase
+                                    stopListeningForSMSOrPhoneCall()
+
+                                }
+
+                                response.success == false -> {
+                                    _registrationResult.value = Event(
+                                        RegistrationResult(
+                                            showSnackBarMessage = response.userMessage,
+                                            userMessageServerCode = response.code
+                                        )
+                                    )
+                                }
+
+                            }
+
+                        } else {
+                            _registrationResult.value = Event(
+                                RegistrationResult(
+                                    mustAskForPermission = true
                                 )
                             )
                         }
 
-                        when (result) {
-                            is Result.Success -> {
-                                val response = result.data
-                                //set variable to define if registration process should use call or sms verification
-                                if(response.callVerificationEnabled){
-                                    signInProcessAuxData.verificationByCallEnabled=response.callVerificationEnabled
-                                    signInProcessAuxData.callerId=response.verificationCallerId
-                                }
+                    }
 
-                                //for testing
-                                //todo remove this later
-                                signInProcessAuxData.verificationByCallEnabled=false //for testing
-                                signInProcessAuxData.callerId=null //for testing
+                    is Result.Error -> {
+                        _registrationResult.value = Event(
+                            RegistrationResult(
+                                //showSnackBarMessage = result.exception.message
+                                showSnackBarErrorMessage = true
+                            )
+                        )
 
-                                if ((signInProcessAuxData.verificationByCallEnabled && checkForPermission()) || !signInProcessAuxData.verificationByCallEnabled) {
-                                    when {
-                                        response.success == true && response.phoneNumberAlreadyAssigned == false -> {
-                                            _registrationResult.value = Event(
-                                                RegistrationResult(
-                                                    navigateToFragment = NAVIGATE_TO_AUTHORIZATION_FRAGMENT,
-                                                    showToastMessage = response.userMessage,
-                                                    userMessageServerCode = response.code
-                                                )
-                                            )
+                        withContext(Dispatchers.IO) {
 
-                                        }
-
-                                        response.success == true && response.phoneNumberAlreadyAssigned == true -> {
-                                            _registrationResult.value = Event(
-                                                RegistrationResult(
-                                                    navigateToFragment = NAVIGATE_TO_NMB_EXISTS_IN_DB_FRAGMENT,
-                                                    showToastMessage = response.userMessage,
-                                                    userMessageServerCode = response.code
-                                                )
-                                            )
-
-                                        }
-
-                                        response.success == false -> {
-                                            _registrationResult.value = Event(
-                                                RegistrationResult(
-                                                    navigateToFragment = NAVIGATE_TO_NMB_EXISTS_IN_DB_FRAGMENT,
-                                                    showSnackBarMessage = response.userMessage,
-                                                    userMessageServerCode = response.code
-                                                )
-                                            )
-                                        }
-
-                                    }
-
-                                } else {
-                                    _registrationResult.value = Event(
-                                        RegistrationResult(
-                                           mustAskForPermission = true
-                                        )
-                                    )
-                                }
-
-                            }
-
-                            is Result.Error -> {
-                                _registrationResult.value = Event(
-                                    RegistrationResult(
-                                        //showSnackBarMessage = result.exception.message
-                                        showSnackBarErrorMessage = true
-                                    )
+                            myRepository.logStateOrErrorToOurServer(
+                                signInForm.normalizedPhoneNmb
+                                    ?: "normalized phone number is null",
+                                myoptions =
+                                mapOf(
+                                    Pair("process", "registration"),
+                                    Pair("error", result.exception.message ?: "")
                                 )
+                            )
 
-                                withContext(Dispatchers.IO) {
-
-                                    myRepository.logStateOrErrorToOurServer(
-                                        signInForm.normalizedPhoneNmb
-                                            ?: "normalized phone number is null",
-                                        myoptions =
-                                        mapOf(
-                                            Pair("process", "registration"),
-                                            Pair("error", result.exception.message ?: "")
-                                        )
-                                    )
-
-                                }
-                            }
                         }
-
-                    } catch (e: Exception) {
-                        Log.i(MY_TAG, "registerButtonClickedError, ${e.message}")
                     }
                 }
+
+            } catch (e: Exception) {
+                Log.i(MY_TAG, "registerButtonClickedError, ${e.message}")
+            }
+        }
     }
+
+
+
 
     //Add number to existing account fragment reorganized
     fun addNumberToAccountButtonClicked() {
@@ -273,96 +304,106 @@ class RegAuthActivityViewModel(val myRepository: IRepo, application: Application
         }
     }
 
-    fun sendAddNumberToAccountToServer(){
-                viewModelScope.launch {
-                    try {
+    fun sendAddNumberToAccountToServer() {
+        startListeningForSMSOrPhoneCall()
+        viewModelScope.launch {
+            try {
 
-                        val result = withContext(Dispatchers.IO) {
-                            myRepository.signUpToServer(
-                                NetRequest_SignUp(
-                                phoneNumber = signInForm.normalizedPhoneNmb?:throw Exception("normalized phone number in sign in form is null"),
-                                email = signInForm.email?:throw Exception("email in sign in form is null"),
-                                password = signInForm.password?:throw Exception("password in sign in form is null"),
-                                verificationMethod = signInProcessAuxData.verificationMethod
-                                )
-                            )
+                val result = withContext(Dispatchers.IO) {
+                    myRepository.signUpToServer(
+                        NetRequest_SignUp(
+                            phoneNumber = signInForm.normalizedPhoneNmb
+                                ?: throw Exception("normalized phone number in sign in form is null"),
+                            email = signInForm.email
+                                ?: throw Exception("email in sign in form is null"),
+                            password = signInForm.password
+                                ?: throw Exception("password in sign in form is null"),
+                            verificationMethod = signInProcessAuxData.verificationMethod
+                        )
+                    )
+                }
+
+
+                when (result) {
+                    is Result.Success -> {
+                        val response = result.data
+
+                        //set variable to define if registration process should use call or sms verification
+                        if (response.callVerificationEnabled) {
+                            signInProcessAuxData.apply {
+                                verificationMethod= VERIFICATION_METHOD_CALL
+                                callerId = response.verificationCallerId
+
+                             }
                         }
 
+                        if (signInProcessAuxData.verificationMethod == VERIFICATION_METHOD_CALL) signInProcessAuxData.callerId =
+                            response.verificationCallerId
 
-                        when (result) {
-                            is Result.Success -> {
-                                val response = result.data
+                        if ((signInProcessAuxData.verificationByCallEnabled && checkForPermission()) || !signInProcessAuxData.verificationByCallEnabled) {
 
-                                //set variable to define if registration process should use call or sms verification
-                                if(response.callVerificationEnabled){
-                                    signInProcessAuxData.verificationByCallEnabled=response.callVerificationEnabled
-                                    signInProcessAuxData.callerId=response.verificationCallerId
-                                }
-
-                                if(signInProcessAuxData.verificationMethod==VERIFICATION_METHOD_CALL) signInProcessAuxData.callerId=response.verificationCallerId
-
-                                if ((signInProcessAuxData.verificationByCallEnabled && checkForPermission()) || !signInProcessAuxData.verificationByCallEnabled) {
-
-                                    val addNumberToAccountResult=AddNumberToAccountResult()
-                                    when(response.success) {
-                                        true -> {
-                                            addNumberToAccountResult.apply {
-                                                navigateToFragment=NAVIGATE_TO_AUTHORIZATION_FRAGMENT
-                                                showToastMessage=response.userMessage
-                                            }
-
-                                        }
-                                        false -> {
-                                            addNumberToAccountResult.apply {
-                                                showSnackBarMessage=response.userMessage
-                                            }
-
-                                        }
+                            val addNumberToAccountResult = AddNumberToAccountResult()
+                            when (response.success) {
+                                true -> {
+                                    addNumberToAccountResult.apply {
+                                        navigateToFragment = NAVIGATE_TO_AUTHORIZATION_FRAGMENT
+                                        showToastMessage = response.userMessage
                                     }
 
-                                    _addNumberToAccountResult.value = Event(addNumberToAccountResult)
-
-                                }else  {
-                                    _addNumberToAccountResult.value=Event(AddNumberToAccountResult(mustAskForPermission = true))
                                 }
+                                false -> {
+                                    addNumberToAccountResult.apply {
+                                        showSnackBarMessage = response.userMessage
+                                    }
 
-
+                                }
                             }
 
-                            is Result.Error -> {
-                                        _addNumberToAccountResult.value = Event(
-                                            AddNumberToAccountResult(showSnackBarErrorMessage = true ))
+                            _addNumberToAccountResult.value = Event(addNumberToAccountResult)
 
-                                        withContext(Dispatchers.IO) {
-                                            myRepository.logStateOrErrorToOurServer(
-                                                signInForm.normalizedPhoneNmb ?: "normalized phone number is null",
-                                                mapOf(
-                                                    Pair("process", "assignPhoneNumberToAccount"),
-                                                    Pair("error", result.exception.message ?: "")
-                                                )
-                                            )
-
-                                        }
-                            }
+                        } else {
+                            _addNumberToAccountResult.value =
+                                Event(AddNumberToAccountResult(mustAskForPermission = true))
                         }
 
-                    } catch (e: Exception) {
-                        Log.i(MY_TAG, "Add Number to account ClickedError, ${e.message}")
+
+                    }
+
+                    is Result.Error -> {
+                        _addNumberToAccountResult.value = Event(
+                            AddNumberToAccountResult(showSnackBarErrorMessage = true)
+                        )
+
+                        withContext(Dispatchers.IO) {
+                            myRepository.logStateOrErrorToOurServer(
+                                signInForm.normalizedPhoneNmb ?: "normalized phone number is null",
+                                mapOf(
+                                    Pair("process", "assignPhoneNumberToAccount"),
+                                    Pair("error", result.exception.message ?: "")
+                                )
+                            )
+
+                        }
                     }
                 }
+
+            } catch (e: Exception) {
+                Log.i(MY_TAG, "Add Number to account ClickedError, ${e.message}")
+            }
+        }
 
     }
 
 
     //number Exists In DB Fragment
-    fun numberExistsInDBVerifyAccountButtonClicked(memail: String?,mpassword: String?) {
+    fun numberExistsInDBVerifyAccountButtonClicked(memail: String?, mpassword: String?) {
         //in case when after clicking on New Account button user navigates to Authorization and then clicks back button
         //email and password fields in SignInForm are null
         //so check is necessary in case user wrote sometning in email and pass fields before clicking New Account button
 
-        if(signInForm.email==null || signInForm.password==null){
-           signInForm.email=memail
-           signInForm.password=mpassword
+        if (signInForm.email == null || signInForm.password == null) {
+            signInForm.email = memail
+            signInForm.password = mpassword
         }
 
         when (signInForm.areSignInDataValid) {
@@ -370,39 +411,43 @@ class RegAuthActivityViewModel(val myRepository: IRepo, application: Application
             false -> {
                 val numberExistsInDBResult = NumberExistsInDBResult().apply {
                     if (!signInForm.isEmailValid) enteredEmailError = R.string.not_valid_email
-                    if (!signInForm.isPasswordValid) enteredPasswordError = R.string.not_valid_password
+                    if (!signInForm.isPasswordValid) enteredPasswordError =
+                        R.string.not_valid_password
                 }
                 _nmbExistsInDBResult.value = Event(numberExistsInDBResult)
             }
-            true->{
-                signInProcessAuxData.signInValue_whenPhoneNumberAlreadyExists=true
+            true -> {
+                signInProcessAuxData.signInValue_whenPhoneNumberAlreadyExists = true
                 numberExistsInDBSignIN()
             }
         }
     }
 
-    fun numberExistsInDBNOAccountButtonClicked(){
+    fun numberExistsInDBNOAccountButtonClicked() {
         resetSignInFormEmailAndPassword()
-        signInProcessAuxData.signInValue_whenPhoneNumberAlreadyExists=false
+        signInProcessAuxData.signInValue_whenPhoneNumberAlreadyExists = false
         numberExistsInDBSignIN()
     }
 
     //number exists in DB fragment Sign In
     private fun numberExistsInDBSignIN() {
+        startListeningForSMSOrPhoneCall()
         viewModelScope.launch {
             try {
                 val result = withContext(Dispatchers.IO) {
                     myRepository.signUpToServer(
                         NetRequest_SignUp(
-                            phoneNumber = signInForm.normalizedPhoneNmb ?: throw Exception("normalized phone number is null"),
-                            email = signInForm.email ?:"",
-                            password = signInForm.password?:"",
-                            signin = signInProcessAuxData.signInValue_whenPhoneNumberAlreadyExists.toString()
+                            phoneNumber = signInForm.normalizedPhoneNmb
+                                ?: throw Exception("normalized phone number is null"),
+                            email = signInForm.email ?: "",
+                            password = signInForm.password ?: "",
+                            signin = signInProcessAuxData.signInValue_whenPhoneNumberAlreadyExists.toString(),
+                            verificationMethod = signInProcessAuxData.verificationMethod
                         )
                     )
                 }
 
-                val numberExistsInDBResult=NumberExistsInDBResult()
+                val numberExistsInDBResult = NumberExistsInDBResult()
                 when (result) {
                     is Result.Success -> {
                         val response = result.data
@@ -410,21 +455,21 @@ class RegAuthActivityViewModel(val myRepository: IRepo, application: Application
                         when {
                             response.success == true -> {
                                 numberExistsInDBResult.apply {
-                                    navigateToFragment=NAVIGATE_TO_AUTHORIZATION_FRAGMENT
-                                    showToastMessage=response.userMessage
-                                 }
+                                    navigateToFragment = NAVIGATE_TO_AUTHORIZATION_FRAGMENT
+                                    showToastMessage = response.userMessage
+                                }
                             }
                             response.success == false -> {
-                                numberExistsInDBResult.showSnackBarMessage=response.userMessage
+                                numberExistsInDBResult.showSnackBarMessage = response.userMessage
                             }
                         }
 
-                        _nmbExistsInDBResult.value=Event(numberExistsInDBResult)
+                        _nmbExistsInDBResult.value = Event(numberExistsInDBResult)
 
                     }
                     is Result.Error -> {
-                        numberExistsInDBResult.showSnackBarErrorMessage=true
-                        _nmbExistsInDBResult.value=Event(numberExistsInDBResult)
+                        numberExistsInDBResult.showSnackBarErrorMessage = true
+                        _nmbExistsInDBResult.value = Event(numberExistsInDBResult)
 
                         withContext(Dispatchers.IO) {
                             myRepository.logStateOrErrorToOurServer(
@@ -445,61 +490,70 @@ class RegAuthActivityViewModel(val myRepository: IRepo, application: Application
 
 
     //Authorization fragment
-    fun submitButtonClicked(smsToken: String) {
+    fun submitAuthorizationButtonClicked(smsToken: String) {
 
-            viewModelScope.launch {
-                val result = withContext(Dispatchers.IO) {
-                    myRepository.authorizeThisUser(
-                        signInForm.normalizedPhoneNmb ?: "",
-                        smsToken,
-                        signInForm.email ?: "",
-                        signInForm.password ?: ""
-                    )
-                }
-
-
-                when (result) {
-                    is Result.Success ->{
-                        when(result.data.success){
-                            true-> {
-                                processAuthorizationData(phoneNumber = signInForm.normalizedPhoneNmb?:throw Exception("normalized phone number is null"),
-                                                        authData=result.data,
-                                                        mRepository=myRepository)
-                                _authorizationResult.value=Event(AuthorizationResult(showToastMessage = result.data.userMessage))
-                            }
-                            false->{
-                                _authorizationResult.value=Event(AuthorizationResult(showSnackBarMessage = result.data.userMessage))
-                            }
-                        }
-                    }
-                    is Result.Error -> {
-                        _authorizationResult.value=Event(AuthorizationResult(showSnackBarErrorMessage = true))
-
-                        withContext(Dispatchers.IO) {
-                            myRepository.logStateOrErrorToOurServer(
-                                signInForm.normalizedPhoneNmb ?: "",
-                                mapOf(
-                                    Pair("process", "authorizeThisUser"),
-                                    Pair("error", result.exception.message ?: "")
-                                )
-                            )
-
-                        }
-                    }
-                }
-
+        viewModelScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                myRepository.authorizeThisUser(
+                    signInForm.normalizedPhoneNmb ?: "",
+                    smsToken,
+                    signInForm.email ?: "",
+                    signInForm.password ?: ""
+                )
             }
+
+
+            when (result) {
+                is Result.Success -> {
+                    when (result.data.success) {
+                        true -> {
+                            processAuthorizationData(
+                                phoneNumber = signInForm.normalizedPhoneNmb
+                                    ?: throw Exception("normalized phone number is null"),
+                                authData = result.data,
+                                mRepository = myRepository
+                            )
+                            _authorizationResult.value =
+                                Event(AuthorizationResult(showToastMessage = result.data.userMessage))
+                        }
+                        false -> {
+                            _authorizationResult.value =
+                                Event(AuthorizationResult(showSnackBarMessage = result.data.userMessage))
+                        }
+                    }
+                }
+                is Result.Error -> {
+                    _authorizationResult.value =
+                        Event(AuthorizationResult(showSnackBarErrorMessage = true))
+
+                    withContext(Dispatchers.IO) {
+                        myRepository.logStateOrErrorToOurServer(
+                            signInForm.normalizedPhoneNmb ?: "",
+                            mapOf(
+                                Pair("process", "authorizeThisUser"),
+                                Pair("error", result.exception.message ?: "")
+                            )
+                        )
+
+                    }
+                }
+            }
+
         }
+    }
 
 
-    fun resendSMSButtonClicked(verificationType:String){
+    fun resendSMSButtonClicked(verificationType: String) {
+        signInProcessAuxData.verificationMethod=verificationType
         //repeat last signIn call, verification type in not refreshed in SigInProcessAuxData
+        startListeningForSMSOrPhoneCall()
         viewModelScope.launch {
             try {
                 val result = withContext(Dispatchers.IO) {
                     myRepository.signUpToServer(
                         NetRequest_SignUp(
-                            phoneNumber = signInForm.normalizedPhoneNmb ?: throw Exception("normalized phone number is null"),
+                            phoneNumber = signInForm.normalizedPhoneNmb
+                                ?: throw Exception("normalized phone number is null"),
                             email = signInForm.email ?: "",
                             password = signInForm.password ?: "",
                             signin = signInProcessAuxData.signInValue_whenPhoneNumberAlreadyExists.toString(),
@@ -513,16 +567,17 @@ class RegAuthActivityViewModel(val myRepository: IRepo, application: Application
                         when (result.data.success) {
                             true -> {
                                 _authorizationResult.value =
-                                    Event(AuthorizationResult(showToastMessage = result.data.userMessage))
+                                    Event(AuthorizationResult(showToastMessage = result.data.userMessage, hideProgressBar = true))
                             }
                             false -> {
                                 _authorizationResult.value =
-                                    Event(AuthorizationResult(showSnackBarMessage = result.data.userMessage))
+                                    Event(AuthorizationResult(showSnackBarMessage = result.data.userMessage,hideProgressBar = true))
                             }
                         }
                     }
                     is Result.Error -> {
-                        _authorizationResult.value=Event(AuthorizationResult(showSnackBarErrorMessage = true))
+                        _authorizationResult.value =
+                            Event(AuthorizationResult(showSnackBarErrorMessage = true,hideProgressBar = true))
                     }
                 }
 
@@ -534,7 +589,7 @@ class RegAuthActivityViewModel(val myRepository: IRepo, application: Application
 
     //process Authorization data sent from server when user is finally created
     private suspend fun processAuthorizationData(
-        phoneNumber:String,
+        phoneNumber: String,
         authData: NetResponse_Authorization,
         mRepository: IRepo
     ) {
@@ -600,82 +655,131 @@ class RegAuthActivityViewModel(val myRepository: IRepo, application: Application
         }
 
         //after processing E1 prenumber, sipAcces and WebApiVersion - insert email, pass and token or just token in DB
-            withContext(Dispatchers.IO) {
-                Log.i(MY_TAG, "viewModelScope.launch updateUsersPhoneAndToken ")
-                if (authData.email.isNotEmpty() && authData.email.isNotBlank()) mRepository.updateUsersPhoneTokenEmail(
-                    phoneNumber,
-                    authData.authToken,
-                    authData.email
-                )
-                else mRepository.updateUsersPhoneAndToken(phoneNumber, authData.authToken)
+        withContext(Dispatchers.IO) {
+            Log.i(MY_TAG, "viewModelScope.launch updateUsersPhoneAndToken ")
+            if (authData.email.isNotEmpty() && authData.email.isNotBlank()) mRepository.updateUsersPhoneTokenEmail(
+                phoneNumber,
+                authData.authToken,
+                authData.email
+            )
+            else mRepository.updateUsersPhoneAndToken(phoneNumber, authData.authToken)
+
+        }
+
+
+    }
+
+
+    private fun startListeningForSMSOrPhoneCall() {
+        val verificationType = signInProcessAuxData.verificationMethod
+        //initial state of the app is that authorization by phone call is possible
+        when (verificationType) {
+            VERIFICATION_METHOD_CALL, VERIFICATION_METHOD_EXPENSIVE_CALL -> {
+                Log.i(MY_TAG, "start Listening For PhoneCall")
+
+                if (phoneCallListener == null) {
+                    val application=getApplication<MyApplication>()
+                    phoneCallListener = MyPhoneCallListener(application,TIME_TO_WAIT_FOR_CALL,this)
+                }
+
+                phoneCallListener?.startListening()
+                smsListener?.stopSMSListening()
 
             }
 
-
-    }
-
-
-    //SMS Retreiver
-    fun setSMSVerificationTokenForAuthFragment(verToken: String) {
-        _verificationTokenForAuthFragment.value = Event(verToken)
-    }
+            VERIFICATION_METHOD_SMS -> {
+                Log.i(MY_TAG, "start Listening For SMS")
 
 
-    // this is called when SMS request is made to server
-    fun startSMSRetreiverFunction(timeThisSMSRetreiverStarted: Long) {
-        Log.i(
-            MY_TAG,
-            "startSMSRetreiverFunction this $timeThisSMSRetreiverStarted, latest $timeLatestSMSRetreiverStarted,${TIME_BETWEEN_TWO_SMS_RETREIVERS_IN_SEC * 1000}"
-        )
+                if (smsListener == null) {
+                    val application=getApplication<MyApplication>()
+                    smsListener = MySMSListener(application,this)
+                }
 
-        if ((timeThisSMSRetreiverStarted - timeLatestSMSRetreiverStarted) > TIME_BETWEEN_TWO_SMS_RETREIVERS_IN_SEC * 1000) {
-            Log.i(
-                MY_TAG,
-                "startSMSRetreiverFunction  ${timeLatestSMSRetreiverStarted - timeThisSMSRetreiverStarted}"
-            )
-            _startSMSRetreiver.value = Event(true)
-            timeLatestSMSRetreiverStarted = timeThisSMSRetreiverStarted
+                smsListener?.startSMSListening()
+                phoneCallListener?.stopListening()
+
+            }
+
         }
+    }
+
+    fun stopListeningForSMSOrPhoneCall() {
+        smsListener?.stopSMSListening()
+        phoneCallListener?.stopListening()
+    }
+
+    override fun onPhoneCallReceiver(incomingNumber: String) {
+        if (checkIfCurrentCallIdIsInList(incomingNumber)) submitAuthorizationButtonClicked(
+            VERIFIED_BY_CALL
+        )
+    }
+
+    private fun checkIfCurrentCallIdIsInList(numberToMatch: String): Boolean {
+        var isInList = false
+        val regex = Regex("[0-9]+")
+        val callIdsList = signInProcessAuxData.getCallerIdList()
+        if (callIdsList.isNotEmpty()) {
+            for (item in callIdsList) {
+                if (regex.find(item)?.value == regex.find(numberToMatch)?.value) {
+                    isInList = true
+                    break
+                }
+            }
+        }
+        return isInList
+    }
+
+    override fun onTimerFinished() {
+        if (signInProcessAuxData.verificationMethod== VERIFICATION_METHOD_CALL) _showConfirmPhoneNumberDialog.value=Event(true)
+        if(signInProcessAuxData.verificationMethod== VERIFICATION_METHOD_EXPENSIVE_CALL) {
+                _expensivePhoneCallAuthorizationFailed.value=Event(true)
+                //set authorization type to SMS since everything failed
+                signInProcessAuxData.verificationMethod= VERIFICATION_METHOD_SMS
+        }
+    }
+
+    override fun onSMSReceived(code: String) {
+        Log.i(MY_TAG, "smsBroadcastReceiverResult $code")
+        _verificationTokenForAuthFragment.value = Event(code)
     }
 
 
     override fun onCleared() {
         Log.i(MY_TAG, "ON CLEARED")
+        stopListeningForSMSOrPhoneCall()
         super.onCleared()
 
     }
 
     fun isOnline(): Boolean {
-
         return app.adinfinitum.ello.utils.isOnline(getApplication())
     }
 
-    fun resetSignInForm(phone:String,email:String,password:String,signin:Boolean){
+    fun resetSignInForm(phone: String, email: String, password: String, signin: Boolean) {
         signInForm.apply {
 
-         }
+        }
     }
 
-    fun getEnteredPhoneNumber():String{
-        return signInForm.phoneNmb?:""
+    fun getEnteredPhoneNumber(): String {
+        return signInForm.phoneNmb ?: ""
     }
 
-    fun isVerificationByCallEnabled():Boolean{
-        return signInProcessAuxData.verificationMethod== VERIFICATION_METHOD_CALL
+    fun isVerificationByCallEnabled(): Boolean {
+        return signInProcessAuxData.verificationByCallEnabled
     }
 
 
     private fun checkForPermission(): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true
         else {
-            if (getApplication<MyApplication>().checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED ||
-                getApplication<MyApplication>().checkSelfPermission(Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED
-
-            ) {
-                return false
-
-            } else return true
+            return !(getApplication<MyApplication>().checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED ||
+                    getApplication<MyApplication>().checkSelfPermission(Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED)
         }
 
     }
+
+
 }
+
