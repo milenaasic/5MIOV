@@ -24,14 +24,11 @@ private val MYTAG="MY_SetEmailPass_VIEWMOD"
 
 class SetEmailPassFragmentViewModel(val myrepository: Repo, application: Application) : AndroidViewModel(application) {
 
+    val NAVIGATE_TO_DIALPAD_FRAGMENT = 1
 
-    private val _setAccountEmailAndPassSuccess= MutableLiveData<Event<NetResponse_SetAccountEmailAndPass>>()
-    val setAccountEmailAndPassSuccess: LiveData<Event<NetResponse_SetAccountEmailAndPass>>
-        get() = _setAccountEmailAndPassSuccess
-
-    private val _setAccountEmailAndPassError= MutableLiveData<Event<String?>>()
-    val setAccountEmailAndPassError: LiveData<Event<String?>>
-        get() = _setAccountEmailAndPassError
+    private val _setAccountEmailAndPassResult= MutableLiveData<Event<SetAccountEmailAndPassResult>>()
+    val setAccountEmailAndPassResult: LiveData<Event<SetAccountEmailAndPassResult>>
+        get() = _setAccountEmailAndPassResult
 
     fun setAccountAndEmailForUser(email:String,password:String){
 
@@ -69,16 +66,33 @@ class SetEmailPassFragmentViewModel(val myrepository: Repo, application: Applica
                                                result.data.appVersion
                                            )
                                        }
-                                       _setAccountEmailAndPassSuccess.value=Event(result.data)
+
+                                       when(result.data.success){
+                                            true->{
+                                                _setAccountEmailAndPassResult.value=Event(SetAccountEmailAndPassResult(
+                                                    navigateToFragment = NAVIGATE_TO_DIALPAD_FRAGMENT,
+                                                    showToastMessage = result.data.userMsg)
+                                                    )
+                                            }
+                                            false->{
+                                                _setAccountEmailAndPassResult.value=Event(SetAccountEmailAndPassResult(
+                                                    showSnackBarMessage = result.data.userMsg
+                                                   )
+                                                )
+                                            }
+                                       }
 
                                    }catch (e:Exception){
-                                        Log.e(MYTAG,"insertion into DB failed")
+                                        Log.e(MYTAG,"insertion into DB failed, ${e.message}")
                                    }
 
 
                                 }
                                 is Result.Error->{
-                                            _setAccountEmailAndPassError.value=Event(result.exception.message)
+                                            _setAccountEmailAndPassResult.value=Event(SetAccountEmailAndPassResult(
+                                                showSnackBarErrorMessage = true
+                                                )
+                                            )
                                             withContext(IO){
                                                 myrepository.logStateOrErrorToOurServer(myoptions =
                                                     mapOf(

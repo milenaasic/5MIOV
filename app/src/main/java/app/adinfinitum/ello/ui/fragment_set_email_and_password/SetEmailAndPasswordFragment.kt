@@ -40,15 +40,6 @@ class SetEmailAndPasswordFragment : Fragment() {
 
         binding= DataBindingUtil.inflate(inflater,R.layout.fragment_set_email_and_password,container,false)
 
-       /* val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
-        val apiService= MyAPI.retrofitService
-        val repo= Repo( database,
-                        apiService,
-                        resources.getString(R.string.mobile_app_version_header,(requireActivity().application as MyApplication).mobileAppVersion)
-                        )*/
-
-
-
         viewModel = ViewModelProvider(this, SetEmailPassViewModelFactory((requireActivity().application as MyApplication).repo,requireActivity().application))
             .get(SetEmailPassFragmentViewModel::class.java)
 
@@ -117,28 +108,27 @@ class SetEmailAndPasswordFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.setAccountEmailAndPassSuccess.observe(viewLifecycleOwner, Observer {
+        viewModel.setAccountEmailAndPassResult.observe(viewLifecycleOwner, Observer {
 
             if(!it.hasBeenHandled){
-                showProgressBar(false)
-                it.getContentIfNotHandled()?.let{response->
-                    showToast(response.userMsg)
-                    if(response.success==true){
-                        findNavController().navigate(SetEmailAndPasswordFragmentDirections.actionSetEmailAndPasswordFragmentToDialPadFragment())
-                    }else binding.setAccountSubmitButton.isEnabled=true
 
+                it.getContentIfNotHandled()?.let{response->
+
+                    if(response.navigateToFragment==viewModel.NAVIGATE_TO_DIALPAD_FRAGMENT){
+                        findNavController().navigate(SetEmailAndPasswordFragmentDirections.actionSetEmailAndPasswordFragmentToDialPadFragment())
+                        response.showToastMessage?.let { it1 -> showToast(it1) }
+                        return@Observer
+                    }
+
+                    showProgressBar(false)
+                    binding.setAccountSubmitButton.isEnabled=true
+                    response.showSnackBarMessage?.let { it1 -> showSnackBar(it1) }
+                    if(response.showSnackBarErrorMessage)showSnackBar(resources.getString(R.string.something_went_wrong))
                 }
 
             }
-         })
+        })
 
-         viewModel.setAccountEmailAndPassError.observe(viewLifecycleOwner, Observer {
-             if(!it.hasBeenHandled){
-                 showSnackBar(getString(R.string.something_went_wrong))
-                 showProgressBar(false)
-                 binding.setAccountSubmitButton.isEnabled=true
-             }
-          })
 
     }
 
