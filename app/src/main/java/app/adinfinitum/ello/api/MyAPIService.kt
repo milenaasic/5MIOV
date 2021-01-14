@@ -34,12 +34,15 @@ object MyAPI {
         level=HttpLoggingInterceptor.Level.BODY
     }
 
+    var mobileAppVersion="0.0"
+
     private val okHttpClient = OkHttpClient.Builder()
         .addInterceptor(object:Interceptor{
             override fun intercept(chain: Interceptor.Chain): okhttp3.Response {
                 val requset=chain.request()
                 val newRequest: Request.Builder=requset.newBuilder()
                     .addHeader("Authorization", "Basic $coded")
+                    .addHeader(HEADER_MOBILE_APP_VERSION,mobileAppVersion)
                 return chain.proceed((newRequest.build()))
             }
         })
@@ -72,13 +75,12 @@ object MyAPI {
      fun signUpToServer(
          @Header(HEADER_PHONE_KEY) phoneNumber:String,
          @Header(HEADER_SIGNATURE) signature:String,
-         @Header(HEADER_MOBILE_APP_VERSION) mobileAppVersion:String,
          @Body request: NetRequest_SignUp): Deferred<NetResponse_SignUp>
 
 
 
      //Registration and Authorization Process
-    @POST("api/user/signup")
+    /*@POST("api/user/signup")
     fun sendRegistrationToServer(
         @Header(HEADER_PHONE_KEY) phoneNumber:String,
         @Header(HEADER_SIGNATURE) signature:String,
@@ -104,13 +106,12 @@ object MyAPI {
          @Header(HEADER_PHONE_KEY) phoneNumber:String,
          @Header(HEADER_SIGNATURE) signature:String,
          @Header(HEADER_MOBILE_APP_VERSION) mobileAppVersion:String,
-         @Body request: NetRequest_NmbExistsInDB_NoAccount): Deferred<NetResponse_NmbExistsInDB>
+         @Body request: NetRequest_NmbExistsInDB_NoAccount): Deferred<NetResponse_NmbExistsInDB>*/
 
      @POST("api/user/create")
      fun authorizeUser(
          @Header(HEADER_PHONE_KEY) phoneNumber:String,
          @Header(HEADER_SIGNATURE) signature:String,
-         @Header(HEADER_MOBILE_APP_VERSION) mobileAppVersion:String,
          @Body request: NetRequest_Authorization): Deferred<NetResponse_Authorization>
 
 
@@ -121,14 +122,12 @@ object MyAPI {
      fun setAccountEmailAndPasswordForUser(
          @Header(HEADER_PHONE_KEY) phoneNumber:String,
          @Header(HEADER_SIGNATURE) signature:String,
-         @Header(HEADER_MOBILE_APP_VERSION) mobileAppVersion:String,
          @Body request: NetRequest_SetAccountEmailAndPass): Deferred<NetResponse_SetAccountEmailAndPass>
 
      @POST("api/phoneBook/update")
      fun exportPhoneBook(
          @Header(HEADER_PHONE_KEY) phoneNumber:String,
          @Header(HEADER_SIGNATURE) signature:String,
-         @Header(HEADER_MOBILE_APP_VERSION) mobileAppVersion:String,
          @Body request: NetRequest_ExportPhonebook): Deferred<NetResponse_ExportPhonebook>
 
 
@@ -144,7 +143,6 @@ object MyAPI {
      fun setNewE1(
          @Header(HEADER_PHONE_KEY) phoneNumber:String,
          @Header(HEADER_SIGNATURE) signature:String,
-         @Header(HEADER_MOBILE_APP_VERSION) mobileAppVersion:String,
          @Body request: NetRequest_SetE1Prenumber): Deferred<NetResponse_SetE1Prenumber>
 
 
@@ -170,14 +168,12 @@ object MyAPI {
      fun resetSipAccess(
          @Header(HEADER_PHONE_KEY) phoneNumber:String,
          @Header(HEADER_SIGNATURE) signature:String,
-         @Header(HEADER_MOBILE_APP_VERSION) mobileAppVersion:String,
          @Body request: NetRequest_ResetSipAccess): Deferred<NetResponse_ResetSipAccess>
 
      @POST("api/sip/getSipAccess")
      fun getSipAccess(
          @Header(HEADER_PHONE_KEY) phoneNumber:String,
          @Header(HEADER_SIGNATURE) signature:String,
-         @Header(HEADER_MOBILE_APP_VERSION) mobileAppVersion:String,
          @Body request: NetRequest_GetSipAccessCredentials): Deferred<NetResponse_GetSipAccessCredentials>
 
 
@@ -187,7 +183,6 @@ object MyAPI {
     fun getCurrentCredit(
         @Header(HEADER_PHONE_KEY) phoneNumber:String,
         @Header(HEADER_SIGNATURE) signature:String,
-        @Header(HEADER_MOBILE_APP_VERSION) mobileAppVersion:String,
         @Body request: NetRequest_GetCurrentCredit): Deferred<NetResponse_GetCurrentCredit>
 
 

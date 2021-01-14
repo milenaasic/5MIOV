@@ -70,14 +70,6 @@ class DialPadFragment : Fragment() {
 
         binding= DataBindingUtil.inflate(inflater, R.layout.fragment_dial_pad,container,false)
 
-        /*val database=MyDatabase.getInstance(requireContext()).myDatabaseDao
-        val apiService=MyAPI.retrofitService
-        val repo=RepoContacts(  requireActivity().contentResolver,
-                                database,
-                                apiService,
-                                resources.getString(R.string.mobile_app_version_header,(requireActivity().application as MyApplication).mobileAppVersion)
-        )*/
-
 
         viewModel = ViewModelProvider(this, DialpadFragmentViewModelFactory((requireActivity().application as MyApplication).repoContacts,requireActivity().application))
             .get(DialpadFragmViewModel::class.java)

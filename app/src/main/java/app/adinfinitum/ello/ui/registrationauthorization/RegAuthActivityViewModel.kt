@@ -43,7 +43,7 @@ import kotlinx.coroutines.withContext
 private const val MY_TAG="MY_RegAuthActivVieModel"
 
 
-class RegAuthActivityViewModel(val myRepository: IRepo, application: Application) : AndroidViewModel(application),
+class RegAuthActivityViewModel(val myRepository: Repo, application: Application) : AndroidViewModel(application),
         MyPhoneCallListenerResult,MySMSListenerResult {
 
     val signInForm = SignInForm()

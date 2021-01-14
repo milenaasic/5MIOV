@@ -42,11 +42,6 @@ class MyApplication : Application() {
         //CoroutineScope(SupervisorJob() + Dispatchers.Main)
     }
 
-    /*val myContainer:MyContainer by lazy {
-        MyContainer(this)
-    }*/
-
-
     val repo:Repo
         get() = ServiceLocator.getRepo(this)
 
@@ -57,8 +52,7 @@ class MyApplication : Application() {
         get()=ServiceLocator.getRepoSIPE1(this)
 
     val mobileAppVersion:String
-    get() = ServiceLocator.getMobAppVersion(this)
-
+        get()=ServiceLocator.getMobAppVersion(this)
 
     override fun attachBaseContext(base: Context?) {
         super.attachBaseContext(base)
@@ -70,8 +64,6 @@ class MyApplication : Application() {
 }
 
 object ServiceLocator{
-
-    val myRetrofitService= MyAPI.retrofitService
 
     @Volatile
     var repo:Repo?=null
@@ -103,19 +95,23 @@ object ServiceLocator{
     }
 
     private fun creteRepoSIPE1(context: Context): RepoSIPE1 {
-        return RepoSIPE1(provideDatabase(context),myRetrofitService, getMobAppVersion(context = context))
+        return RepoSIPE1(provideDatabase(context), provideNetworkService(context))
     }
 
     private fun creteRepoContacts(context: Context): RepoContacts {
-        return RepoContacts(contentResolver = context.contentResolver, provideDatabase(context),myRetrofitService, getMobAppVersion(context = context))
+        return RepoContacts(contentResolver = context.contentResolver, provideDatabase(context),provideNetworkService(context))
     }
 
     private fun creteRepo(context: Context): Repo {
-        return Repo(provideDatabase(context),myRetrofitService, getMobAppVersion(context = context))
+        return Repo(provideDatabase(context),provideNetworkService(context))
     }
 
     private fun provideDatabase(context: Context)=MyDatabase.getInstance(context).myDatabaseDao
 
+    private fun provideNetworkService(context: Context):MyAPIService{
+        MyAPI.mobileAppVersion= getMobAppVersion(context)
+        return MyAPI.retrofitService
+    }
 
     fun getMobAppVersion(context: Context):String{
         var myversionName=""

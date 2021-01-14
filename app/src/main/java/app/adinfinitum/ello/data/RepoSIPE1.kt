@@ -21,7 +21,6 @@ class RepoSIPE1 (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIService,val m
                         Pair(Claim.TOKEN.myClaim,token),
                         Pair(Claim.PHONE.myClaim,phone)
                     ),
-                    mobileAppVersion = mobileAppVer,
                     request = NetRequest_GetSipAccessCredentials(authToken = token,phoneNumber = phone)
                     ).await()
 
@@ -47,7 +46,6 @@ class RepoSIPE1 (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIService,val m
                 Pair(Claim.PHONE.myClaim,phone),
                 Pair(Claim.FORCE_RESET.myClaim, CLAIM_VALUE_1)
             ),
-            mobileAppVersion = mobileAppVer,
             request = NetRequest_ResetSipAccess(authToken=authToken,phoneNumber = phone)
         )
         try {

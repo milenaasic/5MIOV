@@ -41,7 +41,6 @@ class RepoContacts (val contentResolver: ContentResolver,
                             Pair(Claim.TOKEN.myClaim,token),
                             Pair(Claim.PHONE.myClaim,phone)
                     ),
-                    mobileAppVersion = mobileAppVer,
                     request = NetRequest_GetCurrentCredit(authToken= token,phoneNumber= phone)
                 ).await()
 
@@ -75,7 +74,6 @@ class RepoContacts (val contentResolver: ContentResolver,
                         claimsAndValues1 = Pair(Claim.TOKEN.myClaim,token),
                         claimsAndValues2 = Pair(Claim.PHONENUMBER.myClaim,phoneNumber)
                     ),
-                    mobileAppVersion = mobileAppVer,
                     request = NetRequest_ExportPhonebook(
                         token,
                         phoneNumber,
