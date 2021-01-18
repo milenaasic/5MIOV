@@ -6,7 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import app.adinfinitum.ello.api.NetResponse_Registration
+
 import app.adinfinitum.ello.api.NetResponse_SetAccountEmailAndPass
 import app.adinfinitum.ello.data.Repo
 import app.adinfinitum.ello.data.Result

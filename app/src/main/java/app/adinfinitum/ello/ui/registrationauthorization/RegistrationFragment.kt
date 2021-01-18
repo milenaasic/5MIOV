@@ -27,7 +27,7 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 
 import app.adinfinitum.ello.R
-import app.adinfinitum.ello.api.NetResponse_Registration
+
 import app.adinfinitum.ello.databinding.FragmentRegistrationBinding
 import app.adinfinitum.ello.utils.*
 
