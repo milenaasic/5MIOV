@@ -9,7 +9,7 @@ import kotlin.Exception
 
 private const val MYTAG="MY_SIP_REPO"
 
-class RepoSIPE1 (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIService,val mobileAppVer:String="0.0"):LogStateOrErrorToServer{
+class RepoSIPE1 (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIService):LogStateOrErrorToServer{
 
     fun getUserNoLiveData()=myDatabaseDao.getUserNoLiveData()
 

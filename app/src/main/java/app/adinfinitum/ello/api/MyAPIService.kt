@@ -77,37 +77,6 @@ object MyAPI {
          @Header(HEADER_SIGNATURE) signature:String,
          @Body request: NetRequest_SignUp): Deferred<NetResponse_SignUp>
 
-
-
-     //Registration and Authorization Process
-    /*@POST("api/user/signup")
-    fun sendRegistrationToServer(
-        @Header(HEADER_PHONE_KEY) phoneNumber:String,
-        @Header(HEADER_SIGNATURE) signature:String,
-        @Header(HEADER_MOBILE_APP_VERSION) mobileAppVersion:String,
-        @Body request: NetRequest_Registration): Deferred<NetResponse_Registration>
-
-     @POST("api/user/signup")
-     fun sendAddNumberToAccount(
-         @Header(HEADER_PHONE_KEY) phoneNumber:String,
-         @Header(HEADER_SIGNATURE) signature:String,
-         @Header(HEADER_MOBILE_APP_VERSION) mobileAppVersion:String,
-         @Body request: NetRequest_AddNumberToAccount): Deferred<NetResponse_AddNumberToAccount>
-
-     @POST("api/user/signup")
-     fun numberExistsInDBVerifyAccount(
-         @Header(HEADER_PHONE_KEY) phoneNumber:String,
-         @Header(HEADER_SIGNATURE) signature:String,
-         @Header(HEADER_MOBILE_APP_VERSION) mobileAppVersion:String,
-         @Body request: NetRequest_NmbExistsInDB_UserHasAccount): Deferred<NetResponse_NmbExistsInDB>
-
-     @POST("api/user/signup")
-     fun numberExistsInDB_NOAccount(
-         @Header(HEADER_PHONE_KEY) phoneNumber:String,
-         @Header(HEADER_SIGNATURE) signature:String,
-         @Header(HEADER_MOBILE_APP_VERSION) mobileAppVersion:String,
-         @Body request: NetRequest_NmbExistsInDB_NoAccount): Deferred<NetResponse_NmbExistsInDB>*/
-
      @POST("api/user/create")
      fun authorizeUser(
          @Header(HEADER_PHONE_KEY) phoneNumber:String,
