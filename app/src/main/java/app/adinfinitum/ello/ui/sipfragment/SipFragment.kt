@@ -133,13 +133,6 @@ class SipFragment : Fragment() {
         if(args.contactName==args.contactNumber) binding.sipnumbertextView.text=" "
         else binding.sipnumbertextView.text=args.contactNumber
 
-        /*val database= MyDatabase.getInstance(requireActivity().application).myDatabaseDao
-        val mApi= MyAPI.retrofitService
-
-        val mySipRepo=RepoSIPE1(database,
-                                mApi,
-                                resources.getString(R.string.mobile_app_version_header,(requireActivity().application as MyApplication).mobileAppVersion)
-            )*/
 
         val app=requireActivity().application as MyApplication
         viewModel = ViewModelProvider(this, SipViewModelFactory(
@@ -147,6 +140,7 @@ class SipFragment : Fragment() {
                                                         app.repoUser,
                                                         app.repoRemoteDataSource,
                                                         app.repoLogToServer,
+                                                        app.repoLogOut,
                                                         app)
                                     )
             .get(SipViewModel::class.java)

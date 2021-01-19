@@ -17,10 +17,11 @@ import kotlin.Exception
 
 private val MYTAG="MY_SIPVIEWMODEL"
 
-class SipViewModel(val mySipRepo: RepoSIPE1,
+class SipViewModel( val mySipRepo: RepoSIPE1,
                     val myRepoUser: RepoUser,
                     val myRepoRemoteDataSource: RepoRemoteDataSource,
                     val myRepoLogToServer: RepoLogToServer,
+                    val myRepoLogOut: RepoLogOut,
                     application: Application) : AndroidViewModel(application) {
 
     val TIMEOUT_IN_MILLIS=500L
@@ -64,11 +65,8 @@ class SipViewModel(val mySipRepo: RepoSIPE1,
                     when(result){
 
                         is Result.Success->{
-                            if (result.data.authTokenMismatch == true) {
-                                    withContext(IO) {
-                                        logoutAll(getApplication())
-                                    }
-                            } else {
+                            if (result.data.authTokenMismatch == true) myRepoLogOut.logoutAll()
+                             else {
                                 _getSipCredentialsNetSuccess.value=Event(result.data)
                             }
                         }
@@ -135,6 +133,6 @@ class SipViewModel(val mySipRepo: RepoSIPE1,
         getApplication<MyApplication>().applicationScope.launch {
                 myRepoLogToServer.logStateOrErrorToServer(myoptions = options)
         }
-    }
+     }
 }
 
