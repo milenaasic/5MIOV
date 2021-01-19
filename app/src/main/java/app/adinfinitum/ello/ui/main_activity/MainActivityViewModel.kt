@@ -9,6 +9,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import app.adinfinitum.ello.model.PhoneBookItem
 import app.adinfinitum.ello.data.RepoContacts
+import app.adinfinitum.ello.data.RepoLogToServer
+import app.adinfinitum.ello.data.RepoUser
 import app.adinfinitum.ello.model.ContactItemWithInternationalNumbers
 import app.adinfinitum.ello.ui.myapplication.MyApplication
 import app.adinfinitum.ello.utils.*
@@ -17,12 +19,15 @@ import kotlinx.coroutines.Dispatchers.IO
 
 
 private const val MY_TAG="MY_MainActivViewModel"
-class MainActivityViewModel(val myRepository: RepoContacts, application: Application) : AndroidViewModel(application) {
+class MainActivityViewModel(val myRepository: RepoContacts,
+                            val myRepoUser:RepoUser,
+                            val myRepoLogToServer: RepoLogToServer,
+                            application: Application) : AndroidViewModel(application) {
 
 
 
-    //live data from database
-    val userData=myRepository.getUserData()
+    //live data
+    val userData=myRepoUser.getUserData()
 
 
     //setAccountDisclaimer
@@ -39,9 +44,8 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
     fun showSetAccountDisclaimer(){
         viewModelScope.launch {
             try {
-                val user= withContext(Dispatchers.IO) {
-                        myRepository.getUser()
-                }
+                val user= myRepoUser.getUser()
+
                 if(user.userEmail.equals(EMPTY_EMAIL) && !checkForSharedPrefDisclamerShownValue()){
                     Log.i(MY_TAG,"user is $user, disclaimer was not shown")
                     _shouldShowSetAccountDisclaimer.value=true}
@@ -79,9 +83,8 @@ class MainActivityViewModel(val myRepository: RepoContacts, application: Applica
 
     fun logStateOrErrorToMyServer(options:Map<String,String>){
         getApplication<MyApplication>().applicationScope.launch {
-            withContext(Dispatchers.IO){
-                myRepository.logStateOrErrorToOurServer(myoptions = options)
-            }
+                myRepoLogToServer.logStateOrErrorToServer(myoptions = options)
+
         }
 
     }

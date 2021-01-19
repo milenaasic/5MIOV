@@ -4,10 +4,14 @@ import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import app.adinfinitum.ello.data.RepoContacts
+import app.adinfinitum.ello.data.RepoLogToServer
+import app.adinfinitum.ello.data.RepoUser
 
 
 class MainActivityViewModelFactory(
-    val repository: RepoContacts,
+    val myRepository: RepoContacts,
+    val myRepoUser: RepoUser,
+    val myRepoLogToServer: RepoLogToServer,
     val application: Application
 ): ViewModelProvider.Factory{
 
@@ -15,8 +19,7 @@ class MainActivityViewModelFactory(
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(MainActivityViewModel::class.java)) {
             return MainActivityViewModel(
-                repository,
-                application
+                myRepository, myRepoUser, myRepoLogToServer, application
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")

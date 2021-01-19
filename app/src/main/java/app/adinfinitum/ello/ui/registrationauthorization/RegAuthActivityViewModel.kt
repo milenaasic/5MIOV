@@ -19,10 +19,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
 import app.adinfinitum.ello.R
 import app.adinfinitum.ello.api.*
-import app.adinfinitum.ello.data.IRepo
-import app.adinfinitum.ello.data.LogStateOrErrorToServer
-import app.adinfinitum.ello.data.Repo
-import app.adinfinitum.ello.data.Result
+import app.adinfinitum.ello.data.*
 import app.adinfinitum.ello.ui.myapplication.MyApplication
 import app.adinfinitum.ello.ui.registrationauthorization.listeners.MyPhoneCallListener
 import app.adinfinitum.ello.ui.registrationauthorization.listeners.MyPhoneCallListenerResult
@@ -34,16 +31,18 @@ import app.adinfinitum.ello.utils.VERIFICATION_METHOD_EXPENSIVE_CALL
 import app.adinfinitum.ello.utils.VERIFICATION_METHOD_SMS
 import com.google.android.gms.auth.api.phone.SmsRetriever
 import com.google.android.gms.tasks.Task
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 private const val MY_TAG="MY_RegAuthActivVieModel"
 
 
-class RegAuthActivityViewModel(val myRepository: Repo, application: Application) : AndroidViewModel(application),
+class RegAuthActivityViewModel( val myRepositor: Repo,
+                                val myRepoUser: RepoUser,
+                                val myRepoPrenumberAndWebApiVer:RepoPrenumberAndWebApiVer,
+                                val myRepoRemoteDataSource:RepoRemoteDataSource,
+                                val myRepoLogToServer:RepoLogToServer,
+                                application: Application) : AndroidViewModel(application),
         MyPhoneCallListenerResult,MySMSListenerResult {
 
     val signInForm = SignInForm()
@@ -55,10 +54,9 @@ class RegAuthActivityViewModel(val myRepository: Repo, application: Application)
     private var smsListener: MySMSListener? = null
     private val VERIFIED_BY_CALL = "verifiedByCall"
     private val TIME_TO_WAIT_FOR_CALL = 6000L
-    //private val timer=MyTimer()
 
-    val userData = myRepository.getUserData()
-
+    //User LiveData
+    val userData = myRepoUser.getUserData()
 
     //Registration fragment reorganized
     private val _registrationResult = MutableLiveData<Event<RegistrationResult>>()
@@ -172,7 +170,7 @@ class RegAuthActivityViewModel(val myRepository: Repo, application: Application)
         viewModelScope.launch {
             try {
                 val result = withContext(Dispatchers.IO) {
-                    myRepository.signUpToServer(
+                    myRepoRemoteDataSource.signUpToServer(
                         NetRequest_SignUp(
                             phoneNumber = signInForm.normalizedPhoneNmb
                                 ?: throw Exception("normalized phone number is null"),
@@ -195,8 +193,8 @@ class RegAuthActivityViewModel(val myRepository: Repo, application: Application)
 
                         //for testing
                         //todo remove this later
-                        //signInProcessAuxData.verificationByCallEnabled = false //for testing
-                        //signInProcessAuxData.callerId = null //for testing
+                        signInProcessAuxData.verificationMethod = VERIFICATION_METHOD_SMS //for testing
+                        signInProcessAuxData.callerId = null //for testing
 
                         if ((signInProcessAuxData.verificationByCallEnabled && checkForPermission()) || !signInProcessAuxData.verificationByCallEnabled) {
                             when {
@@ -256,7 +254,7 @@ class RegAuthActivityViewModel(val myRepository: Repo, application: Application)
 
                         withContext(Dispatchers.IO) {
 
-                            myRepository.logStateOrErrorToOurServer(
+                            myRepoLogToServer.logStateOrErrorToServer(
                                 signInForm.normalizedPhoneNmb
                                     ?: "normalized phone number is null",
                                 myoptions =
@@ -310,7 +308,7 @@ class RegAuthActivityViewModel(val myRepository: Repo, application: Application)
             try {
 
                 val result = withContext(Dispatchers.IO) {
-                    myRepository.signUpToServer(
+                    myRepoRemoteDataSource.signUpToServer(
                         NetRequest_SignUp(
                             phoneNumber = signInForm.normalizedPhoneNmb
                                 ?: throw Exception("normalized phone number in sign in form is null"),
@@ -375,7 +373,7 @@ class RegAuthActivityViewModel(val myRepository: Repo, application: Application)
                         )
 
                         withContext(Dispatchers.IO) {
-                            myRepository.logStateOrErrorToOurServer(
+                            myRepoLogToServer.logStateOrErrorToServer(
                                 signInForm.normalizedPhoneNmb ?: "normalized phone number is null",
                                 mapOf(
                                     Pair("process", "assignPhoneNumberToAccount"),
@@ -435,7 +433,7 @@ class RegAuthActivityViewModel(val myRepository: Repo, application: Application)
         viewModelScope.launch {
             try {
                 val result = withContext(Dispatchers.IO) {
-                    myRepository.signUpToServer(
+                    myRepoRemoteDataSource.signUpToServer(
                         NetRequest_SignUp(
                             phoneNumber = signInForm.normalizedPhoneNmb
                                 ?: throw Exception("normalized phone number is null"),
@@ -472,7 +470,7 @@ class RegAuthActivityViewModel(val myRepository: Repo, application: Application)
                         _nmbExistsInDBResult.value = Event(numberExistsInDBResult)
 
                         withContext(Dispatchers.IO) {
-                            myRepository.logStateOrErrorToOurServer(
+                            myRepoLogToServer.logStateOrErrorToServer(
                                 signInForm.normalizedPhoneNmb ?: "",
                                 mapOf(
                                     Pair("process", "numberExistsInDBSignIN"),
@@ -493,15 +491,14 @@ class RegAuthActivityViewModel(val myRepository: Repo, application: Application)
     fun submitAuthorizationButtonClicked(smsToken: String) {
 
         viewModelScope.launch {
-            val result = withContext(Dispatchers.IO) {
-                myRepository.authorizeThisUser(
+             val result = withContext(Dispatchers.IO) {
+                myRepoRemoteDataSource.authorizeThisUser(
                     signInForm.normalizedPhoneNmb ?: "",
                     smsToken,
                     signInForm.email ?: "",
                     signInForm.password ?: ""
                 )
             }
-
 
             when (result) {
                 is Result.Success -> {
@@ -511,7 +508,9 @@ class RegAuthActivityViewModel(val myRepository: Repo, application: Application)
                                 phoneNumber = signInForm.normalizedPhoneNmb
                                     ?: throw Exception("normalized phone number is null"),
                                 authData = result.data,
-                                mRepository = myRepository
+                                repoUser = myRepoUser,
+                                repoRemoteDataSource = myRepoRemoteDataSource,
+                                repoPrenumberAndWebApiVer = myRepoPrenumberAndWebApiVer
                             )
                             _authorizationResult.value =
                                 Event(AuthorizationResult(showToastMessage = result.data.userMessage))
@@ -527,7 +526,7 @@ class RegAuthActivityViewModel(val myRepository: Repo, application: Application)
                         Event(AuthorizationResult(showSnackBarErrorMessage = true))
 
                     withContext(Dispatchers.IO) {
-                        myRepository.logStateOrErrorToOurServer(
+                        myRepoLogToServer.logStateOrErrorToServer(
                             signInForm.normalizedPhoneNmb ?: "",
                             mapOf(
                                 Pair("process", "authorizeThisUser"),
@@ -550,7 +549,7 @@ class RegAuthActivityViewModel(val myRepository: Repo, application: Application)
         viewModelScope.launch {
             try {
                 val result = withContext(Dispatchers.IO) {
-                    myRepository.signUpToServer(
+                    myRepoRemoteDataSource.signUpToServer(
                         NetRequest_SignUp(
                             phoneNumber = signInForm.normalizedPhoneNmb
                                 ?: throw Exception("normalized phone number is null"),
@@ -591,16 +590,18 @@ class RegAuthActivityViewModel(val myRepository: Repo, application: Application)
     private suspend fun processAuthorizationData(
         phoneNumber: String,
         authData: NetResponse_Authorization,
-        mRepository: IRepo
+        repoUser: RepoUser,
+        repoRemoteDataSource: RepoRemoteDataSource,
+        repoPrenumberAndWebApiVer: RepoPrenumberAndWebApiVer
     ) {
-
+        // currently in ViewModel scope
         getApplication<MyApplication>().applicationScope.launch {
 
             try {
                 withContext(Dispatchers.IO) {
                     // if Sip Access is not set -invoke it again
                     if (authData.sipReady == false) {
-                        mRepository.resetSipAccess(
+                        repoRemoteDataSource.resetSipAccess(
                             phone = phoneNumber,
                             authToken = authData.authToken
                         )
@@ -610,7 +611,7 @@ class RegAuthActivityViewModel(val myRepository: Repo, application: Application)
                     if (authData.e1phone.isNullOrEmpty() || authData.e1phone.isBlank()) {
                         try {
                             val result =
-                                mRepository.callSetNewE1(
+                                repoRemoteDataSource.callSetNewE1(
                                     phone = phoneNumber,
                                     token = authData.authToken
                                 )
@@ -622,7 +623,7 @@ class RegAuthActivityViewModel(val myRepository: Repo, application: Application)
                                         "inside application scope processing auth data fetch e1 $result"
                                     )
                                     if (!result.data.e1prenumber.isNullOrEmpty() && !result.data.e1prenumber.isNullOrBlank()) {
-                                        mRepository.updatePrenumber(
+                                        repoPrenumberAndWebApiVer.updatePrenumber(
                                             result.data.e1prenumber,
                                             System.currentTimeMillis()
                                         )
@@ -637,7 +638,7 @@ class RegAuthActivityViewModel(val myRepository: Repo, application: Application)
                             Log.i(MY_TAG, "e1 ${e.message}")
                         }
                     } else {
-                        mRepository.updatePrenumber(
+                        repoPrenumberAndWebApiVer.updatePrenumber(
                             authData.e1phone,
                             System.currentTimeMillis()
                         )
@@ -645,7 +646,7 @@ class RegAuthActivityViewModel(val myRepository: Repo, application: Application)
 
                     //insert webapi version into DB
                     if (!authData.appVersion.isNullOrEmpty() && !authData.appVersion.isNullOrBlank()) {
-                        mRepository.updateWebApiVersion(authData.appVersion)
+                        repoPrenumberAndWebApiVer.updateWebApiVersion(authData.appVersion)
                         Log.i(MY_TAG, "myRepository.updateWebApiVersion")
                     }
                 }
@@ -655,16 +656,16 @@ class RegAuthActivityViewModel(val myRepository: Repo, application: Application)
         }
 
         //after processing E1 prenumber, sipAcces and WebApiVersion - insert email, pass and token or just token in DB
-        withContext(Dispatchers.IO) {
+       // withContext(Dispatchers.IO) {
             Log.i(MY_TAG, "viewModelScope.launch updateUsersPhoneAndToken ")
-            if (authData.email.isNotEmpty() && authData.email.isNotBlank()) mRepository.updateUsersPhoneTokenEmail(
+            if (authData.email.isNotEmpty() && authData.email.isNotBlank()) repoUser.updateUsersPhoneTokenEmail(
                 phoneNumber,
                 authData.authToken,
                 authData.email
             )
-            else mRepository.updateUsersPhoneAndToken(phoneNumber, authData.authToken)
+            else repoUser.updateUsersPhoneAndToken(phoneNumber, authData.authToken)
 
-        }
+        //}
 
 
     }

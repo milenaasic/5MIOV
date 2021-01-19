@@ -20,6 +20,10 @@ private const val NAME="MY_DATABASE"
 abstract class MyDatabase:RoomDatabase(){
 
     abstract val myDatabaseDao:MyDatabaseDao
+    abstract val myDatabaseUser:MyDatabaseUser
+    abstract val myDatabasePrenumberAndWebApiVersion:MyDatabasePrenumberAndWebApiVersion
+    abstract val myDatabaseRecentCalls:MyDatabaseRecentCalls
+    abstract val myDatabaseSIPCredentials:MyDatabaseSIPCredentials
 
     companion object {
         @Volatile

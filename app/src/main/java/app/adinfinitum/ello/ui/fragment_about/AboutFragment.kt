@@ -45,7 +45,10 @@ class AboutFragment : Fragment() {
             resources.getString(R.string.mobile_app_version_header,(requireActivity().application as MyApplication).mobileAppVersion)
         )*/
 
-        viewModel = ViewModelProvider(this, AboutFragmentViewModelFactory((requireActivity().application as MyApplication).repoContacts,requireActivity().application))
+        viewModel = ViewModelProvider(this, AboutFragmentViewModelFactory(
+                                                    (requireActivity().application as MyApplication).repoPrenumberAndWebApiVer,
+                                                    requireActivity().application)
+                                                )
             .get(AboutFragmentViewModel::class.java)
 
        // binding.mobileAppVerTextView.text=String.format(resources.getString(R.string.mobile_app_version,(requireActivity().application as MyApplication).myContainer.myMobileAppVersion))

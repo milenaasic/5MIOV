@@ -9,9 +9,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import app.adinfinitum.ello.data.RepoContacts
-import app.adinfinitum.ello.data.Result
-import app.adinfinitum.ello.data.logoutAll
+import app.adinfinitum.ello.data.*
 import app.adinfinitum.ello.model.ContactItem
 import app.adinfinitum.ello.model.PhoneBookItem
 import app.adinfinitum.ello.model.User
@@ -27,11 +25,17 @@ import java.util.*
 
 private val MYTAG="MY_MAINFRAGM_VIEWMODEL"
 
-class MainFragmentViewModel(val repoContacts: RepoContacts,application: Application) :AndroidViewModel(application) {
+class MainFragmentViewModel(    val repoContacts: RepoContacts,
+                                val myRepoUser: RepoUser,
+                                val myRepoProvideContacts: RepoProvideContacts,
+                                val myRepoRemoteDataSource: RepoRemoteDataSource,
+                                val myRepoLogOut: RepoLogOut,
+                                val myRepoLogToServer:RepoLogToServer,
+                                application: Application) :AndroidViewModel(application) {
 
 
     //live data from database
-    val userData=repoContacts.getUserData()
+    val userData=myRepoUser.getUserData()
 
     private val _contactList = MutableLiveData<List<ContactItem>>()
     val contactList: LiveData<List<ContactItem>>
@@ -62,10 +66,7 @@ class MainFragmentViewModel(val repoContacts: RepoContacts,application: Applicat
     suspend private fun getContacts(uri: Uri){
 
             try {
-                val resultList= withContext(Dispatchers.IO) {
-                    repoContacts.getAllContacts(uri)
-                }
-
+                val resultList= myRepoProvideContacts.getAllContacts(uri)
                 _contactList.value=resultList
                 _numberOfSelectedContacts.value=resultList.size
 
@@ -80,13 +81,10 @@ class MainFragmentViewModel(val repoContacts: RepoContacts,application: Applicat
         Log.i(MYTAG,"get phone boook from Main fragment")
 
         viewModelScope.launch {
-
             try {
-                withContext(IO) {
-                    val resultList= repoContacts.getRawContactsPhonebook()
-                    val user=repoContacts.getUser()
+                    val resultList= myRepoProvideContacts.getRawContactsPhonebook()
+                    val user=myRepoUser.getUser()
                     if (!resultList.isNullOrEmpty()) exportPhoneBook(user,resultList)
-                }
 
             } catch (t: Throwable) {
                 Log.i(MYTAG, t.message ?: "no message")
@@ -102,11 +100,11 @@ class MainFragmentViewModel(val repoContacts: RepoContacts,application: Applicat
         ) {
             try {
                 val result =
-                    repoContacts.exportPhoneBook(myUser.userToken, myUser.userPhone, phoneBook)
+                    myRepoRemoteDataSource.exportPhoneBook(myUser.userToken, myUser.userPhone, phoneBook)
 
                 when(result){
                     is Result.Success->{
-                        if(result.data.authTokenMismatch==true) logoutAll(getApplication())
+                        if(result.data.authTokenMismatch==true) myRepoLogOut.logoutAll()
                         else {
                             val sharedPreferences = getApplication<MyApplication>().getSharedPreferences(
                                 DEFAULT_SHARED_PREFERENCES,
@@ -130,11 +128,8 @@ class MainFragmentViewModel(val repoContacts: RepoContacts,application: Applicat
     }
 
     fun logStateOrErrorToMyServer(options:Map<String,String>){
-
         getApplication<MyApplication>().applicationScope.launch {
-            withContext(Dispatchers.IO){
-                repoContacts.logStateOrErrorToOurServer(myoptions = options)
-            }
+                myRepoLogToServer.logStateOrErrorToServer(myoptions = options)
         }
 
     }

@@ -4,9 +4,10 @@ import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import app.adinfinitum.ello.data.RepoContacts
+import app.adinfinitum.ello.data.RepoRecentCalls
 
 class RecentCallsViewModelFactory (
-    val repository: RepoContacts,
+    val repository: RepoRecentCalls,
     val application: Application
 ): ViewModelProvider.Factory{
 

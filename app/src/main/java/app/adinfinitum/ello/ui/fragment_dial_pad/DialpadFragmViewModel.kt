@@ -1,4 +1,4 @@
-package app.adinfinitum.ello.ui.fragment_dial_pad
+  package app.adinfinitum.ello.ui.fragment_dial_pad
 
 import android.app.Application
 import android.util.Log
@@ -7,10 +7,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import app.adinfinitum.ello.R
-import app.adinfinitum.ello.data.RepoContacts
+import app.adinfinitum.ello.data.*
 import app.adinfinitum.ello.model.RecentCall
-import app.adinfinitum.ello.data.Result
-import app.adinfinitum.ello.data.logoutAll
 import app.adinfinitum.ello.ui.myapplication.MyApplication
 import app.adinfinitum.ello.ui.registrationauthorization.Event
 import kotlinx.coroutines.*
@@ -18,15 +16,22 @@ import kotlinx.coroutines.Dispatchers.IO
 
 
 private val MYTAG="MY_DialPadVIewMOdel"
-class DialpadFragmViewModel(val myRepository: RepoContacts, application: Application) : AndroidViewModel(application) {
+class DialpadFragmViewModel(val myRepository: RepoContacts,
+                            val myRepoUser: RepoUser,
+                            val myRepoRecentCalls: RepoRecentCalls,
+                            val myRepoPrenumberAndWebApiVer: RepoPrenumberAndWebApiVer,
+                            val myRepoRemoteDataSource: RepoRemoteDataSource,
+                            val myRepoLogOut: RepoLogOut,
+                            val myRepoLogToServer: RepoLogToServer,
+                            application: Application) : AndroidViewModel(application) {
 
 
-    val myPrenumber=myRepository.getPremunber()
 
-    //live data from database
-    val userData=myRepository.getUserData()
 
-    val recentCallList=myRepository.getAllRecentCalls()
+    //Live data
+    val userData=myRepoUser.getUserData()
+    val myPrenumber=myRepoPrenumberAndWebApiVer.getPremunber()
+    val recentCallList=myRepoRecentCalls.getAllRecentCalls()
 
     private val _credit=MutableLiveData<Event<String>>()
     val credit:LiveData<Event<String>>
@@ -36,19 +41,13 @@ class DialpadFragmViewModel(val myRepository: RepoContacts, application: Applica
     fun getCredit() {
         viewModelScope.launch {
             try {
-                val result=withContext(IO){
-                    val user=myRepository.getUser()
-                    myRepository.getCredit(phone = user.userPhone, token = user.userToken)
-
-                }
+                val user=myRepoUser.getUser()
+                val result= myRepoRemoteDataSource.getCredit(phone = user.userPhone, token = user.userToken)
 
                 when(result){
                     is Result.Success->{
                             if(result.data.authTokenMismatch==true) {
-                                withContext(IO){
-                                    logoutAll(getApplication())
-                                }
-
+                                    myRepoLogOut.logoutAll()
                             }else{
                                 if(result.data.success==true){
 
@@ -57,17 +56,13 @@ class DialpadFragmViewModel(val myRepository: RepoContacts, application: Applica
 
                                    result.data.e1phone?.let {e1number->
                                         if(e1number.isNotEmpty()&&e1number.isNotBlank()) {
-                                            withContext(IO){
-                                                myRepository.updatePrenumber(e1number,System.currentTimeMillis())
-                                            }
+                                                myRepoPrenumberAndWebApiVer.updatePrenumber(e1number,System.currentTimeMillis())
                                         }
                                    }
 
                                     result.data.appVersion?.let {appVer->
                                         if(appVer.isNotEmpty()&& appVer.isNotBlank()) {
-                                            withContext(IO){
-                                                myRepository.updateWebApiVersion(appVer)
-                                            }
+                                                myRepoPrenumberAndWebApiVer.updateWebApiVersion(appVer)
                                         }
                                     }
                                 }
@@ -77,7 +72,7 @@ class DialpadFragmViewModel(val myRepository: RepoContacts, application: Applica
 
                     is Result.Error->{
                             _credit.value=Event(" ")
-                           logStateOrErrorToMyServer(mapOf(
+                           myRepoLogToServer.logStateOrErrorToServer(myoptions = mapOf(
                                                     Pair("process:","DialPad fragment getCredit"),
                                                     Pair("error"," ${result.exception.message}")
                                                     )
@@ -97,20 +92,15 @@ class DialpadFragmViewModel(val myRepository: RepoContacts, application: Applica
 
     fun insertCallIntoDB(call: RecentCall){
         getApplication<MyApplication>().applicationScope.launch {
-            withContext(Dispatchers.IO){
-                myRepository.insertRecentCall(call)
-            }
+            myRepoRecentCalls.insertRecentCall(call)
         }
-
     }
 
 
      fun logStateOrErrorToMyServer(options:Map<String,String>){
         getApplication<MyApplication>().applicationScope.launch {
                 try {
-                    withContext(Dispatchers.IO) {
-                        myRepository.logStateOrErrorToOurServer(myoptions = options)
-                    }
+                    myRepoLogToServer.logStateOrErrorToServer(myoptions = options)
                 } catch (e: Exception) {
                     Log.i(MYTAG, "in logStateOrErrorToMyServer applicationScope error ${e.message}")
                 }

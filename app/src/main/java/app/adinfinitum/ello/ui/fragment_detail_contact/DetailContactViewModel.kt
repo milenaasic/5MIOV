@@ -7,6 +7,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import app.adinfinitum.ello.data.RepoContacts
+import app.adinfinitum.ello.data.RepoLogToServer
+import app.adinfinitum.ello.data.RepoProvideContacts
+import app.adinfinitum.ello.data.RepoRecentCalls
 import app.adinfinitum.ello.model.PhoneItem
 import app.adinfinitum.ello.model.RecentCall
 import app.adinfinitum.ello.ui.myapplication.MyApplication
@@ -15,8 +18,12 @@ import kotlinx.coroutines.Dispatchers.IO
 import java.lang.Exception
 
 private val MYTAG="MY_DetailContViewModel"
-class DetailContactViewModel(val contactLookUp:String,val myRepository: RepoContacts, application: Application) : AndroidViewModel(application) {
-
+class DetailContactViewModel(val contactLookUp:String,
+                            val myRepository: RepoContacts,
+                            val myRepoProvideContacts: RepoProvideContacts,
+                            val myRepoRecentCalls: RepoRecentCalls,
+                            val myRepoLogToServer: RepoLogToServer,
+                            application: Application) : AndroidViewModel(application) {
 
     private val _phoneList = MutableLiveData<List<PhoneItem>>()
     val phoneList: LiveData<List<PhoneItem>>
@@ -31,11 +38,8 @@ class DetailContactViewModel(val contactLookUp:String,val myRepository: RepoCont
     fun getContactPhoneNumbers() {
 
         viewModelScope.launch {
-
                 try {
-                    val list = withContext(IO) {
-                        myRepository.getPhoneNumbersForContact(contactLookUp)
-                    }
+                    val list = myRepoProvideContacts.getPhoneNumbersForContact(contactLookUp)
                     _phoneList.value=list
 
                 }catch (e: Exception) {
@@ -46,23 +50,18 @@ class DetailContactViewModel(val contactLookUp:String,val myRepository: RepoCont
 
     fun insertCallIntoDB(call: RecentCall){
         getApplication<MyApplication>().applicationScope.launch {
-            withContext(Dispatchers.IO){
-                myRepository.insertRecentCall(call)
-            }
+                myRepoRecentCalls.insertRecentCall(call)
         }
 
     }
 
     fun logStateOrErrorToMyServer(options:Map<String,String>){
-
         getApplication<MyApplication>().applicationScope.launch {
-            withContext(Dispatchers.IO){
-                myRepository.logStateOrErrorToOurServer(myoptions = options)
-            }
+                myRepoLogToServer.logStateOrErrorToServer(myoptions = options)
+
         }
 
     }
-
 
 
 }

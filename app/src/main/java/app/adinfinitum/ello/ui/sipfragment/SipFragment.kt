@@ -141,8 +141,14 @@ class SipFragment : Fragment() {
                                 resources.getString(R.string.mobile_app_version_header,(requireActivity().application as MyApplication).mobileAppVersion)
             )*/
 
-
-        viewModel = ViewModelProvider(this, SipViewModelFactory((requireActivity().application as MyApplication).repoSIPE1,requireActivity().application))
+        val app=requireActivity().application as MyApplication
+        viewModel = ViewModelProvider(this, SipViewModelFactory(
+                                                        app.repoSIPE1,
+                                                        app.repoUser,
+                                                        app.repoRemoteDataSource,
+                                                        app.repoLogToServer,
+                                                        app)
+                                    )
             .get(SipViewModel::class.java)
 
         val pwm = requireActivity().getSystemService(Context.POWER_SERVICE) as PowerManager

@@ -4,6 +4,7 @@ package app.adinfinitum.ello.ui.fragment_main
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.Application
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
@@ -21,7 +22,7 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import app.adinfinitum.ello.R
 import app.adinfinitum.ello.api.MyAPI
-import app.adinfinitum.ello.data.RepoContacts
+import app.adinfinitum.ello.data.*
 import app.adinfinitum.ello.database.MyDatabase
 import app.adinfinitum.ello.databinding.FragmentMainLinLayoutBinding
 import app.adinfinitum.ello.model.ContactItem
@@ -62,18 +63,18 @@ class MainFragment : Fragment(){
 
         binding= DataBindingUtil.inflate(inflater,R.layout.fragment_main_lin_layout,container,false)
 
-        /*val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
-        val apiService= MyAPI.retrofitService*/
-
-       /* val repo=RepoContacts(requireActivity().contentResolver,
-                                database,
-                                apiService,
-                                resources.getString(R.string.mobile_app_version_header,(requireActivity().application as MyApplication).mobileAppVersion)
-                                )*/
-
-
-        viewModel = ViewModelProvider(this, MainFragmentViewModelFactory((requireActivity().application as MyApplication).repoContacts,requireActivity().application))
-            .get(MainFragmentViewModel::class.java)
+        val app=requireActivity().application as MyApplication
+        viewModel = ViewModelProvider(this, MainFragmentViewModelFactory(
+                                                        app.repoContacts,
+                                                        app.repoUser,
+                                                        app.repoProvideContacts,
+                                                        app.repoRemoteDataSource,
+                                                        app.repoLogOut,
+                                                        app.repoLogToServer,
+                                                        app
+                                                    )
+                    )
+                    .get(MainFragmentViewModel::class.java)
 
         activityViewModel = requireActivity().run {
             ViewModelProvider(this)[MainActivityViewModel::class.java]

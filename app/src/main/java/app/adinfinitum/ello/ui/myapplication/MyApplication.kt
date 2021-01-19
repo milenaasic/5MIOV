@@ -8,11 +8,8 @@ import android.util.Log
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import app.adinfinitum.ello.api.MyAPI
-import app.adinfinitum.ello.api.MyAPIService
-import app.adinfinitum.ello.data.Repo
-import app.adinfinitum.ello.data.RepoContacts
-import app.adinfinitum.ello.data.RepoSIPE1
+import app.adinfinitum.ello.api.*
+import app.adinfinitum.ello.data.*
 import app.adinfinitum.ello.database.MyDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -51,6 +48,28 @@ class MyApplication : Application() {
     val repoSIPE1:RepoSIPE1
         get()=ServiceLocator.getRepoSIPE1(this)
 
+    val repoUser:RepoUser
+        get()=ServiceLocator.getRepoUser(this)
+
+    val repoPrenumberAndWebApiVer:RepoPrenumberAndWebApiVer
+        get()=ServiceLocator.getRepoPrenumberAndWebApiVer(this)
+
+    val repoRecentCalls:RepoRecentCalls
+        get()=ServiceLocator.getRepoRecentCalls(this)
+
+    val repoProvideContacts:RepoProvideContacts
+        get()=ServiceLocator.getRepoProvideContacts(this)
+
+    val repoRemoteDataSource:RepoRemoteDataSource
+        get()=ServiceLocator.getRepoRemoteDataSource(this)
+
+    val repoLogToServer:RepoLogToServer
+        get()=ServiceLocator.getRepoLogToServer(this)
+
+    val repoLogOut:RepoLogOut
+        get()=ServiceLocator.getRepoLogOut(this)
+
+
     val mobileAppVersion:String
         get()=ServiceLocator.getMobAppVersion(this)
 
@@ -74,6 +93,31 @@ object ServiceLocator{
     @Volatile
     var repoSIPE1:RepoSIPE1?=null
 
+
+
+    @Volatile
+    var repoUser:RepoUser?=null
+
+    @Volatile
+    var repoPrenumberAndWebApiVer:RepoPrenumberAndWebApiVer ?=null
+
+    @Volatile
+    var repoRecentCalls:RepoRecentCalls ?=null
+
+    @Volatile
+    var repoProvideContacts:RepoProvideContacts ?=null
+
+    @Volatile
+    var repoRemoteDataSource:RepoRemoteDataSource ?=null
+
+    @Volatile
+    var repoLogToServer:RepoLogToServer ?=null
+
+    @Volatile
+    var repoLogOut:RepoLogOut?=null
+
+
+
     fun getRepo(context:Context):Repo{
         synchronized(this){
             return repo?: creteRepo(context)
@@ -94,6 +138,76 @@ object ServiceLocator{
 
     }
 
+
+    fun getRepoUser(context:Context):RepoUser{
+        synchronized(this){
+            return repoUser?: creteRepoUser(context)
+        }
+    }
+
+    fun getRepoPrenumberAndWebApiVer(context:Context):RepoPrenumberAndWebApiVer{
+        synchronized(this){
+            return repoPrenumberAndWebApiVer?: creteRepoPrenumberAndWebApiVer(context)
+        }
+    }
+
+    fun getRepoRecentCalls(context:Context):RepoRecentCalls{
+        synchronized(this){
+            return repoRecentCalls?: creteRepoRecentCalls(context)
+        }
+    }
+
+    fun getRepoProvideContacts(context:Context):RepoProvideContacts{
+        synchronized(this){
+            return repoProvideContacts?: creteRepoProvideContacts(context)
+        }
+    }
+
+    fun getRepoRemoteDataSource(context:Context):RepoRemoteDataSource{
+        synchronized(this){
+            return repoRemoteDataSource?: creteRepoRemoteDataSource(context)
+        }
+    }
+
+    fun getRepoLogToServer(context:Context):RepoLogToServer{
+        synchronized(this){
+            return repoLogToServer?: creteRepoLogToServer(context)
+        }
+    }
+
+    fun getRepoLogOut(context:Context):RepoLogOut{
+        synchronized(this){
+            return repoLogOut?: creteRepoLogOut(context)
+        }
+    }
+
+
+    private fun creteRepoProvideContacts(context: Context): RepoProvideContacts {
+       return RepoProvideContacts(contentResolver = context.contentResolver)
+    }
+
+
+
+    private fun creteRepoRecentCalls(context: Context): RepoRecentCalls {
+        return RepoRecentCalls(provideDatabaseRecentCalls(context))
+    }
+
+    private fun creteRepoPrenumberAndWebApiVer(context: Context): RepoPrenumberAndWebApiVer {
+        return RepoPrenumberAndWebApiVer(provideDatabasePrenumberAndWebApiVersion(context = context))
+    }
+
+    private fun creteRepoLogOut(context: Context): RepoLogOut {
+        return RepoLogOut(context)
+    }
+
+
+    private fun creteRepoRemoteDataSource(context: Context): RepoRemoteDataSource {
+        return RepoRemoteDataSource(provideNetworkDataService(context))
+    }
+
+    private fun creteRepoLogToServer(context: Context): RepoLogToServer {
+    return RepoLogToServer(provideDatabaseUser(context), provideNetworkLogService(context))
+    }
     private fun creteRepoSIPE1(context: Context): RepoSIPE1 {
         return RepoSIPE1(provideDatabase(context), provideNetworkService(context))
     }
@@ -106,11 +220,34 @@ object ServiceLocator{
         return Repo(provideDatabase(context),provideNetworkService(context))
     }
 
+
+    private fun creteRepoUser(context: Context): RepoUser {
+        return RepoUser(provideDatabaseUser(context))
+    }
+
+
+    private fun provideDatabaseUser(context: Context)=MyDatabase.getInstance(context).myDatabaseUser
+    private fun provideDatabasePrenumberAndWebApiVersion(context: Context)=MyDatabase.getInstance(context).myDatabasePrenumberAndWebApiVersion
+    private fun provideDatabaseRecentCalls(context: Context)=MyDatabase.getInstance(context).myDatabaseRecentCalls
+
+    // to be deleted
     private fun provideDatabase(context: Context)=MyDatabase.getInstance(context).myDatabaseDao
 
-    private fun provideNetworkService(context: Context):MyAPIService{
+
+
+    private fun provideNetworkService(context: Context):MyAPIDataService{
         MyAPI.mobileAppVersion= getMobAppVersion(context)
-        return MyAPI.retrofitService
+        return MyAPI.myAPIDataService
+    }
+
+    private fun provideNetworkDataService(context: Context): MyAPIDataService{
+        MyAPI.mobileAppVersion= getMobAppVersion(context)
+        return MyAPI.myAPIDataService
+    }
+
+    private fun provideNetworkLogService(context: Context): MyAPILogToServer {
+        MyAPI.mobileAppVersion= getMobAppVersion(context)
+        return MyAPI.myAPILogToServerService
     }
 
     fun getMobAppVersion(context: Context):String{
@@ -128,29 +265,3 @@ object ServiceLocator{
 
 }
 
-
-/*class MyContainer(val application: MyApplication){
-
-    private val myRetrofitService= MyAPI.retrofitService
-    private val myDatabase=MyDatabase.getInstance(application).myDatabaseDao
-    private val myContentProvider=application.contentResolver
-    val myMobileAppVersion=getMobAppVersion()
-
-    val repo =Repo(myDatabase,myRetrofitService,myMobileAppVersion)
-    val repoContacts=RepoContacts(myContentProvider,myDatabase,myRetrofitService,myMobileAppVersion)
-    val repoSIPE1=RepoSIPE1(myDatabase,myRetrofitService,myMobileAppVersion)
-
-    private fun getMobAppVersion():String{
-        var myversionName=""
-        try {
-            val packageInfo: PackageInfo = application.packageManager.getPackageInfo(application.packageName, 0);
-            myversionName = packageInfo.versionName
-
-        } catch ( e:Throwable) {
-            e.printStackTrace();
-        }
-
-        return myversionName
-    }
-
-}*/

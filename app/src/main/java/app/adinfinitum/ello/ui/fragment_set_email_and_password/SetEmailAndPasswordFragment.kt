@@ -2,6 +2,7 @@ package app.adinfinitum.ello.ui.fragment_set_email_and_password
 
 
 import android.app.Activity
+import android.app.Application
 import android.os.Bundle
 import android.view.*
 import android.view.inputmethod.EditorInfo
@@ -17,6 +18,9 @@ import com.google.android.material.snackbar.Snackbar
 import app.adinfinitum.ello.R
 import app.adinfinitum.ello.api.MyAPI
 import app.adinfinitum.ello.data.Repo
+import app.adinfinitum.ello.data.RepoLogToServer
+import app.adinfinitum.ello.data.RepoPrenumberAndWebApiVer
+import app.adinfinitum.ello.data.RepoRemoteDataSource
 import app.adinfinitum.ello.database.MyDatabase
 import app.adinfinitum.ello.databinding.FragmentSetEmailAndPasswordBinding
 import app.adinfinitum.ello.ui.myapplication.MyApplication
@@ -39,9 +43,17 @@ class SetEmailAndPasswordFragment : Fragment() {
     ): View? {
 
         binding= DataBindingUtil.inflate(inflater,R.layout.fragment_set_email_and_password,container,false)
-
-        viewModel = ViewModelProvider(this, SetEmailPassViewModelFactory((requireActivity().application as MyApplication).repo,requireActivity().application))
-            .get(SetEmailPassFragmentViewModel::class.java)
+        val app=requireActivity().application as MyApplication
+        viewModel = ViewModelProvider(this, SetEmailPassViewModelFactory(
+                                                            app.repo,
+                                                            app.repoUser,
+                                                            app.repoPrenumberAndWebApiVer,
+                                                            app.repoRemoteDataSource,
+                                                            app.repoLogToServer,
+                                                            app
+                                                        )
+                                    )
+                    .get(SetEmailPassFragmentViewModel::class.java)
 
 
         binding.setAccountSubmitButton.setOnClickListener {

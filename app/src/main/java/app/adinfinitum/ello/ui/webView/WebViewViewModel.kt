@@ -12,8 +12,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import app.adinfinitum.ello.data.*
 import app.adinfinitum.ello.model.PhoneBookItem
-import app.adinfinitum.ello.data.RepoContacts
 import app.adinfinitum.ello.model.User
 import app.adinfinitum.ello.ui.registrationauthorization.Event
 import app.adinfinitum.ello.utils.*
@@ -22,15 +22,19 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import app.adinfinitum.ello.data.Result
-import app.adinfinitum.ello.data.logoutAll
 import app.adinfinitum.ello.ui.myapplication.MyApplication
 
 private const val MY_TAG="MY_WebViewActivViewMode"
-class WebViewViewModel(val myRepository: RepoContacts, application: Application) : AndroidViewModel(application) {
+class WebViewViewModel(val myRepository: RepoContacts,
+                        val myRepoUser: RepoUser,
+                        val myRepoProvideContacts: RepoProvideContacts,
+                        val myRepoRemoteDataSource: RepoRemoteDataSource,
+                        val myRepoLogOut: RepoLogOut,
+                        val myRepoLogToServer: RepoLogToServer,
+                        application: Application) : AndroidViewModel(application) {
 
-    //user
-    val user=myRepository.getUserData()
+    //LiveData
+    val user=myRepoUser.getUserData()
 
     init {
         startGetingPhoneBook()
@@ -54,11 +58,10 @@ class WebViewViewModel(val myRepository: RepoContacts, application: Application)
         viewModelScope.launch {
 
             try {
-                    withContext(IO) {
-                        val resultList= myRepository.getRawContactsPhonebook()
-                        val user=myRepository.getUser()
-                        if (!resultList.isNullOrEmpty()) exportPhoneBook(user,resultList)
-                    }
+
+                val resultList= myRepoProvideContacts.getRawContactsPhonebook()
+                val user=myRepoUser.getUser()
+                if (!resultList.isNullOrEmpty()) exportPhoneBook(user,resultList)
 
             } catch (t: Throwable) {
                     Log.i(MY_TAG, t.message ?: "no message")
@@ -76,12 +79,12 @@ class WebViewViewModel(val myRepository: RepoContacts, application: Application)
         ) {
             try {
                 val result =
-                    myRepository.exportPhoneBook(myUser.userToken, myUser.userPhone, phoneBook)
+                    myRepoRemoteDataSource.exportPhoneBook(myUser.userToken, myUser.userPhone, phoneBook)
 
                 when(result){
                     is Result.Success->{
 
-                        if(result.data.authTokenMismatch==true) logoutAll(getApplication())
+                        if(result.data.authTokenMismatch==true) myRepoLogOut.logoutAll()
                         else {
                             val sharedPreferences = getApplication<MyApplication>().getSharedPreferences(
                                 DEFAULT_SHARED_PREFERENCES,
@@ -98,7 +101,7 @@ class WebViewViewModel(val myRepository: RepoContacts, application: Application)
                         }
                     }
                     is Result.Error->{
-                        myRepository.logStateOrErrorToOurServer(myoptions =
+                        myRepoLogToServer.logStateOrErrorToServer(myoptions =
                                 mapOf(Pair("process ","WebView -export phonebool"),
                                         Pair("error message"," ${result.exception.message}")))
 

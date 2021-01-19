@@ -2,6 +2,7 @@ package app.adinfinitum.ello.ui.fragment_dial_pad
 
 
 import android.Manifest
+import android.app.Application
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
@@ -27,7 +28,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import app.adinfinitum.ello.R
 import app.adinfinitum.ello.api.MyAPI
-import app.adinfinitum.ello.data.RepoContacts
+import app.adinfinitum.ello.data.*
 import app.adinfinitum.ello.database.MyDatabase
 import app.adinfinitum.ello.databinding.FragmentDialPadBinding
 import app.adinfinitum.ello.model.RecentCall
@@ -70,8 +71,18 @@ class DialPadFragment : Fragment() {
 
         binding= DataBindingUtil.inflate(inflater, R.layout.fragment_dial_pad,container,false)
 
-
-        viewModel = ViewModelProvider(this, DialpadFragmentViewModelFactory((requireActivity().application as MyApplication).repoContacts,requireActivity().application))
+        val app=requireActivity().application as MyApplication
+        viewModel = ViewModelProvider(this, DialpadFragmentViewModelFactory(
+                                                                app.repoContacts,
+                                                                app.repoUser,
+                                                                app.repoRecentCalls,
+                                                                app.repoPrenumberAndWebApiVer,
+                                                                app.repoRemoteDataSource,
+                                                                app.repoLogOut,
+                                                                app.repoLogToServer,
+                                                                app
+                                                    )
+                                    )
             .get(DialpadFragmViewModel::class.java)
 
         binding.apply {

@@ -71,12 +71,17 @@ class DetailContact : Fragment() {
                                 apiService,
                             resources.getString(R.string.mobile_app_version_header,(requireActivity().application as MyApplication).mobileAppVersion)
                                 )*/
-
+        val app=requireActivity().application as MyApplication
         viewModel=ViewModelProvider(this,DetailContactViewModelFactory(
                                                         args.contactLookUpKey,
-                                                        (requireActivity().application as MyApplication).repoContacts,
-                                                        requireActivity().application))
-                                    .get(DetailContactViewModel::class.java)
+                                                        app.repoContacts,
+                                                        app.repoProvideContacts,
+                                                        app.repoRecentCalls,
+                                                        app.repoLogToServer,
+                                                        app
+                                                        )
+                                    )
+            .get(DetailContactViewModel::class.java)
 
 
         phoneAdapter= DetailContactAdapter(

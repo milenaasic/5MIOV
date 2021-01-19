@@ -16,7 +16,7 @@ import kotlinx.coroutines.Dispatchers.IO
 private const val MY_TAG="MY_CONTACTS_REPOSITORY"
 class RepoContacts (val contentResolver: ContentResolver,
                     val myDatabaseDao: MyDatabaseDao,
-                    val myAPIService: MyAPIService):LogStateOrErrorToServer {
+                    val myAPIService: MyAPIDataService):LogStateOrErrorToServer {
 
     //User Live Data
     fun getUserData() = myDatabaseDao.getUser()

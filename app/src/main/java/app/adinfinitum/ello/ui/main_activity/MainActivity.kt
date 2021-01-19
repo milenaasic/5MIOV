@@ -74,10 +74,13 @@ class MainActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         setSupportActionBar(binding.toolbarMain)
 
+        val app=application as MyApplication
         viewModel = ViewModelProvider(this,
             MainActivityViewModelFactory(
-                (application as MyApplication).repoContacts,
-                application
+                app.repoContacts,
+                app.repoUser,
+                app.repoLogToServer,
+                app
             )
         )
             .get(MainActivityViewModel::class.java)

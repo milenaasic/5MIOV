@@ -10,6 +10,7 @@ import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Call
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
@@ -58,13 +59,20 @@ object MyAPI {
         .build()
 
 
-    val retrofitService : MyAPIService by lazy {
-        retrofit.create(MyAPIService::class.java)
+
+    val myAPIDataService : MyAPIDataService by lazy {
+        retrofit.create(MyAPIDataService::class.java)
     }
+
+    val myAPILogToServerService:MyAPILogToServer by lazy {
+        retrofit.create(MyAPILogToServer::class.java)
+    }
+
+
 
 }
 
- interface MyAPIService {
+ interface MyAPIDataService {
 
     //Config
     @POST("api/user/signup")
@@ -157,10 +165,19 @@ object MyAPI {
 
 
      // log error to server
-     @PUT("api/mobileLog")
+     /*@PUT("api/mobileLog")
      fun logStateOrErrorToServer(
          @Header(HEADER_PHONE_KEY) phoneNumber:String,
-         @QueryMap options:Map<String,String>):Response<Nothing>
+         @QueryMap options:Map<String,String>):Response<Nothing>*/
+
+}
+
+interface MyAPILogToServer{
+    // log error to server
+    @PUT("api/mobileLog")
+    fun logStateOrErrorToServer(
+        @Header(HEADER_PHONE_KEY) phoneNumber:String,
+        @QueryMap options:Map<String,String>):Call<Unit>
 
 }
 

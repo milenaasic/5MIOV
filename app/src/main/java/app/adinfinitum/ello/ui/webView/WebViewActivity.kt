@@ -55,8 +55,17 @@ class WebViewActivity : AppCompatActivity() {
             resources.getString(R.string.mobile_app_version_header, mobileAppVersion)
         )*/
 
-
-        viewModel = ViewModelProvider(this, WebViewViewModelFactory( (application as MyApplication).repoContacts, application))
+        val app=application as MyApplication
+        viewModel = ViewModelProvider(this, WebViewViewModelFactory(
+                                                    app.repoContacts,
+                                                    app.repoUser,
+                                                    app.repoProvideContacts,
+                                                    app.repoRemoteDataSource,
+                                                    app.repoLogOut,
+                                                    app.repoLogToServer,
+                                                    app
+                                                )
+                                    )
             .get(WebViewViewModel::class.java)
 
 

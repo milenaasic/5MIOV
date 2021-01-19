@@ -14,7 +14,7 @@ import kotlinx.coroutines.Dispatchers.IO
 
 private const val MY_TAG="MY_Repository"
 
-class Repo (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIService) : IRepo,LogStateOrErrorToServer{
+class Repo (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIDataService) : IRepo,LogStateOrErrorToServer{
 
 
     //User Live Data
