@@ -145,7 +145,7 @@ object MyAPI {
      fun resetSipAccess(
          @Header(HEADER_PHONE_KEY) phoneNumber:String,
          @Header(HEADER_SIGNATURE) signature:String,
-         @Body request: NetRequest_ResetSipAccess): Deferred<NetResponse_ResetSipAccess>
+         @Body request: NetRequest_ResetSipAccess): Call<Unit>
 
      @POST("api/sip/getSipAccess")
      fun getSipAccess(
@@ -162,13 +162,6 @@ object MyAPI {
         @Header(HEADER_SIGNATURE) signature:String,
         @Body request: NetRequest_GetCurrentCredit): Deferred<NetResponse_GetCurrentCredit>
 
-
-
-     // log error to server
-     /*@PUT("api/mobileLog")
-     fun logStateOrErrorToServer(
-         @Header(HEADER_PHONE_KEY) phoneNumber:String,
-         @QueryMap options:Map<String,String>):Response<Nothing>*/
 
 }
 

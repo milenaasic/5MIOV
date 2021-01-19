@@ -7,10 +7,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import app.adinfinitum.ello.data.*
 import app.adinfinitum.ello.model.PhoneBookItem
-import app.adinfinitum.ello.data.RepoContacts
-import app.adinfinitum.ello.data.RepoLogToServer
-import app.adinfinitum.ello.data.RepoUser
 import app.adinfinitum.ello.model.ContactItemWithInternationalNumbers
 import app.adinfinitum.ello.ui.myapplication.MyApplication
 import app.adinfinitum.ello.utils.*
@@ -20,8 +18,8 @@ import kotlinx.coroutines.Dispatchers.IO
 
 private const val MY_TAG="MY_MainActivViewModel"
 class MainActivityViewModel(val myRepository: RepoContacts,
-                            val myRepoUser:RepoUser,
-                            val myRepoLogToServer: RepoLogToServer,
+                            val myRepoUser: IRepoUser,
+                            val myRepoLogToServer: IRepoLogToServer,
                             application: Application) : AndroidViewModel(application) {
 
 

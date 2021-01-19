@@ -9,10 +9,29 @@ import kotlinx.coroutines.withContext
 
 
 private val MY_TAG="RepoRemoteDataSource"
-class RepoRemoteDataSource (val myAPIService: MyAPIDataService, val dispatcher: CoroutineDispatcher=Dispatchers.IO){
+
+interface IRepoRemoteDataSource {
+
+    suspend fun signUpToServer(signIn: NetRequest_SignUp): Result<NetResponse_SignUp>
+
+    suspend fun authorizeThisUser(phone: String, smsToken: String, email: String, password: String): Result<NetResponse_Authorization>
+
+    suspend fun  setAccountEmailAndPasswordForUser(phoneNumber: String, token: String, email: String, password: String): Result<NetResponse_SetAccountEmailAndPass>
+
+    fun resetSipAccess(phone: String, authToken: String)
+
+    suspend fun callSetNewE1(phone: String, token: String): Result<NetResponse_SetE1Prenumber>
+
+    suspend fun getCredit(phone: String, token: String): Result<NetResponse_GetCurrentCredit>
+    suspend fun exportPhoneBook(token: String, phoneNumber: String, phoneBook: List<PhoneBookItem>): Result<NetResponse_ExportPhonebook>
+    suspend fun getSipAccessCredentials(token: String, phone: String): Result<NetResponse_GetSipAccessCredentials>
+}
+
+class RepoRemoteDataSource (val myAPIService: MyAPIDataService, val dispatcher: CoroutineDispatcher=Dispatchers.IO) :
+    IRepoRemoteDataSource {
 
     //SignIn Route
-    suspend fun signUpToServer(signIn: NetRequest_SignUp): Result<NetResponse_SignUp> {
+    override suspend fun signUpToServer(signIn: NetRequest_SignUp): Result<NetResponse_SignUp> {
 
         try{
             val result=myAPIService.signUpToServer(
@@ -31,7 +50,7 @@ class RepoRemoteDataSource (val myAPIService: MyAPIDataService, val dispatcher: 
     }
 
     //Authorization fragment
-    suspend fun authorizeThisUser(phone:String, smsToken:String, email: String, password: String):Result<NetResponse_Authorization>{
+    override suspend fun authorizeThisUser(phone:String, smsToken:String, email: String, password: String):Result<NetResponse_Authorization>{
 
         val defResponse=myAPIService.authorizeUser(
             phoneNumber = phone,
@@ -56,7 +75,7 @@ class RepoRemoteDataSource (val myAPIService: MyAPIDataService, val dispatcher: 
     }
 
     //SetAccountAndEmail Fragment - Main part of the app
-    suspend fun  setAccountEmailAndPasswordForUser(phoneNumber:String, token: String, email: String, password: String):Result<NetResponse_SetAccountEmailAndPass>{
+    override suspend fun  setAccountEmailAndPasswordForUser(phoneNumber:String, token: String, email: String, password: String):Result<NetResponse_SetAccountEmailAndPass>{
 
             val defResult = myAPIService.setAccountEmailAndPasswordForUser(
                 phoneNumber = phoneNumber,
@@ -83,7 +102,7 @@ class RepoRemoteDataSource (val myAPIService: MyAPIDataService, val dispatcher: 
     }
 
     // Reset Sip Access data on server
-    fun resetSipAccess(
+    override fun resetSipAccess(
         phone:String,
         authToken: String
     ) {
@@ -105,7 +124,7 @@ class RepoRemoteDataSource (val myAPIService: MyAPIDataService, val dispatcher: 
     }
 
     //get E1 prenumber
-    suspend fun callSetNewE1(phone: String, token: String):Result<NetResponse_SetE1Prenumber> {
+    override suspend fun callSetNewE1(phone: String, token: String):Result<NetResponse_SetE1Prenumber> {
 
         val defResult = myAPIService.setNewE1(
             phoneNumber = phone,
@@ -129,7 +148,7 @@ class RepoRemoteDataSource (val myAPIService: MyAPIDataService, val dispatcher: 
     }
 
     //DialPad fragment
-    suspend fun getCredit(phone:String,token:String):Result<NetResponse_GetCurrentCredit>{
+    override suspend fun getCredit(phone:String, token:String):Result<NetResponse_GetCurrentCredit>{
 
                 try {
                     val result = myAPIService.getCurrentCredit(
@@ -150,7 +169,7 @@ class RepoRemoteDataSource (val myAPIService: MyAPIDataService, val dispatcher: 
     }
 
 
-    suspend fun exportPhoneBook(token:String, phoneNumber:String,phoneBook:List<PhoneBookItem>):Result<NetResponse_ExportPhonebook>{
+    override suspend fun exportPhoneBook(token:String, phoneNumber:String, phoneBook:List<PhoneBookItem>):Result<NetResponse_ExportPhonebook>{
         Log.i(MY_TAG, "EXPORTING PHONEBOOK")
 
         try {
@@ -178,7 +197,7 @@ class RepoRemoteDataSource (val myAPIService: MyAPIDataService, val dispatcher: 
     }
 
 
-    suspend fun getSipAccessCredentials(token: String,phone: String):Result<NetResponse_GetSipAccessCredentials>{
+    override suspend fun getSipAccessCredentials(token: String, phone: String):Result<NetResponse_GetSipAccessCredentials>{
         return withContext(dispatcher) {
 
             try {

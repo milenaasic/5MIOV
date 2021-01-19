@@ -6,10 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import app.adinfinitum.ello.data.RepoContacts
-import app.adinfinitum.ello.data.RepoLogToServer
-import app.adinfinitum.ello.data.RepoProvideContacts
-import app.adinfinitum.ello.data.RepoRecentCalls
+import app.adinfinitum.ello.data.*
 import app.adinfinitum.ello.model.PhoneItem
 import app.adinfinitum.ello.model.RecentCall
 import app.adinfinitum.ello.ui.myapplication.MyApplication
@@ -20,9 +17,9 @@ import java.lang.Exception
 private val MYTAG="MY_DetailContViewModel"
 class DetailContactViewModel(val contactLookUp:String,
                             val myRepository: RepoContacts,
-                            val myRepoProvideContacts: RepoProvideContacts,
-                            val myRepoRecentCalls: RepoRecentCalls,
-                            val myRepoLogToServer: RepoLogToServer,
+                            val myRepoProvideContacts: IRepoProvideContacts,
+                            val myRepoRecentCalls: IRepoRecentCalls,
+                            val myRepoLogToServer: IRepoLogToServer,
                             application: Application) : AndroidViewModel(application) {
 
     private val _phoneList = MutableLiveData<List<PhoneItem>>()

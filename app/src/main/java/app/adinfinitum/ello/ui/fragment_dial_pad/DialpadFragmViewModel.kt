@@ -17,12 +17,12 @@ import kotlinx.coroutines.Dispatchers.IO
 
 private val MYTAG="MY_DialPadVIewMOdel"
 class DialpadFragmViewModel(val myRepository: RepoContacts,
-                            val myRepoUser: RepoUser,
-                            val myRepoRecentCalls: RepoRecentCalls,
-                            val myRepoPrenumberAndWebApiVer: RepoPrenumberAndWebApiVer,
-                            val myRepoRemoteDataSource: RepoRemoteDataSource,
-                            val myRepoLogOut: RepoLogOut,
-                            val myRepoLogToServer: RepoLogToServer,
+                            val myRepoUser: IRepoUser,
+                            val myRepoRecentCalls: IRepoRecentCalls,
+                            val myRepoPrenumberAndWebApiVer: IRepoPrenumberAndWebApiVer,
+                            val myRepoRemoteDataSource: IRepoRemoteDataSource,
+                            val myRepoLogOut: IRepoLogOut,
+                            val myRepoLogToServer: IRepoLogToServer,
                             application: Application) : AndroidViewModel(application) {
 
 

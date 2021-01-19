@@ -36,23 +36,13 @@ class AboutFragment : Fragment() {
         binding= DataBindingUtil.inflate(inflater, R.layout.fragment_about,container,false)
 
 
-        /*val database= MyDatabase.getInstance(requireContext()).myDatabaseDao
-        val apiService= MyAPI.retrofitService
-
-        val repo= RepoContacts(requireActivity().contentResolver,
-            database,
-            apiService,
-            resources.getString(R.string.mobile_app_version_header,(requireActivity().application as MyApplication).mobileAppVersion)
-        )*/
-
         viewModel = ViewModelProvider(this, AboutFragmentViewModelFactory(
                                                     (requireActivity().application as MyApplication).repoPrenumberAndWebApiVer,
                                                     requireActivity().application)
                                                 )
             .get(AboutFragmentViewModel::class.java)
 
-       // binding.mobileAppVerTextView.text=String.format(resources.getString(R.string.mobile_app_version,(requireActivity().application as MyApplication).myContainer.myMobileAppVersion))
-        binding.mobileAppVerTextView.text=String.format(resources.getString(R.string.mobile_app_version,"23456"))
+        binding.mobileAppVerTextView.text=String.format(resources.getString(R.string.mobile_app_version,(requireActivity().application as MyApplication).mobileAppVersion))
         return binding.root
     }
 

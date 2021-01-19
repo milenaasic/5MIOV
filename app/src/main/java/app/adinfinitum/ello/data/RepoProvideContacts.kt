@@ -14,12 +14,19 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 private val MY_TAG="RepoProvideContacts"
+
+interface IRepoProvideContacts {
+
+    suspend fun getAllContacts(uri: Uri): List<ContactItem>
+    suspend fun getPhoneNumbersForContact(lookUpKey: String): List<PhoneItem>
+    suspend fun getRawContactsPhonebook(): List<PhoneBookItem>
+}
+
 class RepoProvideContacts (
         val contentResolver: ContentResolver,
-        val dispatcher: CoroutineDispatcher=Dispatchers.IO)
-    {
+        val dispatcher: CoroutineDispatcher=Dispatchers.IO) : IRepoProvideContacts {
 
-        suspend fun getAllContacts(uri: Uri):List<ContactItem>{
+        override suspend fun getAllContacts(uri: Uri):List<ContactItem>{
             return withContext(dispatcher){
                 myGetAllContacts(uri = uri)
             }
@@ -84,7 +91,7 @@ class RepoProvideContacts (
         }
 
 
-        suspend fun getPhoneNumbersForContact(lookUpKey:String):List<PhoneItem>{
+        override suspend fun getPhoneNumbersForContact(lookUpKey:String):List<PhoneItem>{
             return withContext(dispatcher){
                 myGetPhoneNumbersForContact(lookUpKey)
             }
@@ -141,12 +148,13 @@ class RepoProvideContacts (
         }
 
         // Called from WebViewViewModel and MainFragment when exporting phonebook to server
-        suspend fun getRawContactsPhonebook():List<PhoneBookItem>{
+        override suspend fun getRawContactsPhonebook():List<PhoneBookItem>{
             return withContext(dispatcher){
                 myGetRawContactsPhonebook()
             }
         }
 
+        //todo to FIX - names and phoneNumbers repeat!
         private fun myGetRawContactsPhonebook():List<PhoneBookItem>{
 
             var resultList= listOf<PhoneBookItem>()

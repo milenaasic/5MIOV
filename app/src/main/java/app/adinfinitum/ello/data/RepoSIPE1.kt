@@ -34,7 +34,7 @@ class RepoSIPE1 (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIDataService):
     }
 
 
-    suspend fun resetSipAccess(
+    /*suspend fun resetSipAccess(
         authToken: String,
         phone: String
     ) {
@@ -55,7 +55,7 @@ class RepoSIPE1 (val myDatabaseDao: MyDatabaseDao, val myAPI: MyAPIDataService):
         } catch (e: Throwable) {
 
         }
-    }
+    }*/
 
 
 

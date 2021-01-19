@@ -6,6 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import app.adinfinitum.ello.data.IRepoPrenumberAndWebApiVer
 import app.adinfinitum.ello.data.RepoContacts
 import app.adinfinitum.ello.data.RepoPrenumberAndWebApiVer
 import app.adinfinitum.ello.database.MyDatabaseDao
@@ -17,7 +18,7 @@ import kotlin.Exception
 
 private const val MYTAG="MY_AboutFragmViewModel"
 
-class AboutFragmentViewModel (val myRepoPrenumberAndWebApiVer:RepoPrenumberAndWebApiVer,application: Application) : AndroidViewModel(application) {
+class AboutFragmentViewModel (val myRepoPrenumberAndWebApiVer: IRepoPrenumberAndWebApiVer, application: Application) : AndroidViewModel(application) {
 
 
     private val _webApiVersion= MutableLiveData<String>()

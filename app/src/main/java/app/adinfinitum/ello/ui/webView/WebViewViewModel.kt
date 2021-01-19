@@ -26,11 +26,11 @@ import app.adinfinitum.ello.ui.myapplication.MyApplication
 
 private const val MY_TAG="MY_WebViewActivViewMode"
 class WebViewViewModel(val myRepository: RepoContacts,
-                        val myRepoUser: RepoUser,
-                        val myRepoProvideContacts: RepoProvideContacts,
-                        val myRepoRemoteDataSource: RepoRemoteDataSource,
-                        val myRepoLogOut: RepoLogOut,
-                        val myRepoLogToServer: RepoLogToServer,
+                        val myRepoUser: IRepoUser,
+                        val myRepoProvideContacts: IRepoProvideContacts,
+                        val myRepoRemoteDataSource: IRepoRemoteDataSource,
+                        val myRepoLogOut: IRepoLogOut,
+                        val myRepoLogToServer: IRepoLogToServer,
                         application: Application) : AndroidViewModel(application) {
 
     //LiveData

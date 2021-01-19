@@ -38,10 +38,10 @@ private const val MY_TAG="MY_RegAuthActivVieModel"
 
 
 class RegAuthActivityViewModel( val myRepositor: Repo,
-                                val myRepoUser: RepoUser,
-                                val myRepoPrenumberAndWebApiVer:RepoPrenumberAndWebApiVer,
-                                val myRepoRemoteDataSource:RepoRemoteDataSource,
-                                val myRepoLogToServer:RepoLogToServer,
+                                val myRepoUser: IRepoUser,
+                                val myRepoPrenumberAndWebApiVer:IRepoPrenumberAndWebApiVer,
+                                val myRepoRemoteDataSource:IRepoRemoteDataSource,
+                                val myRepoLogToServer:IRepoLogToServer,
                                 application: Application) : AndroidViewModel(application),
         MyPhoneCallListenerResult,MySMSListenerResult {
 
@@ -590,9 +590,9 @@ class RegAuthActivityViewModel( val myRepositor: Repo,
     private suspend fun processAuthorizationData(
         phoneNumber: String,
         authData: NetResponse_Authorization,
-        repoUser: RepoUser,
-        repoRemoteDataSource: RepoRemoteDataSource,
-        repoPrenumberAndWebApiVer: RepoPrenumberAndWebApiVer
+        repoUser: IRepoUser,
+        repoRemoteDataSource: IRepoRemoteDataSource,
+        repoPrenumberAndWebApiVer: IRepoPrenumberAndWebApiVer
     ) {
         // currently in ViewModel scope
         getApplication<MyApplication>().applicationScope.launch {

@@ -26,11 +26,11 @@ import java.util.*
 private val MYTAG="MY_MAINFRAGM_VIEWMODEL"
 
 class MainFragmentViewModel(    val repoContacts: RepoContacts,
-                                val myRepoUser: RepoUser,
-                                val myRepoProvideContacts: RepoProvideContacts,
-                                val myRepoRemoteDataSource: RepoRemoteDataSource,
-                                val myRepoLogOut: RepoLogOut,
-                                val myRepoLogToServer:RepoLogToServer,
+                                val myRepoUser: IRepoUser,
+                                val myRepoProvideContacts: IRepoProvideContacts,
+                                val myRepoRemoteDataSource: IRepoRemoteDataSource,
+                                val myRepoLogOut: IRepoLogOut,
+                                val myRepoLogToServer:IRepoLogToServer,
                                 application: Application) :AndroidViewModel(application) {
 
 

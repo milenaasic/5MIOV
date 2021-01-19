@@ -18,10 +18,10 @@ import kotlin.Exception
 private val MYTAG="MY_SIPVIEWMODEL"
 
 class SipViewModel( val mySipRepo: RepoSIPE1,
-                    val myRepoUser: RepoUser,
-                    val myRepoRemoteDataSource: RepoRemoteDataSource,
-                    val myRepoLogToServer: RepoLogToServer,
-                    val myRepoLogOut: RepoLogOut,
+                    val myRepoUser: IRepoUser,
+                    val myRepoRemoteDataSource: IRepoRemoteDataSource,
+                    val myRepoLogToServer: IRepoLogToServer,
+                    val myRepoLogOut: IRepoLogOut,
                     application: Application) : AndroidViewModel(application) {
 
     val TIMEOUT_IN_MILLIS=500L

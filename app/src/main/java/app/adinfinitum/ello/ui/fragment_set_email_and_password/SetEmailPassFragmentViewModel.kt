@@ -20,10 +20,10 @@ import kotlin.Exception
 private val MYTAG="MY_SetEmailPass_VIEWMOD"
 
 class SetEmailPassFragmentViewModel(val myrepository: Repo,
-                                    val myRepoUser: RepoUser,
-                                    val myRepoPrenumberAndWebApiVer: RepoPrenumberAndWebApiVer,
-                                    val myRepoRemoteDataSource: RepoRemoteDataSource,
-                                    val myRepoLogToServer:RepoLogToServer,
+                                    val myRepoUser: IRepoUser,
+                                    val myRepoPrenumberAndWebApiVer: IRepoPrenumberAndWebApiVer,
+                                    val myRepoRemoteDataSource: IRepoRemoteDataSource,
+                                    val myRepoLogToServer:IRepoLogToServer,
                                     application: Application) : AndroidViewModel(application) {
 
     val NAVIGATE_TO_DIALPAD_FRAGMENT = 1
